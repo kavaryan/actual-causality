@@ -1,0 +1,12 @@
+networkx
+matplotlib
+numpy
+sympy
+z3-solver
+scipy
+scikit-learn
+#pygraphviz
+#pydot
+tqdm
+torch
+z3-solver
