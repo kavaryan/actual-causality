@@ -3,7 +3,7 @@ import random
 import time
 
 from tqdm import tqdm
-from actual.scm import SCMSystem, read_system
+from core.scm import SCMSystem, read_system
 
 '''TODO:
 - [] Use Z3 for finding the counterexamples
