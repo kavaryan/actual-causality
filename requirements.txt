@@ -8,5 +8,4 @@ scikit-learn
 #pygraphviz
 #pydot
 tqdm
-torch
-z3-solver
+#torch

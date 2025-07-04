@@ -2,7 +2,7 @@
 
 import ast
 import random
-from matplotlib.path import Path
+from pathlib import Path
 import networkx as nx
 from sympy import sympify, lambdify
 import math
