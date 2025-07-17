@@ -399,7 +399,7 @@ class Elevator:
 
 class ElevatorService:
     def __init__(self, floors_config: FloorsConfig, elevator_configs: List[ElevatorConfig], 
-                 time_service: TimeService):
+                 time_service: TimeService, verbose: bool = False):
         self.floors = floors_config
         self.elevator_configs = elevator_configs
         self.time_service = time_service
@@ -408,6 +408,7 @@ class ElevatorService:
         self.pending_calls: List[Call] = []
         self.active_calls: Dict[int, Call] = {}  # passenger_id -> Call
         self.completed_calls: List[CompletedCall] = []
+        self.verbose = verbose
         
         self._calc_floor_height_sums()
         self._create_elevators()
@@ -479,7 +480,8 @@ class ElevatorService:
                 self.completed_calls.append(completed_call)
                 calls_to_remove.append(passenger_id)
                 delivered_count += 1
-                print(f"Passenger {passenger_id} delivered to floor {floor_num}, waiting time: {waiting_time:.2f}s")
+                if self.verbose:
+                    print(f"Passenger {passenger_id} delivered to floor {floor_num}, waiting time: {waiting_time:.2f}s")
         
         # Remove delivered passengers from active calls
         for passenger_id in calls_to_remove:
@@ -499,12 +501,13 @@ class ElevatorService:
 
 class ElevatorSimulation:
     def __init__(self, floors_config: FloorsConfig, elevator_configs: List[ElevatorConfig], 
-                 calls: List[Dict], time_ratio: float = 2.5):
+                 calls: List[Dict], time_ratio: float = 2.5, verbose: bool = False):
         self.time_service = TimeService(time_ratio)
-        self.elevator_service = ElevatorService(floors_config, elevator_configs, self.time_service)
+        self.elevator_service = ElevatorService(floors_config, elevator_configs, self.time_service, verbose=verbose)
         self.calls = self._create_calls(calls)
         self.current_time = 0.0
         self.time_step = 0.1  # 100ms steps
+        self.verbose = verbose
         
     def _create_calls(self, call_configs: List[Dict]) -> List[Call]:
         calls = []
@@ -521,12 +524,13 @@ class ElevatorSimulation:
                 passenger_id += 1
         return calls
     
-    def run_simulation(self, max_time: float = 1000.0) -> float:
+    def run_simulation(self, max_time: float = 1000.0, verbose: bool = False) -> float:
         # Add all calls to the service
         for call in self.calls:
             self.elevator_service.add_call(call)
         
-        print(f"Starting simulation with {len(self.calls)} calls")
+        if verbose:
+            print(f"Starting simulation with {len(self.calls)} calls and {max_time=}")
         
         # Run simulation
         while self.current_time < max_time:
@@ -542,22 +546,21 @@ class ElevatorSimulation:
             
             # Check if simulation is complete
             if self.elevator_service.all_calls_completed():
-                print(f"Simulation completed at time {self.current_time:.2f}s")
+                if verbose:
+                    print(f"Simulation completed at time {self.current_time:.2f}s")
                 break
                 
             self.current_time += self.time_step
         
         avg_waiting_time = self.elevator_service.get_average_waiting_time()
-        print(f"Completed calls: {len(self.elevator_service.completed_calls)}")
-        print(f"Average waiting time: {avg_waiting_time:.2f}s")
-        
+        if verbose:
+            print(f"Completed calls: {len(self.elevator_service.completed_calls)}")
+            print(f"Average waiting time: {avg_waiting_time:.2f}s")
+            
         return avg_waiting_time
-    
-    
-def test_metamorphic_relation_basic():
-    """Test the metamorphic relation: awt(L1, C)/awt(L2, C) < |L2|/|L1|"""
-    
-    # Define floors configuration
+
+
+def run_elevator_simulation_for_lifts(num_lifts: int, verbose: bool = False) -> float:
     floors_config = FloorsConfig(
         min_floor=-1,
         max_floor=6,
@@ -565,321 +568,55 @@ def test_metamorphic_relation_basic():
     )
     
     # Define elevator configurations
-    elevator_configs_L1 = [
-        ElevatorConfig(-1, 6, 0, 8, 1.5, 6, 1.5),
-        ElevatorConfig(-1, 3, 0, 10, 2.5, 6, 1.5),
-        ElevatorConfig(0, 5, 0, 4, 2, 5, 2)
-    ]
+    elevator_configs = [
+        ElevatorConfig(-1, 6, 0, 8, 1.5, 6, 1.5)
+        for _ in range(num_lifts)]
     
-    # L2 is subset of L1 (remove last elevator)
-    elevator_configs_L2 = elevator_configs_L1[:2]
     
     # Define test calls
     test_calls = [
         {'from': 1, 'to': 5, 'noPassengers': 2, 'callTime': 0},
         {'from': -1, 'to': 3, 'noPassengers': 1, 'callTime': 5},
         {'from': 2, 'to': 6, 'noPassengers': 1, 'callTime': 10},
-        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 15}
-    ]
-    
-    print(f"Testing with {sum(call['noPassengers'] for call in test_calls)} total passengers")
-    
-    # Run simulations
-    print("Running simulation with L1 (3 elevators)...")
-    sim_L1 = ElevatorSimulation(floors_config, elevator_configs_L1, test_calls)
-    awt_L1 = sim_L1.run_simulation()
-    
-    print("Running simulation with L2 (2 elevators)...")
-    sim_L2 = ElevatorSimulation(floors_config, elevator_configs_L2, test_calls)
-    awt_L2 = sim_L2.run_simulation()
-    
-    # Test metamorphic relation
-    L1_size = len(elevator_configs_L1)
-    L2_size = len(elevator_configs_L2)
-    
-    ratio_awt = awt_L1 / awt_L2 if awt_L2 > 0 else float('inf')
-    ratio_size = L2_size / L1_size
-    
-    print(f"\nResults:")
-    print(f"Average waiting time L1 ({L1_size} elevators): {awt_L1:.2f} seconds")
-    print(f"Average waiting time L2 ({L2_size} elevators): {awt_L2:.2f} seconds")
-    print(f"awt(L1)/awt(L2) = {ratio_awt:.3f}")
-    print(f"|L2|/|L1| = {ratio_size:.3f}")
-    print(f"Metamorphic relation satisfied: {ratio_awt < ratio_size}")
-    
-    return ratio_awt < ratio_size
+        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 15},
+        {'from': 2, 'to': 6, 'noPassengers': 1, 'callTime': 15},
+        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 17},
+        {'from': 2, 'to': 6, 'noPassengers': 1, 'callTime': 20},
+        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 21}
 
-def test_heavy_load():
-    """Test with heavy passenger load - homogeneous elevators"""
-    print("\n" + "="*60)
-    print("TEST CASE 2: Heavy Load (Homogeneous)")
-    print("="*60)
-    
-    floors_config = FloorsConfig(
-        min_floor=0,
-        max_floor=10,
-        heights=[4.0] * 11
-    )
-    
-    # L1: 4 identical elevators
-    elevator_configs_L1 = [
-        ElevatorConfig(0, 10, 5, 8, 2.0, 5, 2),
-        ElevatorConfig(0, 10, 5, 8, 2.0, 5, 2),
-        ElevatorConfig(0, 10, 5, 8, 2.0, 5, 2),
-        ElevatorConfig(0, 10, 5, 8, 2.0, 5, 2)
     ]
     
-    # L2: 2 elevators (subset of L1)
-    elevator_configs_L2 = elevator_configs_L1[:2]
+    if verbose:
+        print(f"Running simulation with {num_lifts} elevators...")
+    sim = ElevatorSimulation(floors_config, elevator_configs, test_calls, verbose=verbose)
+    awt = sim.run_simulation()
+    return awt
     
-    # Heavy load: many passengers at different times
-    test_calls = [
-        {'from': 0, 'to': 10, 'noPassengers': 3, 'callTime': 0},
-        {'from': 1, 'to': 9, 'noPassengers': 3, 'callTime': 2},
-        {'from': 2, 'to': 8, 'noPassengers': 2, 'callTime': 4},
-        {'from': 3, 'to': 7, 'noPassengers': 3, 'callTime': 6},
-        {'from': 4, 'to': 6, 'noPassengers': 2, 'callTime': 8}
-    ]
-    
-    return run_test_case(floors_config, elevator_configs_L1, elevator_configs_L2, test_calls)
-
-def test_simultaneous_calls():
-    """Test with all calls arriving simultaneously - homogeneous elevators"""
-    print("\n" + "="*60)
-    print("TEST CASE 3: Simultaneous Calls (Homogeneous)")
-    print("="*60)
-    
-    floors_config = FloorsConfig(
-        min_floor=-2,
-        max_floor=8,
-        heights=[3.5] * 11
-    )
-    
-    # L1: 3 identical elevators
-    elevator_configs_L1 = [
-        ElevatorConfig(-2, 8, 0, 8, 2.0, 4, 1.5),
-        ElevatorConfig(-2, 8, 0, 8, 2.0, 4, 1.5),
-        ElevatorConfig(-2, 8, 0, 8, 2.0, 4, 1.5)
-    ]
-    
-    # L2: 1 elevator (subset of L1)
-    elevator_configs_L2 = elevator_configs_L1[:1]
-    
-    # All calls at time 0
-    test_calls = [
-        {'from': -2, 'to': 8, 'noPassengers': 2, 'callTime': 0},
-        {'from': 0, 'to': 5, 'noPassengers': 2, 'callTime': 0},
-        {'from': 1, 'to': 7, 'noPassengers': 1, 'callTime': 0},
-        {'from': 3, 'to': -1, 'noPassengers': 2, 'callTime': 0},
-        {'from': 6, 'to': 2, 'noPassengers': 1, 'callTime': 0}
-    ]
-    
-    return run_test_case(floors_config, elevator_configs_L1, elevator_configs_L2, test_calls)
-
-def test_time_distributed_calls():
-    """Test with calls distributed over time - homogeneous elevators"""
-    print("\n" + "="*60)
-    print("TEST CASE 4: Time-Distributed Calls (Homogeneous)")
-    print("="*60)
-    
-    floors_config = FloorsConfig(
-        min_floor=0,
-        max_floor=15,
-        heights=[3.0] * 16
-    )
-    
-    # L1: 4 identical elevators
-    elevator_configs_L1 = [
-        ElevatorConfig(0, 15, 7, 8, 2.0, 4, 1.5),
-        ElevatorConfig(0, 15, 7, 8, 2.0, 4, 1.5),
-        ElevatorConfig(0, 15, 7, 8, 2.0, 4, 1.5),
-        ElevatorConfig(0, 15, 7, 8, 2.0, 4, 1.5)
-    ]
-    
-    # L2: 2 elevators (subset of L1)
-    elevator_configs_L2 = elevator_configs_L1[:2]
-    
-    # Calls spread over 30 seconds
-    test_calls = [
-        {'from': 0, 'to': 15, 'noPassengers': 2, 'callTime': 0},
-        {'from': 3, 'to': 12, 'noPassengers': 1, 'callTime': 5},
-        {'from': 8, 'to': 2, 'noPassengers': 2, 'callTime': 10},
-        {'from': 12, 'to': 5, 'noPassengers': 2, 'callTime': 15},
-        {'from': 1, 'to': 14, 'noPassengers': 1, 'callTime': 20},
-        {'from': 9, 'to': 0, 'noPassengers': 2, 'callTime': 25}
-    ]
-    
-    return run_test_case(floors_config, elevator_configs_L1, elevator_configs_L2, test_calls)
-
-def test_single_vs_multiple():
-    """Test single elevator vs multiple elevators"""
-    print("\n" + "="*60)
-    print("TEST CASE 5: Single vs Multiple Elevators")
-    print("="*60)
-    
-    floors_config = FloorsConfig(
-        min_floor=0,
-        max_floor=5,
-        heights=[4.0] * 6
-    )
-    
-    # L1: 3 identical elevators
-    elevator_configs_L1 = [
-        ElevatorConfig(0, 5, 2, 8, 2.0, 5, 2),
-        ElevatorConfig(0, 5, 2, 8, 2.0, 5, 2),
-        ElevatorConfig(0, 5, 2, 8, 2.0, 5, 2)
-    ]
-    
-    # L2: 1 elevator (subset of L1)
-    elevator_configs_L2 = elevator_configs_L1[:1]
-    
-    # Medium load
-    test_calls = [
-        {'from': 0, 'to': 5, 'noPassengers': 3, 'callTime': 0},
-        {'from': 1, 'to': 4, 'noPassengers': 2, 'callTime': 3},
-        {'from': 2, 'to': 0, 'noPassengers': 2, 'callTime': 6},
-        {'from': 5, 'to': 1, 'noPassengers': 1, 'callTime': 9}
-    ]
-    
-    return run_test_case(floors_config, elevator_configs_L1, elevator_configs_L2, test_calls)
-
-def test_capacity_variation():
-    """Test with different elevator capacities but same floor range"""
-    print("\n" + "="*60)
-    print("TEST CASE 6: Capacity Variation (Same Floor Range)")
-    print("="*60)
-    
-    floors_config = FloorsConfig(
-        min_floor=-1,
-        max_floor=8,
-        heights=[3.5] * 10
-    )
-    
-    # L1: Same floor range, different capacities
-    elevator_configs_L1 = [
-        ElevatorConfig(-1, 8, 3, 12, 1.8, 6, 2),     # High capacity, slow
-        ElevatorConfig(-1, 8, 3, 6, 2.5, 4, 1.5),    # Medium capacity, fast
-        ElevatorConfig(-1, 8, 3, 8, 2.0, 5, 2),      # Medium capacity, medium speed
-    ]
-    
-    # L2: Remove one elevator
-    elevator_configs_L2 = elevator_configs_L1[:2]
-    
-    # Mixed load calls
-    test_calls = [
-        {'from': -1, 'to': 8, 'noPassengers': 6, 'callTime': 0},
-        {'from': 2, 'to': 6, 'noPassengers': 3, 'callTime': 5},
-        {'from': 5, 'to': 1, 'noPassengers': 4, 'callTime': 10},
-        {'from': 0, 'to': 7, 'noPassengers': 2, 'callTime': 15}
-    ]
-    
-    return run_test_case(floors_config, elevator_configs_L1, elevator_configs_L2, test_calls)
-
-def run_test_case(floors_config, elevator_configs_L1, elevator_configs_L2, test_calls):
-    """Helper function to run a test case and check the metamorphic relation"""
-    
-    total_passengers = sum(call['noPassengers'] for call in test_calls)
-    print(f"Testing with {total_passengers} total passengers")
-    
-    # Run simulations
-    print(f"Running simulation with L1 ({len(elevator_configs_L1)} elevators)...")
-    sim_L1 = ElevatorSimulation(floors_config, elevator_configs_L1, test_calls)
-    awt_L1 = sim_L1.run_simulation()
-    
-    print(f"Running simulation with L2 ({len(elevator_configs_L2)} elevators)...")
-    sim_L2 = ElevatorSimulation(floors_config, elevator_configs_L2, test_calls)
-    awt_L2 = sim_L2.run_simulation()
-    
-    # Test metamorphic relations
-    L1_size = len(elevator_configs_L1)
-    L2_size = len(elevator_configs_L2)
-    
-    ratio_awt = awt_L1 / awt_L2 if awt_L2 > 0 else float('inf')
-    ratio_size = L2_size / L1_size
-    
-    print(f"\nResults:")
-    print(f"Average waiting time L1 ({L1_size} elevators): {awt_L1:.2f} seconds")
-    print(f"Average waiting time L2 ({L2_size} elevators): {awt_L2:.2f} seconds")
-    print(f">>>>awt(L1)/awt(L2) = {ratio_awt:.3f}")
-    print(f">>>>|L2|/|L1| = {ratio_size:.3f}")
-    
-    # Test both relations
-    strict_relation = ratio_awt < ratio_size
-    simple_relation = awt_L1 <= awt_L2
-    
-    print(f"Strict metamorphic relation (awt(L1)/awt(L2) < |L2|/|L1|): {strict_relation}")
-    print(f"Simple relation (awt(L1) ≤ awt(L2)): {simple_relation}")
-    
-    return strict_relation, simple_relation
-
-def run_all_tests():
-    """Run all test cases and summarize results"""
-    print("METAMORPHIC TESTING: awt(L1, C)/awt(L2, C) < |L2|/|L1|")
-    print("Where L2 ⊂ L1 (L2 is a subset of L1)")
-    print("="*80)
-    
-    test_functions = [
-        ("Basic Test", test_metamorphic_relation_basic),
-        ("Heavy Load", test_heavy_load),
-        ("Simultaneous Calls", test_simultaneous_calls),
-        ("Time-Distributed Calls", test_time_distributed_calls),
-        ("Single vs Multiple", test_single_vs_multiple),
-        ("Capacity Variation", test_capacity_variation)
-    ]
-    
-    strict_results = []
-    simple_results = []
-    
-    for test_name, test_func in test_functions:
-        try:
-            if test_name == "Basic Test":
-                result = test_func()
-                strict_results.append((test_name, result, "PASS" if result else "FAIL"))
-                simple_results.append((test_name, True, "PASS"))  # Basic test only returns one result
-            else:
-                strict_result, simple_result = test_func()
-                strict_results.append((test_name, strict_result, "PASS" if strict_result else "FAIL"))
-                simple_results.append((test_name, simple_result, "PASS" if simple_result else "FAIL"))
-        except Exception as e:
-            print(f"ERROR in {test_name}: {e}")
-            strict_results.append((test_name, False, "ERROR"))
-            simple_results.append((test_name, False, "ERROR"))
-    
-    # Summary
-    print("\n" + "="*80)
-    print("SUMMARY OF ALL TESTS")
-    print("="*80)
-    
-    print("STRICT RELATION: awt(L1, C)/awt(L2, C) < |L2|/|L1|")
-    print("-" * 50)
-    strict_passed = 0
-    for test_name, result, status in strict_results:
-        print(f"{test_name:25} | {status}")
-        if result:
-            strict_passed += 1
-    
-    print(f"\nStrict tests passed: {strict_passed}/{len(strict_results)}")
-    print(f"Strict success rate: {strict_passed/len(strict_results)*100:.1f}%")
-    
-    print("\nSIMPLE RELATION: awt(L1, C) ≤ awt(L2, C)")
-    print("-" * 50)
-    simple_passed = 0
-    for test_name, result, status in simple_results:
-        print(f"{test_name:25} | {status}")
-        if result:
-            simple_passed += 1
-    
-    print(f"\nSimple tests passed: {simple_passed}/{len(simple_results)}")
-    print(f"Simple success rate: {simple_passed/len(simple_results)*100:.1f}%")
-    
-    if strict_passed == len(strict_results):
-        print("\n✅ All STRICT tests PASSED! The strict metamorphic relation holds.")
-    elif simple_passed == len(simple_results):
-        print("\n✅ All SIMPLE tests PASSED! More elevators never increase waiting time.")
-    else:
-        print(f"\n❌ Some tests FAILED. The relations may not hold universally.")
-    
-    return strict_passed == len(strict_results)
-
 if __name__ == "__main__":
-    run_all_tests()
+    max_num_lifts = 4
+    verbose = False
+    awts = []
+    for num_lifts in range(1, max_num_lifts + 1):
+        if verbose:
+            print(f"\nTesting with {num_lifts} elevators:")
+        awts.append(run_elevator_simulation_for_lifts(num_lifts, verbose=verbose))
+    
+
+    coefs = []
+    # Print header
+    header = ["i\\j"] + [str(j) for j in range(2, max_num_lifts + 1)]
+    print("\t".join(header))
+    for i, awt in enumerate(awts, start=1):
+        if i == max_num_lifts:
+            continue  # No j > i
+        row = [str(i)]
+        # Add empty cells for columns before j = i+1
+        row += [""] * (i - 1)
+        for j in range(i + 1, max_num_lifts + 1):
+            coef = j / i * awts[i - 1] / awts[j - 1]
+            row.append(f"{coef:.3f}")
+            coefs.append(coef)
+        print("\t".join(row))
+    
+    print('Tight bound', min(coefs))
+    
