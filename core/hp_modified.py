@@ -14,14 +14,14 @@ from core.scm import SCMSystem, read_system
 - [] Shapley value's higher dimensions
 '''
 
-def find_all_causes(scm: SCMSystem, context: dict[str,object], Y: str, op: str , y: object, include_exo=False):
+def find_all_causes(scm: SCMSystem, context: dict[str,object], Y: str, op: str , y_thr: object, include_exo=False):
     """
     TODO: support complex formulas for effect
     """
     results = {}
     
     start_time = time.time()
-    all_causes_list = find_all_causes_ac1_and_ac2(scm, context, Y, op, y, include_exo=include_exo)
+    all_causes_list = find_all_causes_ac1_and_ac2(scm, context, Y, op, y_thr, include_exo=include_exo)
     results["ac2_time"] = time.time() - start_time
 
     start_time = time.time()
@@ -48,11 +48,12 @@ def check_ac3(all_causes_list):
     final_all_causes_set = set(all_causes)
     return [d for d in all_causes_list if frozenset(d['X_x_prime'].keys()) in final_all_causes_set]
 
-def check_op(u,op,v):
+def check_op(y_actual, op, y_thr):
+    """ Check if u op v holds, where op is one of the comparison operators."""
     assert op in ['==', '!=', '<=', '<', '>=', '>']
-    return eval(f'{u}{op}{v}') 
+    return eval(f'{y_actual}{op}{y_thr}') 
 
-def find_all_causes_ac1_and_ac2(scm: SCMSystem, context: dict[str,object], Y: str, op: str, y: object, include_exo=False):
+def find_all_causes_ac1_and_ac2(scm: SCMSystem, context: dict[str,object], Y: str, op: str, y_thr: object, include_exo=False):
     """
     Find all sets of variables X (with their actual assignments x) that
     cause Y = y, in the sense that intervening on X to some x' (different
@@ -74,7 +75,7 @@ def find_all_causes_ac1_and_ac2(scm: SCMSystem, context: dict[str,object], Y: st
     actual_state = scm.get_state(context)
     
     # If Y != y in the actual state, there are no "causes" for Y=y
-    if not check_op(actual_state[Y], op, y):
+    if not check_op(actual_state[Y], op, y_thr):
         return []
     
     # Helper to get all subsets of an iterable
@@ -134,7 +135,7 @@ def find_all_causes_ac1_and_ac2(scm: SCMSystem, context: dict[str,object], Y: st
                 new_state = scm.get_state(context, interventions=x_prime_w)
                 
                 # Check if Y changed
-                if not check_op(new_state[Y], op, y):
+                if not check_op(new_state[Y], op, y_thr):
                     # If Y is different from y, we found that X_subset=x is a cause
                     # (under the "change all variables in X_subset" definition).
                     all_causes.append(
