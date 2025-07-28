@@ -307,14 +307,16 @@ class Elevator:
                     no_passengers = details['no_entering'] + details['no_inside']
                 
                 for i in range(enter_idx + 1, len(self._next_floors)):
-                    no_passengers += self._next_floors[i].details['no_entering']
+                    if self._next_floors[i].details:
+                        no_passengers += self._next_floors[i].details['no_entering']
             
             if (leave_idx + 1 < len(self._next_floors) and 
                 self._next_floors[leave_idx].floor_num != to_floor):
                 details = self._next_floors[leave_idx + 1].details
                 no_passengers = details['no_inside']
                 for i in range(leave_idx + 1, len(self._next_floors)):
-                    no_passengers += self._next_floors[i].details['no_entering']
+                    if self._next_floors[i].details:
+                        no_passengers += self._next_floors[i].details['no_entering']
             
             total_time += no_passengers * self.total_stop_duration
         
