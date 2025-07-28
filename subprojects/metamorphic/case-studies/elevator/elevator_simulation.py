@@ -302,7 +302,7 @@ class Elevator:
         if self.next_floor:
             no_passengers = 0
             if self._next_floors[enter_idx].floor_num != from_floor:
-                if self._next_floors[enter_idx].details:
+                if enter_idx < len(self._next_floors) and self._next_floors[enter_idx].details:
                     details = self._next_floors[enter_idx].details
                     no_passengers = details['no_entering'] + details['no_inside']
                 
@@ -311,7 +311,8 @@ class Elevator:
                         no_passengers += self._next_floors[i].details['no_entering']
             
             if (leave_idx + 1 < len(self._next_floors) and 
-                self._next_floors[leave_idx].floor_num != to_floor):
+                self._next_floors[leave_idx].floor_num != to_floor and
+                self._next_floors[leave_idx + 1].details):
                 details = self._next_floors[leave_idx + 1].details
                 no_passengers = details['no_inside']
                 for i in range(leave_idx + 1, len(self._next_floors)):
@@ -324,26 +325,31 @@ class Elevator:
     
     def _has_free_space(self, from_floor: int, to_floor: int, 
                        enter_idx: int, leave_idx: int) -> bool:
-        if not self.next_floor or not self.next_floor.details:
+        if not self.next_floor:
             return True
         
         # Check space at pickup floor
-        if self._next_floors[enter_idx].floor_num == from_floor:
+        if (enter_idx < len(self._next_floors) and 
+            self._next_floors[enter_idx].floor_num == from_floor and
+            self._next_floors[enter_idx].details):
             details = self._next_floors[enter_idx].details
             if details['no_entering'] + details['no_inside'] >= self.config.max_load:
                 return False
         
         # Check space at dropoff floor
-        if self._next_floors[leave_idx].floor_num == to_floor:
+        if (leave_idx < len(self._next_floors) and
+            self._next_floors[leave_idx].floor_num == to_floor and
+            self._next_floors[leave_idx].details):
             details = self._next_floors[leave_idx].details
             if details['no_leaving'] + details['no_inside'] >= self.config.max_load:
                 return False
         
         # Check intermediate floors
         for i in range(enter_idx + 1, leave_idx):
-            details = self._next_floors[i].details
-            if details['no_entering'] + details['no_inside'] >= self.config.max_load:
-                return False
+            if i < len(self._next_floors) and self._next_floors[i].details:
+                details = self._next_floors[i].details
+                if details['no_entering'] + details['no_inside'] >= self.config.max_load:
+                    return False
         
         return True
     
