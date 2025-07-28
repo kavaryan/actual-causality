@@ -4,6 +4,8 @@ from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import copy
+import random
+import numpy as np
 
 class ElevatorState(Enum):
     IDLE = 'idle'
@@ -566,6 +568,8 @@ def run_elevator_simulation_for_lifts(num_lifts: int, verbose: bool = False) -> 
         max_floor=6,
         heights=[3.2, 5.0, 4.75, 3.7, 2.75, 4.45, 3.8, 4.25]
     )
+    max_passengers = 10
+    T = 200
     
     # Define elevator configurations
     elevator_configs = [
@@ -574,26 +578,37 @@ def run_elevator_simulation_for_lifts(num_lifts: int, verbose: bool = False) -> 
     
     
     # Define test calls
-    test_calls = [
-        {'from': 1, 'to': 5, 'noPassengers': 2, 'callTime': 0},
-        {'from': -1, 'to': 3, 'noPassengers': 1, 'callTime': 5},
-        {'from': 2, 'to': 6, 'noPassengers': 1, 'callTime': 10},
-        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 15},
-        {'from': 2, 'to': 6, 'noPassengers': 1, 'callTime': 15},
-        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 17},
-        {'from': 2, 'to': 6, 'noPassengers': 1, 'callTime': 20},
-        {'from': 0, 'to': 4, 'noPassengers': 2, 'callTime': 21}
+    def generate_poisson_calls(num_calls, seed=42):
+        random.seed(seed)
+        np.random.seed(seed)
+        calls = []
+        call_times = np.cumsum(np.random.exponential(T / num_calls, num_calls))
+        call_times = np.clip(call_times, 0, T)
+        for i in range(num_calls):
+            from_floor = random.randint(floors_config.min_floor, floors_config.max_floor)
+            to_floor = random.randint(floors_config.min_floor, floors_config.max_floor)
+            while to_floor == from_floor:
+                to_floor = random.randint(floors_config.min_floor, floors_config.max_floor)
+            call = {
+                'from': from_floor,
+                'to': to_floor,
+                'noPassengers': random.randint(1, 4),  # Random number of passengers
+                'callTime': float(call_times[i])
+            }
+            calls.append(call)
+        return calls
 
-    ]
-    
+    num_calls = 10 * num_lifts
+    test_calls = generate_poisson_calls(num_calls)
+
     if verbose:
-        print(f"Running simulation with {num_lifts} elevators...")
+        print(f"Running simulation with {num_lifts} elevators and {num_calls} calls...")
     sim = ElevatorSimulation(floors_config, elevator_configs, test_calls, verbose=verbose)
     awt = sim.run_simulation()
     return awt
     
 if __name__ == "__main__":
-    max_num_lifts = 4
+    max_num_lifts = 400
     verbose = False
     awts = []
     for num_lifts in range(1, max_num_lifts + 1):
