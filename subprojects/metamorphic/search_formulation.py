@@ -59,12 +59,19 @@ def hp_cause_bfs(V, v, awt_thr, search_space: SearchSpace):
 def hp_cause_mm(V, v, awt_thr, mms, search_space: SearchSpace):
     Q_f = set(mn.var for mn in mms if isinstance(mn, MonotoQual))
     Q_r = set(mn.var for mn in mms if isinstance(mn, RevMonotoQual))
-    def h(X):
+    def h1(X):
         s = 0
-        for i in X:
-            if i in Q_f:
-                s += (1 - v[i])
-        return s
+        for i in X & Q_f:
+            s += (1 - v[i])
+        return -s
+    
+    def h2(X):
+        s = 0
+        for i in X & Q_f:
+            s += -1 if v[i] else 1 
+        return -s
+    
+    h = h2
     
     start = frozenset()
     if search_space.is_goal(start, v, awt_thr):
