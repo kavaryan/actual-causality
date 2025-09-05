@@ -13,11 +13,12 @@ from mock_lift_simulation import MockLiftsSimulator
 from search_formulation import SearchSpace
 from run_single_experiment import run_single_experiment
 
-def run_comparison_study(num_vars_list = [5, 10, 15], num_trials = 20, awt_coeff = 0.8, timeout = 30):
+def run_comparison_study(num_vars_list = [5, 10, 15], num_trials = 20, awt_coeff = 0.8,
+        timeout = 30, simulator_startup_cost=0.1):
     """Run the full comparison study across different numbers of variables."""
     
     # Initialize simulator and search space
-    simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
+    simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=simulator_startup_cost)
     search_space = SearchSpace(simulator.simulate)
     
     results = []
@@ -71,34 +72,26 @@ def create_method_label(row):
             return f'A* Bundled (size={bundle_size})'
     return row['method']
 
-def plot_results(df, ci=95):
+def plot_execution_time_vs_num_vars(df, ax1, ci=95, methods='all'):
     """Create beautiful seaborn plots with confidence intervals."""
     
+    if methods != 'all':
+        df = df[df['method'].isin(methods)]
+
     # Add method labels
     df['method_label'] = df.apply(create_method_label, axis=1)
     
-    # Set up the plot style
-    plt.style.use('default')
-    sns.set_palette("husl")
-    
-    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    fig.suptitle('Algorithm Performance Comparison', fontsize=16, fontweight='bold')
-    
-    # Plot 1: Execution time vs number of variables
-    ax1 = axes[0, 0]
-    sns.lineplot(data=df.loc[df['success'], ['num_vars', 'time']], x='num_vars', y='time', hue='method_label', 
+    sns.lineplot(data=df.loc[df['success'], ['num_vars', 'time', 'method_label']], x='num_vars', y='time', hue='method_label', 
                 marker='o', ax=ax1, err_style='band', errorbar=('ci', ci))
-    ax1.set_title('Execution Time vs Number of Variables')
+    ax1.set_title('Simulated Execution Time vs Number of Variables')
     ax1.set_xlabel('Number of Variables')
     ax1.set_ylabel('Time (seconds)')
-    ax1.set_yscale('log')
-    ax1.legend(title='Method', bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax1.set_xscale('log')
+    if methods == 'all':    
+        ax1.set_yscale('log')
+    # ax1.legend(title='Method', bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax1.legend(title='Method', loc='lower right')
     ax1.grid(True, alpha=0.3)
-    
-    
-    plt.tight_layout()
-    plt.show()
-    
     
 if __name__ == "__main__":
     print("Running comparison study...")
@@ -109,4 +102,4 @@ if __name__ == "__main__":
     print(f"Results saved to comparison_results.csv")
     
     # Create plots
-    plot_results(df)
+    plot_execution_time_vs_num_vars(df)

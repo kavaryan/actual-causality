@@ -1,12 +1,12 @@
 class MockLiftsSimulator:
-    def __init__(self, stretch_coefficient=1.0, startup_cost=0.1):
-        self.stretch_coefficient = stretch_coefficient
-        self.startup_cost = startup_cost
+    def __init__(self, average_max_time=1.0, simulator_startup_cost=0.1):
+        self.stretch_coefficient = average_max_time
+        self.startup_cost = simulator_startup_cost
         self.total_time = 0.0
 
     def simulate(self, num_lifts):
         # Calculate simulation time based on number of lifts
-        sim_time = self.stretch_coefficient / num_lifts + self.startup_cost
+        sim_time = ((self.stretch_coefficient / num_lifts) if num_lifts else float('inf')) + self.startup_cost
         
         # Add to total tracked time
         self.total_time += sim_time

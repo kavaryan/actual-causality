@@ -5,22 +5,22 @@ from tqdm import tqdm
 import seaborn as sns
 from search_formulation import MonotoQual, RevMonotoQual, SearchSpace, AdditiveBundle, hp_cause_bfs, hp_cause_mm, hp_cause_mm_bundled
 
-def run_exp_individual(N, simulator_func, search_space):
-    V = list(range(N))
-    v = np.random.randint(0, 2, size=N)
+def run_exp_subject_individual(num_vars, awt_coeff, simulator_func, search_space):
+    V = list(range(num_vars))
+    v = np.random.randint(0, 2, size=num_vars)
     
     # Reset simulator time tracking
     if hasattr(search_space.simulate_lifts_func, '__self__'):
         search_space.simulate_lifts_func.__self__.reset_time()
     
     awt = simulator_func(sum(v))
-    awt_thr = awt * 0.9
-    print(f"Initially active lifts: {np.sum(v)}/{N}, initial AWT: {awt}, aiming for: {awt_thr}")
+    awt_thr = awt * awt_coeff
+    print(f"Initially active lifts: {np.sum(v)}/{num_vars}, initial AWT: {awt}, aiming for: {awt_thr}")
 
     # Track both actual computation time and simulator time
     tic = time.time()
     sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
-    X = hp_cause_bfs(V, v, awt_thr, search_space)
+    X_hp = hp_cause_bfs(V, v, awt_thr, search_space)
     toc = time.time()
     sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
     d_hp = (toc - tic) + (sim_time_end - sim_time_start)
@@ -30,16 +30,16 @@ def run_exp_individual(N, simulator_func, search_space):
 
     tic = time.time()
     sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
-    hp_cause_mm(V, v, awt_thr, mms, search_space)
+    X_hp_mm = hp_cause_mm(V, v, awt_thr, mms, search_space)
     toc = time.time()
     sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
     d_hp_mm = (toc - tic) + (sim_time_end - sim_time_start)
     print('hp mm done')
 
-    return {'d_hp': d_hp, 'd_hp_mm': d_hp_mm}
+    return {'d_hp': d_hp, 'd_hp_mm': d_hp_mm, 'X_hp': X_hp, 'X_hp_mm': X_hp_mm, 'v': v}
 
 
-def run_exp_bundled(N, bundle_size, simulator_func, search_space):
+def run_exp_subject_bundled(N, awt_coeff, bundle_size, simulator_func, search_space):
     V = list(range(N))
     v = np.random.randint(0, 2, size=N)
     
@@ -48,7 +48,7 @@ def run_exp_bundled(N, bundle_size, simulator_func, search_space):
         search_space.simulate_lifts_func.__self__.reset_time()
     
     awt = simulator_func(sum(v))
-    awt_thr = awt * 0.9
+    awt_thr = awt * awt_coeff
     print(f"N={N}, bundle_size={bundle_size}")
     print(f"Initially active lifts: {np.sum(v)}/{N}, initial AWT: {awt}, aiming for: {awt_thr}")
 

@@ -37,7 +37,8 @@ class SearchSpace:
         rest = [v[i] for i in range(len(v)) if i not in X]
         x_prime = [0 if x_i else 1 for x_i in x]
         num_lifts = sum(rest) + sum(x_prime)
-        # awt = run_lift_simulation_for_lifts(num_lifts)
+        if num_lifts == 0:
+            return False
         awt = self.simulate_lifts_func(num_lifts)
         return awt <= awt_thr
 
