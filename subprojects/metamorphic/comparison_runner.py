@@ -23,7 +23,7 @@ def run_comparison_study(num_vars_list = [5, 10, 15], num_trials = 20, awt_coeff
     results = []
     
     for num_vars in tqdm(num_vars_list, desc="Variables"):
-        for trial in tqdm(range(num_trials), desc=f"Trials (N={num_vars})", leave=False):
+        for trial in tqdm(range(num_trials), desc=f"Trials (N={num_vars})", leave=True):
             # Generate one random configuration for this trial
             v = np.random.randint(0, 2, size=num_vars)
             
@@ -78,7 +78,7 @@ def plot_results(df, ci=95):
     
     # Plot 1: Execution time vs number of variables
     ax1 = axes[0, 0]
-    sns.lineplot(data=df[df['success']], x='num_vars', y='time', hue='method_label', 
+    sns.lineplot(data=df.loc[df['success'], ['num_vars', 'time']], x='num_vars', y='time', hue='method_label', 
                 marker='o', ax=ax1, err_style='band', errorbar=('ci', ci))
     ax1.set_title('Execution Time vs Number of Variables')
     ax1.set_xlabel('Number of Variables')
@@ -87,69 +87,11 @@ def plot_results(df, ci=95):
     ax1.legend(title='Method', bbox_to_anchor=(1.05, 1), loc='upper left')
     ax1.grid(True, alpha=0.3)
     
-    # Plot 2: Success rate vs number of variables
-    ax2 = axes[0, 1]
-    success_rate = df.groupby(['num_vars', 'method_label'])['success'].mean().reset_index()
-    sns.lineplot(data=success_rate, x='num_vars', y='success', hue='method_label', 
-                marker='s', ax=ax2)
-    ax2.set_title('Success Rate vs Number of Variables')
-    ax2.set_xlabel('Number of Variables')
-    ax2.set_ylabel('Success Rate')
-    ax2.set_ylim(0, 1.05)
-    ax2.legend(title='Method', bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax2.grid(True, alpha=0.3)
-    
-    # Plot 3: Box plot of execution times for successful runs
-    ax3 = axes[1, 0]
-    successful_df = df[df['success']]
-    sns.boxplot(data=successful_df, x='num_vars', y='time', hue='method_label', ax=ax3)
-    ax3.set_title('Distribution of Execution Times (Successful Runs)')
-    ax3.set_xlabel('Number of Variables')
-    ax3.set_ylabel('Time (seconds)')
-    ax3.legend(title='Method', bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax3.grid(True, alpha=0.3)
-    
-    # Plot 4: Timeout rate vs number of variables
-    ax4 = axes[1, 1]
-    timeout_rate = df.groupby(['num_vars', 'method_label'])['timeout'].mean().reset_index()
-    sns.lineplot(data=timeout_rate, x='num_vars', y='timeout', hue='method_label', 
-                marker='^', ax=ax4)
-    ax4.set_title('Timeout Rate vs Number of Variables')
-    ax4.set_xlabel('Number of Variables')
-    ax4.set_ylabel('Timeout Rate')
-    ax4.set_ylim(0, 1.05)
-    ax4.legend(title='Method', bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax4.grid(True, alpha=0.3)
     
     plt.tight_layout()
     plt.show()
     
-    # Print summary statistics
-    print("\n" + "="*60)
-    print("SUMMARY STATISTICS")
-    print("="*60)
     
-    for num_vars in sorted(df['num_vars'].unique()):
-        print(f"\nNumber of Variables: {num_vars}")
-        print("-" * 40)
-        subset = df[df['num_vars'] == num_vars]
-        
-        for method_label in subset['method_label'].unique():
-            method_data = subset[subset['method_label'] == method_label]
-            success_rate = method_data['success'].mean()
-            timeout_rate = method_data['timeout'].mean()
-            
-            if success_rate > 0:
-                successful_times = method_data[method_data['success']]['time']
-                mean_time = successful_times.mean()
-                std_time = successful_times.std()
-                print(f"{method_label:20s}: Success={success_rate:.2f}, "
-                      f"Timeout={timeout_rate:.2f}, "
-                      f"Time={mean_time:.3f}±{std_time:.3f}s")
-            else:
-                print(f"{method_label:20s}: Success={success_rate:.2f}, "
-                      f"Timeout={timeout_rate:.2f}, Time=N/A")
-
 if __name__ == "__main__":
     print("Running comparison study...")
     df = run_comparison_study()
