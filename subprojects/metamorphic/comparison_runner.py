@@ -35,7 +35,7 @@ def run_comparison_study(num_vars_list = [5, 10, 15], num_trials = 20, awt_coeff
             methods_to_test = [
                 ('bfs', {}),
                 ('mm', {}),
-                ('mm_bundled', {'bundle_size': 2}),
+                ('mm_bundled', {'bundle_size': max(1, num_vars // 5)}),
                 ('mm_bundled', {'bundle_size': num_vars // 2})
             ]
             
@@ -60,7 +60,15 @@ def create_method_label(row):
         return 'A*'
     elif row['method'] == 'mm_bundled':
         bundle_size = row.get('bundle_size', 2)
-        return f'A* Bundled (size={bundle_size})'
+        num_vars = row.get('num_vars', 10)
+        
+        # Categorize bundle sizes consistently
+        if bundle_size == max(1, num_vars // 5):
+            return 'A* Bundled (N/5)'
+        elif bundle_size == num_vars // 2:
+            return 'A* Bundled (N/2)'
+        else:
+            return f'A* Bundled (size={bundle_size})'
     return row['method']
 
 def plot_results(df, ci=95):
