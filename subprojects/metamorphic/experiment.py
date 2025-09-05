@@ -8,22 +8,32 @@ from search_formulation import MonotoQual, RevMonotoQual, SearchSpace, AdditiveB
 def run_exp_individual(N, simulator_func, search_space):
     V = list(range(N))
     v = np.random.randint(0, 2, size=N)
+    
+    # Reset simulator time tracking
+    if hasattr(search_space.simulate_lifts_func, '__self__'):
+        search_space.simulate_lifts_func.__self__.reset_time()
+    
     awt = simulator_func(sum(v))
     awt_thr = awt * 0.9
     print(f"Initially active lifts: {np.sum(v)}/{N}, initial AWT: {awt}, aiming for: {awt_thr}")
 
+    # Track both actual computation time and simulator time
     tic = time.time()
+    sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
     X = hp_cause_bfs(V, v, awt_thr, search_space)
     toc = time.time()
-    d_hp = toc - tic
+    sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
+    d_hp = (toc - tic) + (sim_time_end - sim_time_start)
     print('hp done')
 
     mms = [MonotoQual(i) for i in V]
 
     tic = time.time()
+    sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
     hp_cause_mm(V, v, awt_thr, mms, search_space)
     toc = time.time()
-    d_hp_mm = toc - tic
+    sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
+    d_hp_mm = (toc - tic) + (sim_time_end - sim_time_start)
     print('hp mm done')
 
     return {'d_hp': d_hp, 'd_hp_mm': d_hp_mm}
@@ -32,6 +42,11 @@ def run_exp_individual(N, simulator_func, search_space):
 def run_exp_bundled(N, bundle_size, simulator_func, search_space):
     V = list(range(N))
     v = np.random.randint(0, 2, size=N)
+    
+    # Reset simulator time tracking
+    if hasattr(search_space.simulate_lifts_func, '__self__'):
+        search_space.simulate_lifts_func.__self__.reset_time()
+    
     awt = simulator_func(sum(v))
     awt_thr = awt * 0.9
     print(f"N={N}, bundle_size={bundle_size}")
@@ -48,16 +63,20 @@ def run_exp_bundled(N, bundle_size, simulator_func, search_space):
     
     # Run standard A*
     tic = time.time()
+    sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
     X_standard = hp_cause_mm(V, v, awt_thr, mms, search_space)
     toc = time.time()
-    d_standard = toc - tic
+    sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
+    d_standard = (toc - tic) + (sim_time_end - sim_time_start)
     print(f'Standard A* done in {d_standard:.3f}s')
     
     # Run bundled A*
     tic = time.time()
+    sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
     X_bundled = hp_cause_mm_bundled(V, v, awt_thr, mms, bundles, search_space)
     toc = time.time()
-    d_bundled = toc - tic
+    sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
+    d_bundled = (toc - tic) + (sim_time_end - sim_time_start)
     print(f'Bundled A* done in {d_bundled:.3f}s')
     
     return {
