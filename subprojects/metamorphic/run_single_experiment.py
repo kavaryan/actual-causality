@@ -9,7 +9,7 @@ class TimeoutError(Exception):
 def timeout_handler(signum, frame):
     raise TimeoutError("Experiment timed out")
 
-def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs):
+def run_single_experiment(awt_thr, v, method, search_space, timeout=10, **kwargs):
     """
     Run a single experiment with the given parameters.
     
