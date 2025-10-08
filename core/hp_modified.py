@@ -134,10 +134,19 @@ def find_all_causes_ac1_and_ac2(scm: SCMSystem, context: dict[str,object], Y: st
                 # Evaluate the new state
                 new_state = scm.get_state(context, interventions=x_prime_w)
                 
+                # Debug logging
+                if frozenset(X_subset) == frozenset(['ST']):
+                    print(f"    DEBUG ST: X_subset={X_subset}, combo={combo}, W_subset={W_subset}")
+                    print(f"    DEBUG ST: x_prime_w={x_prime_w}")
+                    print(f"    DEBUG ST: new_state={new_state}")
+                    print(f"    DEBUG ST: Y={Y}, new_state[Y]={new_state[Y]}, op={op}, y_thr={y_thr}")
+                    print(f"    DEBUG ST: check_op result={check_op(new_state[Y], op, y_thr)}")
+                
                 # Check if Y changed
                 if not check_op(new_state[Y], op, y_thr):
                     # If Y is different from y, we found that X_subset=x is a cause
                     # (under the "change all variables in X_subset" definition).
+                    print(f"    FOUND CAUSE: {X_subset} -> {dict(zip(X_subset, combo))} with W={W_subset}")
                     all_causes.append(
                         dict(
                             X_x_prime=dict(zip(X_subset, combo)),
