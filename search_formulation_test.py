@@ -53,6 +53,12 @@ class SuzyBillySearchSpace(SearchSpace):
         # Get actual values for variables in X
         x_actual = {v: self.actual_state[v] for v in X_vars}
         
+        # Debug output for ST case
+        if X_vars == ['ST']:
+            print(f"DEBUG: Testing ST intervention")
+            print(f"DEBUG: x_actual = {x_actual}")
+            print(f"DEBUG: domains = {[(v, self.scm.domains[v].all) for v in X_vars]}")
+        
         # Try all possible alternative values for variables in X
         # (similar to the logic in find_all_causes_ac1_and_ac2)
         domain_options = []
@@ -70,11 +76,23 @@ class SuzyBillySearchSpace(SearchSpace):
         for combo in product(*domain_options):
             x_prime = dict(zip(X_vars, combo))
             
+            # Debug output for ST case
+            if X_vars == ['ST']:
+                print(f"DEBUG: Trying intervention x_prime = {x_prime}")
+            
             # Evaluate new state with intervention
             new_state = self.scm.get_state(self.context, interventions=x_prime)
             
+            # Debug output for ST case
+            if X_vars == ['ST']:
+                print(f"DEBUG: new_state = {new_state}")
+                print(f"DEBUG: Y={self.Y}, new_state[Y]={new_state[self.Y]}, op={self.op}, y_thr={self.y_thr}")
+                print(f"DEBUG: check_op result = {self.check_op(new_state[self.Y], self.op, self.y_thr)}")
+            
             # Check if Y changed to not satisfy the condition
             if not self.check_op(new_state[self.Y], self.op, self.y_thr):
+                if X_vars == ['ST']:
+                    print(f"DEBUG: ST is a cause!")
                 return True
                 
         return False
