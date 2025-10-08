@@ -39,22 +39,6 @@ class SearchSpace:
     def is_goal(self, X, v):
         pass
 
-class LiftSearchSpace(SearchSpace):
-    def __init__(self, simulate_lifts_func, awt_thr):
-        self.simulate_lifts_func = simulate_lifts_func
-        self.awt_thr = awt_thr
-        super().__init__(list(range(len(simulate_lifts_func))))
-
-    def is_goal(self, X, v):
-        x = [v[i] for i in X]
-        rest = [v[i] for i in range(len(v)) if i not in X]
-        x_prime = [0 if x_i else 1 for x_i in x]
-        num_lifts = sum(rest) + sum(x_prime)
-        if num_lifts == 0:
-            return False
-        awt = self.simulate_lifts_func(num_lifts)
-        return awt <= self.awt_thr
-
 def hp_cause_bfs(v, search_space: SearchSpace):
     start = frozenset()                     # begin with no flips
     if search_space.is_goal(start, v):
