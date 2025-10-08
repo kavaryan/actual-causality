@@ -123,6 +123,7 @@ if __name__ == '__main__':
     print(bt_only_causes)
     assert frozenset({'BT'}) in bt_only_causes
     assert frozenset({'BH'}) in bt_only_causes
+    # ST is NOT a cause because intervening ST=1 still results in BS=1 (SH=1, so bottle still shatters)
     assert frozenset({'ST'}) not in bt_only_causes
     assert frozenset({'SH'}) not in bt_only_causes
 
