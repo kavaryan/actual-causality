@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.naive_bayes import abstractmethod
 from tqdm import tqdm
 import seaborn as sns
 import heapq
@@ -19,20 +20,32 @@ class AdditiveBundle:
         self.vars = vars
 
 class SearchSpace:
-    def __init__(self, simulate_lifts_func):
-        self.simulate_lifts_func = simulate_lifts_func
+    def __init__(self, V):
+        self.V = V
 
-    def neighbors(self, X, V):
-        X = set(X) & set(V)
-        
+    def neighbors(self, X):
+        if not X.issubset(self.V):
+            raise ValueError("X must be a subset of V")
+        X = set(X) & set(self.V)
+
         # Flip each element of V once: remove if present, add if absent.
-        for v in V:
+        for v in self.V:
             if v in X:
                 yield frozenset(X - {v})   # remove v ####### why go backward? no matter, we have a seen queue
             else:
                 yield frozenset(X | {v})   # add v
 
-    def is_goal(self, X, v, awt_thr):
+    @abstractmethod
+    def is_goal(self, X, v):
+        pass
+
+class LiftSearchSpace(SearchSpace):
+    def __init__(self, simulate_lifts_func, awt_thr):
+        self.simulate_lifts_func = simulate_lifts_func
+        self.awt_thr = awt_thr
+        super().__init__(list(range(len(simulate_lifts_func))))
+
+    def is_goal(self, X, v):
         x = [v[i] for i in X]
         rest = [v[i] for i in range(len(v)) if i not in X]
         x_prime = [0 if x_i else 1 for x_i in x]
@@ -40,11 +53,11 @@ class SearchSpace:
         if num_lifts == 0:
             return False
         awt = self.simulate_lifts_func(num_lifts)
-        return awt <= awt_thr
+        return awt <= self.awt_thr
 
-def hp_cause_bfs(V, v, awt_thr, search_space: SearchSpace):
+def hp_cause_bfs(v, search_space: SearchSpace):
     start = frozenset()                     # begin with no flips
-    if search_space.is_goal(start, v, awt_thr):
+    if search_space.is_goal(start, v):
         return start
 
     frontier = deque([start])
@@ -52,16 +65,16 @@ def hp_cause_bfs(V, v, awt_thr, search_space: SearchSpace):
 
     while frontier:
         X = frontier.popleft()
-        for Y in search_space.neighbors(X, V):
+        for Y in search_space.neighbors(X):
             if Y not in visited:
-                if search_space.is_goal(Y, v, awt_thr):  # goal test on generation
-                    return Y
+                if search_space.is_goal(Y, v):  # goal test on generation
+                    yield Y
                 visited.add(Y)
                 frontier.append(Y)
     return None
 
 
-def hp_cause_mm(V, v, awt_thr, mms, search_space: SearchSpace):
+def hp_cause_mm(v, awt_thr, mms, search_space: LiftSearchSpace):
     Q_f = set(mn.var for mn in mms if isinstance(mn, MonotoQual))
     Q_r = set(mn.var for mn in mms if isinstance(mn, RevMonotoQual))
     def h1(X):
@@ -79,7 +92,7 @@ def hp_cause_mm(V, v, awt_thr, mms, search_space: SearchSpace):
     h = h2
     
     start = frozenset()
-    if search_space.is_goal(start, v, awt_thr):
+    if search_space.is_goal(start, v):
         return start
 
     # priority queue stores (f = g + h, g, subset)
@@ -94,19 +107,19 @@ def hp_cause_mm(V, v, awt_thr, mms, search_space: SearchSpace):
         if g_curr != g_cost[X]:
             continue
 
-        for Y in search_space.neighbors(X, V):
+        for Y in search_space.neighbors(X):
             tentative_g = g_curr + 1          # each edge has unit cost
             if tentative_g < g_cost[Y]:
                 g_cost[Y] = tentative_g
                 f_Y = tentative_g + h(Y)
-                if search_space.is_goal(Y, v, awt_thr):    # goal found
+                if search_space.is_goal(Y, v):    # goal found
                     return Y
                 heapq.heappush(pq, (f_Y, tentative_g, Y))
 
     return None   # no solution within search space
 
 
-def hp_cause_mm_bundled(V, v, awt_thr, mms, bundles, search_space: SearchSpace):
+def hp_cause_mm_bundled(V, v, awt_thr, mms, bundles, search_space: LiftSearchSpace):
     """
     A* search that flips variables in bundles together to reduce simulator calls.
     
