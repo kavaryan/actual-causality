@@ -30,12 +30,7 @@ class SuzyBillySearchSpace(SearchSpace):
         super().__init__(candidate_vars)
 
         # Get all causes using find_all_causes_ac1_and_ac2
-        print(f"Finding all causes for {Y} {op} {y_thr} with context {context}")
         self.all_causes = find_all_causes_ac1_and_ac2(scm, context, Y, op, y_thr, include_exo=False)
-        print(f"Found {len(self.all_causes)} causes:")
-        for i, cause in enumerate(self.all_causes):
-            cause_vars = frozenset(cause['X_x_prime'].keys())
-            print(f"  Cause {i+1}: {cause_vars} -> {cause['X_x_prime']}")
     
     def check_op(self, y_actual, op, y_thr):
         """Check if y_actual op y_thr holds."""
@@ -56,15 +51,12 @@ class SuzyBillySearchSpace(SearchSpace):
         
         # Check if X_vars (as a set) matches any of the found causes
         X_set = frozenset(X_vars)
-        print(f"  is_goal: Checking if {X_set} is a cause")
         
         for cause in self.all_causes:
             cause_vars = frozenset(cause['X_x_prime'].keys())
             if cause_vars == X_set:
-                print(f"  is_goal: Found match! {X_set} is a cause")
                 return True
         
-        print(f"  is_goal: {X_set} is NOT a cause")
         return False
 
 def create_suzy_billy_system():
@@ -80,7 +72,8 @@ BT = BTu
 SH = ST
 
 # Billy's rock hits only if he throws and Suzy doesn't throw.
-BH = BT * (1 - ST)
+# BH = BT * (1 - ST) --> this leads to that under {BTu=1, STu=0}, ST=0 becomes a cause of BS=1, because (X,x') = {ST=1}, (W,w) = {SH=0}, Bh=1*(1-1)=0, BS=min(1,0+0)=0
+BH = BT * (1 - SH)
 
 # The bottle is shattered if either rock hits.
 BS = min(1, SH + BH)
@@ -112,10 +105,6 @@ def test_hp_cause_bfs(context):
     # Create search space to find causes of BS == 1
     search_space = SuzyBillySearchSpace(system, context, 'BS', '==', 1)
     
-    # Use variable names instead of indices for the search
-    V = search_space.V  # This should be ['ST', 'BT', 'SH', 'BH']
-    print(f"Variables that can be intervened on: {V}")
-    
     # Run BFS to find minimal cause
     return list(hp_cause_bfs(actual_state, search_space))
 
@@ -144,3 +133,5 @@ if __name__ == '__main__':
     assert frozenset({'BH'}) not in both_throw_causes
     assert frozenset({'ST'}) in both_throw_causes
     assert frozenset({'SH'}) in both_throw_causes
+
+    print("All tests passed.")
