@@ -2,6 +2,7 @@ import tempfile
 import os
 from core.scm import read_system
 from subprojects.metamorphic.search_formulation import SearchSpace, hp_cause_bfs
+from core.hp_modified import find_all_causes_ac1_and_ac2
 
 class SuzyBillySearchSpace(SearchSpace):
     def __init__(self, scm, context, Y, op, y_thr):
@@ -39,62 +40,24 @@ class SuzyBillySearchSpace(SearchSpace):
         """
         Check if intervening on variables in X causes the effect Y op y_thr.
         
-        This implements the causality check similar to find_all_causes_ac1_and_ac2:
-        - X is a set of variable indices to intervene on
-        - We need to find interventions that flip Y from satisfying the condition
-          to not satisfying it (or vice versa)
+        Uses find_all_causes_ac1_and_ac2 to determine if X is a cause.
         """
         # Convert X (set of indices) to variable names
         X_vars = [self.V[i] for i in X] if isinstance(list(X)[0] if X else None, int) else list(X)
         
         if not X_vars:
             return False
-            
-        # Get actual values for variables in X
-        x_actual = {v: self.actual_state[v] for v in X_vars}
         
-        # Debug output for ST case
-        if X_vars == ['ST']:
-            print(f"DEBUG: Testing ST intervention")
-            print(f"DEBUG: x_actual = {x_actual}")
-            print(f"DEBUG: domains = {[(v, self.scm.domains[v].all) for v in X_vars]}")
+        # Use find_all_causes_ac1_and_ac2 to get all causes
+        all_causes = find_all_causes_ac1_and_ac2(self.scm, self.context, self.Y, self.op, self.y_thr, include_exo=False)
         
-        # Try all possible alternative values for variables in X
-        # (similar to the logic in find_all_causes_ac1_and_ac2)
-        domain_options = []
-        for v in X_vars:
-            if v not in self.scm.domains:
-                return False
-            # Get alternative values (different from actual)
-            alternatives = [val for val in self.scm.domains[v].all if val != x_actual[v]]
-            if not alternatives:
-                return False
-            domain_options.append(alternatives)
-        
-        # Try all combinations of alternative values
-        from itertools import product
-        for combo in product(*domain_options):
-            x_prime = dict(zip(X_vars, combo))
-            
-            # Debug output for ST case
-            if X_vars == ['ST']:
-                print(f"DEBUG: Trying intervention x_prime = {x_prime}")
-            
-            # Evaluate new state with intervention
-            new_state = self.scm.get_state(self.context, interventions=x_prime)
-            
-            # Debug output for ST case
-            if X_vars == ['ST']:
-                print(f"DEBUG: new_state = {new_state}")
-                print(f"DEBUG: Y={self.Y}, new_state[Y]={new_state[self.Y]}, op={self.op}, y_thr={self.y_thr}")
-                print(f"DEBUG: check_op result = {self.check_op(new_state[self.Y], self.op, self.y_thr)}")
-            
-            # Check if Y changed to not satisfy the condition
-            if not self.check_op(new_state[self.Y], self.op, self.y_thr):
-                if X_vars == ['ST']:
-                    print(f"DEBUG: ST is a cause!")
+        # Check if X_vars (as a set) matches any of the found causes
+        X_set = frozenset(X_vars)
+        for cause in all_causes:
+            cause_vars = frozenset(cause['X_x_prime'].keys())
+            if cause_vars == X_set:
                 return True
-                
+        
         return False
 
 def create_suzy_billy_system():
