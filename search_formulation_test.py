@@ -28,8 +28,9 @@ class SuzyBillySearchSpace(SearchSpace):
         # Variables that can be intervened on (endogenous vars except Y)
         candidate_vars = [v for v in scm.endogenous_vars if v != Y]
         super().__init__(candidate_vars)
-        print(f"DEBUG: Endogenous vars: {scm.endogenous_vars}")
-        print(f"DEBUG: Candidate vars: {candidate_vars}")
+
+        # FIXME: copy the function content here
+        self.all_causes = find_all_causes_ac1_and_ac2(scm, context, Y, op, y_thr, include_exo=False)
     
     def check_op(self, y_actual, op, y_thr):
         """Check if y_actual op y_thr holds."""
@@ -49,11 +50,11 @@ class SuzyBillySearchSpace(SearchSpace):
             return False
         
         # Use find_all_causes_ac1_and_ac2 to get all causes
-        all_causes = find_all_causes_ac1_and_ac2(self.scm, self.context, self.Y, self.op, self.y_thr, include_exo=False)
+        
         
         # Check if X_vars (as a set) matches any of the found causes
         X_set = frozenset(X_vars)
-        for cause in all_causes:
+        for cause in self.all_causes:
             cause_vars = frozenset(cause['X_x_prime'].keys())
             if cause_vars == X_set:
                 return True
@@ -110,13 +111,29 @@ def test_hp_cause_bfs(context):
     print(f"Variables that can be intervened on: {V}")
     
     # Run BFS to find minimal cause
-    results = list(hp_cause_bfs(actual_state, search_space))
-    for result in results:
-        print(f"Found cause: {result}")
+    return list(hp_cause_bfs(actual_state, search_space))
 
     
 
 if __name__ == '__main__':
-    test_hp_cause_bfs({'STu': 0, 'BTu': 1})
+    no_throw_causes = test_hp_cause_bfs({'STu': 0, 'BTu': 0})
+    assert len(no_throw_causes) == 0  # No cause, bottle not shattered
 
-    test_hp_cause_bfs({'STu': 1, 'BTu': 1})
+    bt_only_causes = test_hp_cause_bfs({'STu': 0, 'BTu': 1})
+    print(bt_only_causes)
+    assert frozenset({'BT'}) in bt_only_causes
+    assert frozenset({'BH'}) in bt_only_causes
+    assert frozenset({'ST'}) not in bt_only_causes
+    assert frozenset({'SH'}) not in bt_only_causes
+
+    st_only_causes = test_hp_cause_bfs({'STu': 1, 'BTu': 0})
+    assert frozenset({'BT'}) not in st_only_causes
+    assert frozenset({'BH'}) not in st_only_causes
+    assert frozenset({'ST'}) in st_only_causes
+    assert frozenset({'SH'}) in st_only_causes
+
+    both_throw_causes = test_hp_cause_bfs({'STu': 1, 'BTu': 1})
+    assert frozenset({'BT'}) not in both_throw_causes
+    assert frozenset({'BH'}) not in both_throw_causes
+    assert frozenset({'ST'}) in both_throw_causes
+    assert frozenset({'SH'}) in both_throw_causes
