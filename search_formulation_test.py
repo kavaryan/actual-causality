@@ -27,6 +27,8 @@ class SuzyBillySearchSpace(SearchSpace):
         # Variables that can be intervened on (endogenous vars except Y)
         candidate_vars = [v for v in scm.endogenous_vars if v != Y]
         super().__init__(candidate_vars)
+        print(f"DEBUG: Endogenous vars: {scm.endogenous_vars}")
+        print(f"DEBUG: Candidate vars: {candidate_vars}")
     
     def check_op(self, y_actual, op, y_thr):
         """Check if y_actual op y_thr holds."""
