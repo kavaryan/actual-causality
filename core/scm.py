@@ -7,6 +7,7 @@ import networkx as nx
 from sympy import sympify, lambdify
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 
 def is_literal(s):
     try:
@@ -72,6 +73,17 @@ class BoundedIntInterval:
     #     for x in range(self.a,self.b+1):
     #         yield x
 
+class BoundedFloatInterval:
+    def __init__(self, a, b, num_points=20):
+        """ [a, ..., b] with num_points evenly spaced values """
+        self.a = a
+        self.b = b
+        self.num_points = num_points
+        self.all = list(np.linspace(a, b, num_points))
+    
+    def __eq__(self, other):
+        return isinstance(other, BoundedFloatInterval) and (self.a, self.b, self.num_points) == (other.a, other.b, other.num_points)
+
 class SCMSystem:
     """
     Represents the overall Structural Causal Model (SCM) system.
@@ -116,6 +128,8 @@ class SCMSystem:
             d = self.domains[v]
             if isinstance(d, BoundedIntInterval):
                 ans[v] = random.randint(d.a, d.b)
+            elif isinstance(d, BoundedFloatInterval):
+                ans[v] = random.uniform(d.a, d.b)
             else:
                 ValueError(f'get_random_context: Domain of type {type(d)} not supported.')
         return ans
@@ -236,16 +250,6 @@ class SCMSystem:
 
 import re
 
-class BoundedIntInterval:
-    def __init__(self, a, b):
-        """ [a,a+1,...,b] """
-        self.a = a
-        self.b = b
-        self.all = list(range(self.a, self.b+1))
-    
-    def __eq__(self, other):
-        return isinstance(other, BoundedIntInterval) and (self.a, self.b) == (other.a, other.b)
-
 
 def read_system(config_file):
     return read_system_str(Path(config_file).read_text())
@@ -279,6 +283,7 @@ def read_system_str(config_str):
         
         # Parse domains
         elif section == "domains":
+            # Try to match Int domain
             match = re.match(r"([A-Za-z0-9_, ]+):\s*Int\((\d+),\s*(\d+)\)", line)
             if match:
                 variables = [var.strip() for var in match.group(1).split(',')]
@@ -287,6 +292,16 @@ def read_system_str(config_str):
                 
                 for var in variables:
                     domains[var] = interval
+            else:
+                # Try to match Float domain
+                match = re.match(r"([A-Za-z0-9_, ]+):\s*Float\(([+-]?\d*\.?\d+),\s*([+-]?\d*\.?\d+)\)", line)
+                if match:
+                    variables = [var.strip() for var in match.group(1).split(',')]
+                    lower_bound, upper_bound = float(match.group(2)), float(match.group(3))
+                    interval = BoundedFloatInterval(lower_bound, upper_bound)
+                    
+                    for var in variables:
+                        domains[var] = interval
 
     return SCMSystem(components, domains)  # Assuming SCMSystem can take domains
 
