@@ -29,8 +29,13 @@ class SuzyBillySearchSpace(SearchSpace):
         candidate_vars = [v for v in scm.endogenous_vars if v != Y]
         super().__init__(candidate_vars)
 
-        # FIXME: copy the function content here
+        # Get all causes using find_all_causes_ac1_and_ac2
+        print(f"Finding all causes for {Y} {op} {y_thr} with context {context}")
         self.all_causes = find_all_causes_ac1_and_ac2(scm, context, Y, op, y_thr, include_exo=False)
+        print(f"Found {len(self.all_causes)} causes:")
+        for i, cause in enumerate(self.all_causes):
+            cause_vars = frozenset(cause['X_x_prime'].keys())
+            print(f"  Cause {i+1}: {cause_vars} -> {cause['X_x_prime']}")
     
     def check_op(self, y_actual, op, y_thr):
         """Check if y_actual op y_thr holds."""
@@ -49,16 +54,17 @@ class SuzyBillySearchSpace(SearchSpace):
         if not X_vars:
             return False
         
-        # Use find_all_causes_ac1_and_ac2 to get all causes
-        
-        
         # Check if X_vars (as a set) matches any of the found causes
         X_set = frozenset(X_vars)
+        print(f"  is_goal: Checking if {X_set} is a cause")
+        
         for cause in self.all_causes:
             cause_vars = frozenset(cause['X_x_prime'].keys())
             if cause_vars == X_set:
+                print(f"  is_goal: Found match! {X_set} is a cause")
                 return True
         
+        print(f"  is_goal: {X_set} is NOT a cause")
         return False
 
 def create_suzy_billy_system():
