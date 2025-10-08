@@ -106,16 +106,15 @@ ST,BT,SH,BH,BS: Int(0,1)
     finally:
         os.unlink(temp_path)
 
-def test_hp_cause_bfs():
+def test_hp_cause_bfs(context):
     """Test hp_cause_bfs with Suzy/Billy example."""
-    print("Testing hp_cause_bfs with Suzy/Billy example...")
+    print("\n\nSuzy/Billy example:")
     
     # Create SCM system
     system = create_suzy_billy_system()
     
     # Test case: STu=0, BTu=1 (only Billy throws)
     # In this case, BS=1 (bottle shatters)
-    context = {'STu': 0, 'BTu': 1}
     actual_state = system.get_state(context)
     print(f"Actual state: {actual_state}")
     print(f"BS = {actual_state['BS']}")
@@ -128,33 +127,13 @@ def test_hp_cause_bfs():
     print(f"Variables that can be intervened on: {V}")
     
     # Run BFS to find minimal cause
-    result = hp_cause_bfs(V, None, search_space)
-    
-    if result is not None:
+    results = list(hp_cause_bfs(actual_state, search_space))
+    for result in results:
         print(f"Found cause: {result}")
-        # Convert back to variable names for interpretation
-        cause_vars = list(result)
-        print(f"Cause variables: {cause_vars}")
-    else:
-        print("No cause found")
+
     
-    # Test another case: STu=1, BTu=1 (both throw)
-    print("\n" + "="*50)
-    print("Testing case where both throw...")
-    context2 = {'STu': 1, 'BTu': 1}
-    actual_state2 = system.get_state(context2)
-    print(f"Actual state: {actual_state2}")
-    print(f"BS = {actual_state2['BS']}")
-    
-    search_space2 = SuzyBillySearchSpace(system, context2, 'BS', '==', 1)
-    result2 = hp_cause_bfs(V, None, search_space2)
-    
-    if result2 is not None:
-        print(f"Found cause: {result2}")
-        cause_vars2 = list(result2)
-        print(f"Cause variables: {cause_vars2}")
-    else:
-        print("No cause found")
 
 if __name__ == '__main__':
-    test_hp_cause_bfs()
+    test_hp_cause_bfs({'STu': 0, 'BTu': 1})
+
+    test_hp_cause_bfs({'STu': 1, 'BTu': 1})
