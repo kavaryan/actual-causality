@@ -28,16 +28,16 @@ def create_perfect_aeb_system():
     
     # Create components for a perfect system
     components = [
-        Component("dist", "dist_u"),
-        Component("vel", "vel_u"), 
-        Component("radar_conf", "radar_conf_u"),
-        Component("critical_dist", "vel * 0.8 + (vel * vel) / (2 * 8.0)"),
-        Component("dist_margin", "dist - critical_dist"),
-        Component("aeb_should_trigger", "1.0"),  # Perfect system always triggers AEB
-        Component("brake_force", "1.0"),  # Perfect system always applies full braking
-        Component("collision_risk", "0.0"),  # Perfect system has no collision risk
-        Component("collision", "0.0"),  # Perfect system never has collisions
-        Component("collision_severity", "0.0"),  # Perfect system has no collision severity
+        Component("dist = dist_u"),
+        Component("vel = vel_u"), 
+        Component("radar_conf = radar_conf_u"),
+        Component("critical_dist = vel * 0.8 + (vel * vel) / (2 * 8.0)"),
+        Component("dist_margin = dist - critical_dist"),
+        Component("aeb_should_trigger = 1.0"),  # Perfect system always triggers AEB
+        Component("brake_force = 1.0"),  # Perfect system always applies full braking
+        Component("collision_risk = 0.0"),  # Perfect system has no collision risk
+        Component("collision = 0.0"),  # Perfect system never has collisions
+        Component("collision_severity = 0.0"),  # Perfect system has no collision severity
     ]
     
     # Use same domains as original system
