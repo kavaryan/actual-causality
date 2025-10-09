@@ -176,5 +176,12 @@ def pretty_print_a_cause(state: dict, cause: dict):
 def pretty_print_causes(system: SCMSystem, context: dict, causes: list[dict]):
     print(f"Times: AC1={causes['ac2_time']:.5f}, AC2={causes['ac3_time']:.5f}")
     state = system.get_state(context)
+    new_causes = {}
     for cause in causes['results']:
+        if frozenset(cause['X_x_prime'].keys()) not in new_causes:
+            new_causes[frozenset(cause['X_x_prime'].keys())] = cause
+    new_causes = {'results': list(new_causes.values())}
+
+    print(f"Minified causes from {len(causes['results'])} to {len(new_causes['results'])}:")
+    for cause in new_causes['results']:
         pretty_print_a_cause(state, cause)

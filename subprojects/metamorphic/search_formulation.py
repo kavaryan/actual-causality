@@ -7,6 +7,9 @@ import seaborn as sns
 import heapq
 from collections import deque, defaultdict
 
+# FIXME: remove
+from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
+
 class MonotoQual:
     def __init__(self, var: int):
         self.var = var

@@ -74,7 +74,7 @@ class BoundedIntInterval:
     #         yield x
 
 class BoundedFloatInterval:
-    def __init__(self, a, b, num_points=20):
+    def __init__(self, a, b, num_points=1):
         """ [a, ..., b] with num_points evenly spaced values """
         self.a = a
         self.b = b
