@@ -91,8 +91,9 @@ def compare_liability_methods():
     S = create_perfect_aeb_system()  # Specification system (perfect)
     T = system  # Implementation system (actual)
     
-    # Define failure set - collision occurs (collision > 0.1 to capture more cases)
-    F = ClosedHalfSpaceFailureSet({'collision': (0.1, 'ge')})
+    # Define failure set - focus on AEB failure (should trigger but doesn't)
+    # This will give us more meaningful liability attribution to input variables
+    F = ClosedHalfSpaceFailureSet({'aeb_should_trigger': (0.5, 'le')})
     
     # Generate random contexts
     contexts = generate_random_contexts(system, num_contexts=20)
@@ -112,8 +113,9 @@ def compare_liability_methods():
         collision_value = state['collision']
         collision_states.append(collision_value)
         
-        # Only analyze contexts where collision actually occurs
-        if collision_value > 0.1:
+        # Only analyze contexts where AEB should trigger but doesn't (failure case)
+        aeb_value = state['aeb_should_trigger']
+        if aeb_value < 0.5 and state['dist_margin'] < 0:  # Dangerous situation but AEB doesn't trigger
             try:
                 # Calculate k-leg liability (k=2)
                 print(f"        Computing k-leg liability...")
@@ -126,7 +128,7 @@ def compare_liability_methods():
                 shapley_results.append(shapley_values)
                 
                 # Print results for this context
-                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f}")
+                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | AEB:{aeb_value:.3f} Collision:{collision_value:.3f}")
                 
                 # Debug: Show system states
                 t_state = T.get_state(context)
@@ -149,7 +151,7 @@ def compare_liability_methods():
             except Exception as e:
                 print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | Error: {str(e)}")
         else:
-            print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | No collision")
+            print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | AEB:{aeb_value:.3f} Collision:{collision_value:.3f} | AEB working properly")
     
     print(f"\nTotal contexts analyzed: {len(contexts)}")
     print(f"Contexts with collision: {len(k_leg_results)}")
@@ -299,21 +301,22 @@ def focused_collision_analysis():
     
     system = load_static_aeb_system()
     
-    # Create contexts that are more likely to cause collisions
+    # Create contexts that are more likely to cause AEB failures
+    # These should be dangerous situations (negative dist_margin) but with poor radar
     focused_contexts = [
-        {'dist_u': 1.9, 'vel_u': 15.0, 'radar_conf_u': 0.9},  # Close, fast, good radar
-        {'dist_u': 1.8, 'vel_u': 12.0, 'radar_conf_u': 0.3},  # Close, moderate speed, poor radar
-        {'dist_u': 1.7, 'vel_u': 8.0, 'radar_conf_u': 0.8},   # Very close, moderate speed
-        {'dist_u': 1.5, 'vel_u': 20.0, 'radar_conf_u': 0.5},  # Very close, very fast
-        {'dist_u': 1.6, 'vel_u': 18.0, 'radar_conf_u': 0.1},  # Close, fast, radar failure
-        {'dist_u': 1.4, 'vel_u': 10.0, 'radar_conf_u': 0.7},  # Very close, moderate
-        {'dist_u': 1.3, 'vel_u': 14.0, 'radar_conf_u': 0.4},  # Very close, fast, poor radar
-        {'dist_u': 1.1, 'vel_u': 16.0, 'radar_conf_u': 0.8},  # Extremely close, fast
+        {'dist_u': 5.0, 'vel_u': 15.0, 'radar_conf_u': 0.2},   # Dangerous + poor radar
+        {'dist_u': 4.0, 'vel_u': 12.0, 'radar_conf_u': 0.1},   # Dangerous + very poor radar
+        {'dist_u': 6.0, 'vel_u': 18.0, 'radar_conf_u': 0.3},   # Very dangerous + poor radar
+        {'dist_u': 3.0, 'vel_u': 10.0, 'radar_conf_u': 0.15},  # Dangerous + poor radar
+        {'dist_u': 7.0, 'vel_u': 20.0, 'radar_conf_u': 0.25},  # Very dangerous + poor radar
+        {'dist_u': 5.5, 'vel_u': 16.0, 'radar_conf_u': 0.05},  # Dangerous + radar failure
+        {'dist_u': 4.5, 'vel_u': 14.0, 'radar_conf_u': 0.2},   # Dangerous + poor radar
+        {'dist_u': 8.0, 'vel_u': 22.0, 'radar_conf_u': 0.1},   # Extremely dangerous + poor radar
     ]
     
     S = create_perfect_aeb_system()
     T = system
-    F = ClosedHalfSpaceFailureSet({'collision': (0.1, 'ge')})
+    F = ClosedHalfSpaceFailureSet({'aeb_should_trigger': (0.5, 'le')})
     
     print("Focused collision contexts:")
     print("Context | Dist | Vel  | Radar | Collision")
@@ -323,12 +326,13 @@ def focused_collision_analysis():
         state = system.get_state(context)
         collision_value = state['collision']
         
-        if collision_value > 0.1:
+        aeb_value = state['aeb_should_trigger']
+        if aeb_value < 0.5 and state['dist_margin'] < 0:  # AEB failure in dangerous situation
             try:
                 k_leg_values = k_leg_liab(T, S, context, F, k=2)
                 shapley_values = shapley_liab(T, S, context, F, k=-1)
                 
-                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f}")
+                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | AEB:{aeb_value:.3f} Collision:{collision_value:.3f}")
                 
                 # Print all liability values for this context
                 print(f"        K-leg liabilities: {dict(sorted(k_leg_values.items(), key=lambda x: x[1], reverse=True))}")
@@ -343,7 +347,7 @@ def focused_collision_analysis():
             except Exception as e:
                 print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | Error: {str(e)}")
         else:
-            print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | No collision")
+            print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | AEB:{aeb_value:.3f} Collision:{collision_value:.3f} | AEB working properly")
 
 if __name__ == '__main__':
     try:
