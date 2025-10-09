@@ -66,8 +66,8 @@ def compare_liability_methods():
     collision_states = []
     
     print("Analyzing contexts...")
-    print("Context | Dist | Vel  | Radar | Collision | K-leg Components | Shapley Components")
-    print("-" * 90)
+    print("Context | Dist | Vel  | Radar | Collision")
+    print("-" * 50)
     
     for i, context in enumerate(contexts):
         # Get system state
@@ -87,19 +87,19 @@ def compare_liability_methods():
                 shapley_results.append(shapley_values)
                 
                 # Print results for this context
-                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | ", end="")
+                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f}")
                 
-                # Print top k-leg components
-                k_leg_sorted = sorted(k_leg_liab_values.items(), key=lambda x: x[1], reverse=True)
-                k_leg_top = k_leg_sorted[:2]  # Top 2
-                k_leg_str = ", ".join([f"{comp}:{val:.3f}" for comp, val in k_leg_top])
-                print(f"{k_leg_str:15s} | ", end="")
+                # Print all k-leg components with their liability values
+                print(f"        K-leg liabilities: {dict(sorted(k_leg_liab_values.items(), key=lambda x: x[1], reverse=True))}")
                 
-                # Print top Shapley components
-                shapley_sorted = sorted(shapley_values.items(), key=lambda x: x[1], reverse=True)
-                shapley_top = shapley_sorted[:2]  # Top 2
-                shapley_str = ", ".join([f"{comp}:{val:.3f}" for comp, val in shapley_top])
-                print(f"{shapley_str}")
+                # Print all Shapley components with their liability values
+                print(f"        Shapley liabilities: {dict(sorted(shapley_values.items(), key=lambda x: x[1], reverse=True))}")
+                
+                # Verify they sum to 1
+                k_leg_sum = sum(k_leg_liab_values.values())
+                shapley_sum = sum(shapley_values.values())
+                print(f"        Sums - K-leg: {k_leg_sum:.6f}, Shapley: {shapley_sum:.6f}")
+                print()
                 
             except Exception as e:
                 print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | Error: {str(e)}")
@@ -271,8 +271,8 @@ def focused_collision_analysis():
     F = ClosedHalfSpaceFailureSet({'collision': (0.1, 'ge')})
     
     print("Focused collision contexts:")
-    print("Context | Dist | Vel  | Radar | Collision | Method Comparison")
-    print("-" * 70)
+    print("Context | Dist | Vel  | Radar | Collision")
+    print("-" * 50)
     
     for i, context in enumerate(focused_contexts):
         state = system.get_state(context)
@@ -283,12 +283,17 @@ def focused_collision_analysis():
                 k_leg_values = k_leg_liab(T, S, context, F, k=2)
                 shapley_values = shapley_liab(T, S, context, F)
                 
-                # Find the component with highest liability in each method
-                k_leg_max = max(k_leg_values.items(), key=lambda x: x[1])
-                shapley_max = max(shapley_values.items(), key=lambda x: x[1])
+                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f}")
                 
-                print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | ", end="")
-                print(f"K-leg: {k_leg_max[0]}({k_leg_max[1]:.3f}), Shapley: {shapley_max[0]}({shapley_max[1]:.3f})")
+                # Print all liability values for this context
+                print(f"        K-leg liabilities: {dict(sorted(k_leg_values.items(), key=lambda x: x[1], reverse=True))}")
+                print(f"        Shapley liabilities: {dict(sorted(shapley_values.items(), key=lambda x: x[1], reverse=True))}")
+                
+                # Verify they sum to 1
+                k_leg_sum = sum(k_leg_values.values())
+                shapley_sum = sum(shapley_values.values())
+                print(f"        Sums - K-leg: {k_leg_sum:.6f}, Shapley: {shapley_sum:.6f}")
+                print()
                 
             except Exception as e:
                 print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f} | Error: {str(e)}")
