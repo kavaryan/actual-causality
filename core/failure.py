@@ -89,34 +89,38 @@ class ClosedHalfSpaceFailureSet(FailureSet):
         solver.set('random_seed', seed)
         solver.set('arith.random_initial_value', False)
         
-        # Create variables
-        for x in M.U:
+        # Create variables for exogenous variables
+        for x in M.exogenous_nl_vars:
             xx = z3.Real(x)
             exec(f'{x} = xx')
-        for x in M.V:
+        
+        # Create variables for endogenous variables in both systems
+        for x in M.endogenous_vars:
             xm = f'm_{x}'
             xx = z3.Real(xm)
             exec(f'{xm}=xx')
-        for x in N.V:
+        for x in N.endogenous_vars:
             xn = f'n_{x}'
             xx = z3.Real(xn)
             exec(f'{xn}=xx')
         
         # Add M equations
-        for c_o, c in M.cs_dict.items():
-            c_o = f'm_{c_o}'
-            ceq = c.f
-            for x in M.V:
-                ceq = re.sub(rf'\b{x}\b', f'm_{x}', ceq)
-            solver.add(eval(f'{c_o}=={ceq}'))
+        for var, comp in M.components.items():
+            if not comp.is_literal:
+                c_o = f'm_{var}'
+                ceq = str(comp.expression)
+                for x in M.endogenous_vars:
+                    ceq = re.sub(rf'\b{x}\b', f'm_{x}', ceq)
+                solver.add(eval(f'{c_o}=={ceq}'))
 
         # Add N equations
-        for c_o, c in N.cs_dict.items():
-            c_o = f'n_{c_o}'
-            ceq = c.f
-            for x in M.V:
-                ceq = re.sub(rf'\b{x}\b', f'n_{x}', ceq)
-            solver.add(eval(f'{c_o}=={ceq}'))
+        for var, comp in N.components.items():
+            if not comp.is_literal:
+                c_o = f'n_{var}'
+                ceq = str(comp.expression)
+                for x in N.endogenous_vars:
+                    ceq = re.sub(rf'\b{x}\b', f'n_{x}', ceq)
+                solver.add(eval(f'{c_o}=={ceq}'))
 
         # Add non-failure for M constraint 
         or_args = []
@@ -129,12 +133,12 @@ class ClosedHalfSpaceFailureSet(FailureSet):
         if solver.check() == z3.sat:
             model = solver.model()
             ret = {}
-            for k in M.U:
+            for k in M.exogenous_nl_vars:
                 # `as_decimal` returns a string 
                 ret[k] = float(model[eval(k)].as_decimal(17).split('?')[0])
 
-            state_m, _ = M.get_state(ret)
-            state_n, _ = N.get_state(ret)
+            state_m = M.get_state(ret)
+            state_n = N.get_state(ret)
             if self.contains(state_m) or not self.contains(state_n):
                 # assert False
                 ...

@@ -9,18 +9,18 @@ from sympy import Max
 import numpy as np
 from core.bf import bf
 from core.failure import ClosedHalfSpaceFailureSet, FailureSet
-from liab.scm import ComponentOrEquation, GSym, System
-from liab.utils import subsets_upto
+from core.scm import SCMSystem, Component
+from subprojects.liab.utils import subsets_upto
 
-def k_leg_liab(T: System, S: System, u: Dict[GSym, float], F: FailureSet, *, k: int):
+def k_leg_liab(T: SCMSystem, S: SCMSystem, u: Dict[str, float], F: FailureSet, *, k: int):
     """Calculate the k-leg liability of each component in T.
     
     For more information see the paper.
 
     Args:
-        T (System): The implementation system.
-        S (System): The specification system.
-        u (Dict[GSym, float]): The context as a dictionary with keys as the variable names.
+        T (SCMSystem): The implementation system.
+        S (SCMSystem): The specification system.
+        u (Dict[str, float]): The context as a dictionary with keys as the variable names.
         F (FailureSet): The failure set.
         k (int, always as keyword argument): The number of legs to consider.
 
@@ -31,13 +31,13 @@ def k_leg_liab(T: System, S: System, u: Dict[GSym, float], F: FailureSet, *, k: 
     if not u or not isinstance(u, dict):
         raise ValueError("The context must be a non-empty dictionary.")
     bf_dict = {}
-    M = S.induced_scm()
-    N = T.induced_scm(state_order=M.state_order)
 
-    liabs = np.zeros(len(T.cs))
-    for Xi, X in enumerate(T.cs):
+    endogenous_vars = T.endogenous_vars
+    liabs = np.zeros(len(endogenous_vars))
+    
+    for Xi, X in enumerate(endogenous_vars):
         B = []
-        for K in subsets_upto(T.cs, k-1):
+        for K in subsets_upto(endogenous_vars, k-1):
             if bf(T, S, [X]+list(K), u, F, bf_dict):
                 B.append(K)
 
@@ -47,19 +47,41 @@ def k_leg_liab(T: System, S: System, u: Dict[GSym, float], F: FailureSet, *, k: 
 
         X_shares = np.zeros(len(B))
         for Ki, K in enumerate(B):
-            rep_dict = {kc.O: M.cs_dict[kc.O] for kc in K}
-            rep_dict2 = dict(rep_dict)
-            rep_dict2[X.O] = M.cs_dict[X.O]
-            d = max(0,  F.depth(T.get_replacement(rep_dict).induced_scm().get_state(u)[0]) -
-                        F.depth(T.get_replacement(rep_dict2).induced_scm().get_state(u)[0]))
-                        
+            # Create modified system with K variables replaced by specification
+            new_components_k = []
+            for var, comp in T.components.items():
+                if var in K:
+                    if var in S.components:
+                        new_components_k.append(S.components[var])
+                    else:
+                        new_components_k.append(comp)
+                else:
+                    new_components_k.append(comp)
+            T_k = SCMSystem(new_components_k, T.domains)
+            
+            # Create modified system with both K and X variables replaced
+            new_components_kx = []
+            for var, comp in T.components.items():
+                if var in K or var == X:
+                    if var in S.components:
+                        new_components_kx.append(S.components[var])
+                    else:
+                        new_components_kx.append(comp)
+                else:
+                    new_components_kx.append(comp)
+            T_kx = SCMSystem(new_components_kx, T.domains)
+            
+            state_k = T_k.get_state(u)
+            state_kx = T_kx.get_state(u)
+            
+            d = max(0, F.depth(state_k) - F.depth(state_kx))
             X_shares[Ki] = d
+            
         liabs[Xi] = X_shares.mean()
 
-    keys = [c.O for c in T.cs]
     if liabs.sum() != 0:
         liabs = liabs/liabs.sum()
-    return dict(zip(keys, liabs))
+    return dict(zip(endogenous_vars, liabs))
 
 
 if __name__ == "__main__":
