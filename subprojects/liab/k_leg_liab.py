@@ -3,8 +3,6 @@ if __name__ == "__main__":
     import sys
     sys.path.append('src/')
 
-from typing import Dict
-
 from sympy import Max
 import numpy as np
 from core.bf import bf
@@ -12,7 +10,7 @@ from core.failure import ClosedHalfSpaceFailureSet, FailureSet
 from core.scm import SCMSystem, Component
 from subprojects.liab.utils import subsets_upto
 
-def k_leg_liab(T: SCMSystem, S: SCMSystem, u: Dict[str, float], F: FailureSet, *, k: int):
+def k_leg_liab(T: SCMSystem, S: SCMSystem, u: dict[str, float], F: FailureSet, *, k: int):
     """Calculate the k-leg liability of each component in T.
     
     For more information see the paper.
@@ -20,7 +18,7 @@ def k_leg_liab(T: SCMSystem, S: SCMSystem, u: Dict[str, float], F: FailureSet, *
     Args:
         T (SCMSystem): The implementation system.
         S (SCMSystem): The specification system.
-        u (Dict[str, float]): The context as a dictionary with keys as the variable names.
+        u (dict[str, float]): The context as a dictionary with keys as the variable names.
         F (FailureSet): The failure set.
         k (int, always as keyword argument): The number of legs to consider.
 

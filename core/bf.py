@@ -3,7 +3,7 @@ if __name__ == "__main__":
     import sys
     sys.path.append('src/')
 
-from typing import Union, List, Dict, Tuple, Callable
+from typing import Union
 import numpy as np
 from itertools import chain, combinations
 
@@ -14,8 +14,8 @@ def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
-def bf(T: SCMSystem, S: SCMSystem, X: Union[str,List[str]], 
-       u: Dict[str, float], F: FailureSet, bf_dict=None) -> bool:
+def bf(T: SCMSystem, S: SCMSystem, X: Union[str,list[str]], 
+       u: dict[str, float], F: FailureSet, bf_dict=None) -> bool:
     """Check but-for causality.
     
     Check if the variable(s) X is a but-for cause of T (with the specification S) 
@@ -24,10 +24,10 @@ def bf(T: SCMSystem, S: SCMSystem, X: Union[str,List[str]],
     Args:
         T (SCMSystem): The implementation system.
         S (SCMSystem): The specification system.
-        X (Union[str,List[str]]): The variable name(s) to check.
-        u (Dict[str, float]): The context.
+        X (Union[str,list[str]]): The variable name(s) to check.
+        u (dict[str, float]): The context.
         F (FailureSet): The failure set.
-        bf_dict (Dict[frozenset, bool], optional): A dictionary to reuse the results of the but-for analysis.
+        bf_dict (dict[frozenset, bool], optional): A dictionary to reuse the results of the but-for analysis.
     """
     if not isinstance(X, list):
         assert isinstance(X, str)
@@ -78,38 +78,3 @@ def bf(T: SCMSystem, S: SCMSystem, X: Union[str,List[str]],
         
     _rec_bf(X)
     return bf_dict_[X]
-    
-def test_bf():
-    from core.failure import ClosedHalfSpaceFailureSet
-    from core.scm import Component, BoundedIntInterval
-    
-    # Create specification system components
-    a_sp = Component('A = a')
-    b_sp = Component('B = b')
-    c_sp = Component('C = c + A*B')
-    
-    # Create implementation system components  
-    a_im = Component('A = a + 10')
-    b_im = Component('B = b + 10')
-    c_im = Component('C = c + A*B + 10')
-
-    # Create domains
-    domains = {
-        'a': BoundedIntInterval(0, 20),
-        'b': BoundedIntInterval(0, 20), 
-        'c': BoundedIntInterval(0, 20)
-    }
-
-    S = SCMSystem([a_sp, b_sp, c_sp], domains)
-    T = SCMSystem([a_im, b_im, c_im], domains)
-    F = ClosedHalfSpaceFailureSet({'C': (250, 'ge')})
-    
-    assert bf(T, S, 'A', {'a': 10, 'b': 10, 'c': 10}, F)
-    assert bf(T, S, 'B', {'a': 10, 'b': 10, 'c': 10}, F)
-    assert not bf(T, S, 'C', {'a': 10, 'b': 10, 'c': 10}, F)
-    assert not bf(T, S, ['A', 'C'], {'a': 10, 'b': 10, 'c': 10}, F)
-
-    print("All tests passed!")
-
-if __name__ == "__main__":
-    test_bf()

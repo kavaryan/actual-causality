@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from itertools import combinations
 import random
 import re
-from typing import Union, List, Dict, Tuple, Callable
+from typing import Union
 import numpy as np
 import sympy as sp
 import z3
@@ -41,43 +41,43 @@ class FailureSet(ABC):
         ...
 
 class ClosedHalfSpaceFailureSet(FailureSet):
-    def __init__(self, bounadry_dict: Dict[str, Tuple[float, str]]):
+    def __init__(self, boundary_dict: dict[str, tuple[float, str]]):
         """ Represents a closed half-space in n-dimensional space in the form 
             And_i(x_i >= a_i | x_i <= a_i) for i = 1, 2, ..., n.
         
         Args:
-            boundary_dict (Dict[str, float]): A dictionary representing the boundaries:
+            boundary_dict (dict[str, float]): A dictionary representing the boundaries:
                 key: the name of the variable
                 value: the boundary value and type
                     boundary value: a float representing the value of the boundary,
                     boundary type: a string ('ge' for >=, 'le' for <=)
                         defining the type of inequality for each boundary.
         """
-        self.boundary_dict = bounadry_dict
+        self.boundary_dict = boundary_dict
 
     def __str__(self):
         _symbolize = {'le': '<=', 'ge': '>='}
         s = ','.join(f'{k}{_symbolize[bt]}{bv:.2f}' for k,(bv,bt) in self.boundary_dict.items())
         return f'ClosedHalfSpaceFailureSet({s})'
     
-    def contains(self, x: Dict[str, float]) -> bool:
+    def contains(self, x: dict[str, float]) -> bool:
         """Check if a given point is in the failure set.
         
         Args:
-            x (Dict[str, float]): A dictionary representing the point with keys as the variable names.
+            x (dict[str, float]): A dictionary representing the point with keys as the variable names.
         """
         for k, v in self.boundary_dict.items():
             if (v[1] == 'ge' and x[k] < v[0]) or (v[1] == 'le' and x[k] > v[0]):
                 return False
         return True
 
-    def dist(self, x: Dict[str, float]) -> float:
+    def dist(self, x: dict[str, float]) -> float:
         """Calculate the distance of a point to the boundary of the failure set.
         
         The result is always non-negative.
 
         Args:
-            x (Dict[str, float]): A dictionary representing the point with keys as the variable names.
+            x (dict[str, float]): A dictionary representing the point with keys as the variable names.
         """
         return min([abs(x[k] - v[0]) for k, v in self.boundary_dict.items()])
     
@@ -178,22 +178,22 @@ class QFFOFormulaFailureSet(FailureSet):
 
         return QFFOFormulaFailureSet(bf)
     
-    def contains(self, x: Dict[str, float]) -> bool:
+    def contains(self, x: dict[str, float]) -> bool:
         """Check if a given point is in the failure set.
         
         Args:
-            x (Dict[str, float]): A dictionary representing the point with keys as the variable names.
+            x (dict[str, float]): A dictionary representing the point with keys as the variable names.
         """
         x = {k: bool(v) for k, v in x.items()}
         return bool(self.failure_formual.subs(x))
 
-    def dist(self, x: Dict[str, float]) -> float:
+    def dist(self, x: dict[str, float]) -> float:
         """Calculate the Hamming distance of a point to the boundary of the failure set.
         
         The result is always non-negative.
 
         Args:
-            x (Dict[str, float]): A dictionary representing the point with keys as the variable names.
+            x (dict[str, float]): A dictionary representing the point with keys as the variable names.
         """
         initial_result = self.contains(x)
         n = len(self.vars_order)
