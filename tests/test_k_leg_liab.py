@@ -41,6 +41,7 @@ def test_k_leg_liab():
     assert T.get_state(u) == {'A': 20, 'B': 20, 'C': 18, 'D': 420, 'a': 10, 'b': 10, 'c': 10, 'd': 10}
     
     liabs = k_leg_liab(T, S, u, F, k=2)
+    print("2-leg liabilities:", liabs)
     assert np.isclose(liabs['A'], 0.348, atol=0.01)
     assert np.isclose(liabs['A'], liabs['B'])
     assert np.isclose(liabs['C'], 0.302, atol=0.01)

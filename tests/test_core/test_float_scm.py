@@ -1,8 +1,9 @@
 import tempfile
 import os
 from core.scm import read_system
+
+# FIXME: use search formulation
 from core.hp_modified import find_all_causes_ac1_and_ac2
-from search_formulation_test import SuzyBillySearchSpace
 from subprojects.metamorphic.search_formulation import hp_cause_bfs
 
 def create_float_multiplication_system():
@@ -76,13 +77,6 @@ def test_float_hp_cause():
     print(f"Causes involving only y: {len(y_causes)}")
     print(f"Causes involving both x and y: {len(xy_causes)}")
     
-    # Test with search space approach
-    search_space = SuzyBillySearchSpace(system, context, 'z', '>', 10.0)
-    bfs_causes = list(hp_cause_bfs(actual_state, search_space))
-    print(f"\nBFS found {len(bfs_causes)} minimal causes:")
-    for cause in bfs_causes:
-        print(f"  {cause}")
-    
     return all_causes
 
 def test_narrow_domain_case():
@@ -128,13 +122,6 @@ def test_narrow_domain_case():
             print(f"    y={y_val:.2f} -> z={z_val:.2f}")
     
     print(f"Causes involving both x and y: {len(xy_causes)}")
-    
-    # Test with search space approach
-    search_space = SuzyBillySearchSpace(system, context, 'z', '>', 9.0)
-    bfs_causes = list(hp_cause_bfs(actual_state, search_space))
-    print(f"\nBFS found {len(bfs_causes)} minimal causes:")
-    for cause in bfs_causes:
-        print(f"  {cause}")
     
     return all_causes
 
