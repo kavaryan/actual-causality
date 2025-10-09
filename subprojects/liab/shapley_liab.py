@@ -9,9 +9,9 @@ from itertools import chain, combinations
 
 from sympy import Max
 import numpy as np
-from liab.bf import bf
-from liab.failure import ClosedHalfSpaceFailureSet, FailureSet
-from liab.scm import ComponentOrEquation, GSym, System
+from core.bf import bf
+from core.failure import ClosedHalfSpaceFailureSet, FailureSet
+from core.scm import ComponentOrEquation, GSym, System
 from liab.utils import subsets_upto
 
 def shapley_liab(T: System, S: System, u: Dict[GSym, float], F: FailureSet, k: int=-1):
