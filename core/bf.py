@@ -7,8 +7,8 @@ from typing import Union, List, Dict, Tuple, Callable
 import numpy as np
 from itertools import chain, combinations
 
-from liab.scm import ComponentOrEquation, GSym, System, SCM
-from liab.failure import FailureSet
+from core.scm import ComponentOrEquation, GSym, System, SCM
+from core.failure import FailureSet
 
 def powerset(iterable):
     s = list(iterable)

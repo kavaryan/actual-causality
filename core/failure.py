@@ -8,7 +8,7 @@ from typing import Union, List, Dict, Tuple, Callable
 import numpy as np
 import sympy as sp
 import z3
-from liab.scm import SCM
+from core.scm import SCMSystem
 
 class FailureSet(ABC):
     @abstractmethod
@@ -82,7 +82,7 @@ class ClosedHalfSpaceFailureSet(FailureSet):
         return min([abs(x[k] - v[0]) for k, v in self.boundary_dict.items()])
     
 
-    def get_example_context(self, M: SCM, N: SCM, seed=42):
+    def get_example_context(self, M: SCMSystem, N: SCMSystem, seed=42):
         """ Find a context where the resulting M-state is not failed and N-state is failed. """
 
         solver = z3.Solver()

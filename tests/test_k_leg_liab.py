@@ -7,7 +7,7 @@ import numpy as np
 from sympy import Max
 from subprojects.liab.k_leg_liab import k_leg_liab
 from core.failure import ClosedHalfSpaceFailureSet
-from liab.scm import ComponentOrEquation, System
+from core.scm import ComponentOrEquation, System
 
 
 def test_k_leg_liab():
