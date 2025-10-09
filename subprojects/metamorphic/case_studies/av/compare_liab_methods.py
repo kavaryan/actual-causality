@@ -22,6 +22,43 @@ def load_static_aeb_system():
     config_path = os.path.join(os.path.dirname(__file__), 'av_static.conf')
     return read_system(config_path)
 
+def create_perfect_aeb_system():
+    """Create a perfect AEB system that never has collisions (specification)."""
+    from core.scm import Component, SCMSystem, BoundedFloatInterval
+    
+    # Create components for a perfect system
+    components = [
+        Component("dist", "dist_u"),
+        Component("vel", "vel_u"), 
+        Component("radar_conf", "radar_conf_u"),
+        Component("critical_dist", "vel * 0.8 + (vel * vel) / (2 * 8.0)"),
+        Component("dist_margin", "dist - critical_dist"),
+        Component("aeb_should_trigger", "1.0"),  # Perfect system always triggers AEB
+        Component("brake_force", "1.0"),  # Perfect system always applies full braking
+        Component("collision_risk", "0.0"),  # Perfect system has no collision risk
+        Component("collision", "0.0"),  # Perfect system never has collisions
+        Component("collision_severity", "0.0"),  # Perfect system has no collision severity
+    ]
+    
+    # Use same domains as original system
+    domains = {
+        'dist_u': BoundedFloatInterval(1.0, 50.0),
+        'vel_u': BoundedFloatInterval(2.0, 20.0),
+        'radar_conf_u': BoundedFloatInterval(0.0, 1.0),
+        'dist': BoundedFloatInterval(0.0, 100.0),
+        'vel': BoundedFloatInterval(0.0, 100.0),
+        'radar_conf': BoundedFloatInterval(0.0, 100.0),
+        'critical_dist': BoundedFloatInterval(-50.0, 100.0),
+        'dist_margin': BoundedFloatInterval(-50.0, 100.0),
+        'aeb_should_trigger': BoundedFloatInterval(0.0, 1.0),
+        'brake_force': BoundedFloatInterval(0.0, 1.0),
+        'collision_risk': BoundedFloatInterval(0.0, 1.0),
+        'collision': BoundedFloatInterval(0.0, 1.0),
+        'collision_severity': BoundedFloatInterval(0.0, 1.0),
+    }
+    
+    return SCMSystem(components, domains)
+
 def generate_random_contexts(system, num_contexts=20, seed=42):
     """Generate random contexts for the AEB system."""
     np.random.seed(seed)
@@ -49,10 +86,10 @@ def compare_liability_methods():
     scm = system
     
     # Create specification system (ideal case - no collision)
-    # For this comparison, we'll use the same system as both spec and implementation
-    # but we could modify this to have different behaviors
-    S = system  # Specification system
-    T = system  # Implementation system (same for this example)
+    # We need different systems for meaningful liability comparison
+    # S will be a "perfect" system that never has collisions
+    S = create_perfect_aeb_system()  # Specification system (perfect)
+    T = system  # Implementation system (actual)
     
     # Define failure set - collision occurs (collision > 0.1 to capture more cases)
     F = ClosedHalfSpaceFailureSet({'collision': (0.1, 'ge')})
@@ -79,15 +116,23 @@ def compare_liability_methods():
         if collision_value > 0.1:
             try:
                 # Calculate k-leg liability (k=2)
+                print(f"        Computing k-leg liability...")
                 k_leg_liab_values = k_leg_liab(T, S, context, F, k=2)
                 k_leg_results.append(k_leg_liab_values)
                 
                 # Calculate Shapley values
-                shapley_values = shapley_liab(T, S, context, F)
+                print(f"        Computing Shapley values...")
+                shapley_values = shapley_liab(T, S, context, F, k=-1)
                 shapley_results.append(shapley_values)
                 
                 # Print results for this context
                 print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f}")
+                
+                # Debug: Show system states
+                t_state = T.get_state(context)
+                s_state = S.get_state(context)
+                print(f"        T collision: {t_state['collision']:.3f}, S collision: {s_state['collision']:.3f}")
+                print(f"        F.contains(T): {F.contains(t_state)}, F.contains(S): {F.contains(s_state)}")
                 
                 # Print all k-leg components with their liability values
                 print(f"        K-leg liabilities: {dict(sorted(k_leg_liab_values.items(), key=lambda x: x[1], reverse=True))}")
@@ -266,7 +311,7 @@ def focused_collision_analysis():
         {'dist_u': 1.1, 'vel_u': 16.0, 'radar_conf_u': 0.8},  # Extremely close, fast
     ]
     
-    S = system
+    S = create_perfect_aeb_system()
     T = system
     F = ClosedHalfSpaceFailureSet({'collision': (0.1, 'ge')})
     
@@ -281,7 +326,7 @@ def focused_collision_analysis():
         if collision_value > 0.1:
             try:
                 k_leg_values = k_leg_liab(T, S, context, F, k=2)
-                shapley_values = shapley_liab(T, S, context, F)
+                shapley_values = shapley_liab(T, S, context, F, k=-1)
                 
                 print(f"{i+1:7d} | {context['dist_u']:4.1f} | {context['vel_u']:4.1f} | {context['radar_conf_u']:5.2f} | {collision_value:9.3f}")
                 
