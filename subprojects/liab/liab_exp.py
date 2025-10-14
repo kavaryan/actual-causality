@@ -21,6 +21,30 @@ from subprojects.liab.shapley_liab import shapley_liab
 import sympy as sp
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run liability experiments on SCM systems')
+    parser.add_argument('spec_file', help='Path to specification SCM configuration file')
+    parser.add_argument('impl_file', help='Path to implementation SCM configuration file')
+    parser.add_argument('--temporal', action='store_true', 
+                       help='Treat the files as temporal SCM systems')
+    parser.add_argument('--temporal_expansion_window_width', type=int, default=1,
+                       help='Window width for temporal expansion (default: 1)')
+    parser.add_argument('--delta', type=float, default=0.1,
+                       help='Delta parameter for temporal expansion (default: 0.1)')
+    parser.add_argument('--failure', required=True,
+                       help='Failure formula (e.g., "V > 2")')
+    parser.add_argument('--k', type=int, required=True,
+                       help='k parameter for k-leg liability')
+    parser.add_argument('--num-exps', type=int, default=10,
+                       help='Number of experiments to run (default: 10)')
+    parser.add_argument('--output', default='liability_results.json',
+                       help='Output JSON file (default: liability_results.json)')
+    parser.add_argument('--seed', type=int, default=42,
+                       help='Random seed (default: 42)')
+    
+    return parser.parse_args()
+
+
 def parse_failure_formula(failure_str: str) -> sp.Basic:
     """Parse a failure formula string into a sympy expression."""
     try:
