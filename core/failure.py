@@ -184,8 +184,10 @@ class QFFOFormulaFailureSet(FailureSet):
         Args:
             x (dict[str, float]): A dictionary representing the point with keys as the variable names.
         """
-        x = {k: bool(v) for k, v in x.items()}
-        return bool(self.failure_formual.subs(x))
+        # Convert values to SymPy expressions for proper substitution
+        x_sympy = {sp.Symbol(k): v for k, v in x.items()}
+        result = self.failure_formual.subs(x_sympy)
+        return bool(result)
 
     def dist(self, x: dict[str, float]) -> float:
         """Calculate the Hamming distance of a point to the boundary of the failure set.
