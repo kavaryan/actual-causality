@@ -4,10 +4,11 @@ import ast
 import random
 from pathlib import Path
 import networkx as nx
-from sympy import sympify, lambdify
+from sympy import sympify, lambdify, symbols, Derivative
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 
 def is_literal(s):
     try:
@@ -83,6 +84,103 @@ class BoundedFloatInterval:
     
     def __eq__(self, other):
         return isinstance(other, BoundedFloatInterval) and (self.a, self.b, self.num_points) == (other.a, other.b, other.num_points)
+
+class DifferentialComponent:
+    """
+    Represents a differential equation component in the form dX/dt = expression.
+    """
+    def __init__(self, definition_str):
+        # Parse differential equation like "dX/dt = -X + Y"
+        parts = definition_str.split('=')
+        if len(parts) != 2:
+            raise ValueError("Differential component definition must be of the form 'dX/dt = Expression'")
+        
+        lhs, rhs = parts[0].strip(), parts[1].strip()
+        
+        # Extract variable name from dX/dt
+        match = re.match(r'd([A-Za-z_][A-Za-z0-9_]*)/dt', lhs)
+        if not match:
+            raise ValueError("Left-hand side must be in the form 'dX/dt'")
+        
+        self.variable = match.group(1)  # The variable being differentiated
+        self.expression = sympify(rhs, evaluate=False)
+        self.input_vars = [str(s) for s in self.expression.free_symbols]
+        self.func = lambdify(self.input_vars, self.expression, modules=["math"])
+
+    def compute(self, inputs):
+        """Compute the derivative value given input values."""
+        try:
+            args = [inputs[var] for var in self.input_vars]
+        except KeyError as e:
+            raise ValueError(f"Missing input variable: {e}")
+        return self.func(*args)
+
+
+class TemporalSCMSystem:
+    """
+    Represents a system with differential equations that can be expanded temporally.
+    """
+    def __init__(self, components, differential_components, domains, temporal_expansion_window_width=1, delta=0.1):
+        self.components = {comp.output: comp for comp in components}
+        self.differential_components = {comp.variable: comp for comp in differential_components}
+        self.domains = domains
+        self.temporal_expansion_window_width = temporal_expansion_window_width
+        self.delta = delta
+    
+    def expand_to_scm(self):
+        """
+        Expand the temporal system into a regular SCM by discretizing differential equations.
+        Returns a regular SCMSystem.
+        """
+        expanded_components = []
+        expanded_domains = {}
+        
+        # Copy existing non-differential components
+        for comp in self.components.values():
+            expanded_components.append(comp)
+        
+        # Copy domains
+        expanded_domains.update(self.domains)
+        
+        # For each differential variable, create time-indexed versions
+        for var_name, diff_comp in self.differential_components.items():
+            # Create initial condition variable (X_0)
+            initial_var = f"{var_name}_0"
+            if var_name in self.domains:
+                expanded_domains[initial_var] = self.domains[var_name]
+            
+            # Create time-stepped variables using Euler's method
+            for t in range(1, self.temporal_expansion_window_width + 1):
+                current_var = f"{var_name}_{t}"
+                prev_var = f"{var_name}_{t-1}"
+                
+                # Build the equation: X_t = X_{t-1} + delta * (derivative expression at t-1)
+                # Replace variables in the derivative expression with their time-indexed versions
+                expr_str = str(diff_comp.expression)
+                
+                # Replace each input variable with its time-indexed version
+                for input_var in diff_comp.input_vars:
+                    if input_var == var_name:
+                        # Self-reference: use previous time step
+                        expr_str = re.sub(r'\b' + re.escape(input_var) + r'\b', f"{input_var}_{t-1}", expr_str)
+                    else:
+                        # Other variables: use previous time step if they're differential, current if not
+                        if input_var in self.differential_components:
+                            expr_str = re.sub(r'\b' + re.escape(input_var) + r'\b', f"{input_var}_{t-1}", expr_str)
+                        else:
+                            # Non-differential variables don't have time indices
+                            pass
+                
+                # Create the Euler step equation
+                euler_equation = f"{current_var} = {prev_var} + {self.delta} * ({expr_str})"
+                expanded_components.append(Component(euler_equation))
+                
+                # Set domain for the new variable
+                if var_name in self.domains:
+                    expanded_domains[current_var] = self.domains[var_name]
+        
+        return SCMSystem(expanded_components, expanded_domains)
+
 
 class SCMSystem:
     """
@@ -250,9 +348,6 @@ class SCMSystem:
             plt.savefig(plot_name, bbox_inches='tight')
 
 
-import re
-
-
 def read_system(config_file):
     return read_system_str(Path(config_file).read_text())
 
@@ -305,5 +400,75 @@ def read_system_str(config_str):
                     for var in variables:
                         domains[var] = interval
 
-    return SCMSystem(components, domains)  # Assuming SCMSystem can take domains
+    return SCMSystem(components, domains)
+
+def read_temporal_system_str(config_str, temporal_expansion_window_width=1, delta=0.1):
+    """
+    Read a configuration file and construct a TemporalSCMSystem.
+    Supports both regular equations and differential equations.
+    """
+    components = []
+    differential_components = []
+    domains = {}
+    section = None
+    
+    for line in config_str.splitlines():
+        # Remove comments and strip whitespace
+        line = line.split('#', 1)[0].strip()
+        if not line:
+            continue
+        
+        # Detect sections
+        if line == "[equations]":
+            section = "equations"
+            continue
+        elif line == "[differential_equations]":
+            section = "differential_equations"
+            continue
+        elif line == "[domains]":
+            section = "domains"
+            continue
+        elif line == "[temporal_params]":
+            section = "temporal_params"
+            continue
+        
+        # Parse equations
+        if section == "equations":
+            components.append(Component(line))
+        
+        # Parse differential equations
+        elif section == "differential_equations":
+            differential_components.append(DifferentialComponent(line))
+        
+        # Parse temporal parameters
+        elif section == "temporal_params":
+            if line.startswith("window_width"):
+                temporal_expansion_window_width = int(line.split('=')[1].strip())
+            elif line.startswith("delta"):
+                delta = float(line.split('=')[1].strip())
+        
+        # Parse domains
+        elif section == "domains":
+            # Try to match Int domain
+            match = re.match(r"([A-Za-z0-9_, ]+):\s*Int\((\d+),\s*(\d+)\)", line)
+            if match:
+                variables = [var.strip() for var in match.group(1).split(',')]
+                lower_bound, upper_bound = int(match.group(2)), int(match.group(3))
+                interval = BoundedIntInterval(lower_bound, upper_bound)
+                
+                for var in variables:
+                    domains[var] = interval
+            else:
+                # Try to match Float domain
+                match = re.match(r"([A-Za-z0-9_, ]+):\s*Float\(([+-]?\d*\.?\d+),\s*([+-]?\d*\.?\d+)\)", line)
+                if match:
+                    variables = [var.strip() for var in match.group(1).split(',')]
+                    lower_bound, upper_bound = float(match.group(2)), float(match.group(3))
+                    interval = BoundedFloatInterval(lower_bound, upper_bound)
+                    
+                    for var in variables:
+                        domains[var] = interval
+
+    return TemporalSCMSystem(components, differential_components, domains, 
+                           temporal_expansion_window_width, delta)
 
