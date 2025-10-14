@@ -120,14 +120,12 @@ class TemporalSCMSystem:
     """
     Represents a system with differential equations that can be expanded temporally.
     """
-    def __init__(self, components, differential_components, domains, temporal_expansion_window_width=1, delta=0.1):
+    def __init__(self, components, differential_components, domains):
         self.components = {comp.output: comp for comp in components}
         self.differential_components = {comp.variable: comp for comp in differential_components}
         self.domains = domains
-        self.temporal_expansion_window_width = temporal_expansion_window_width
-        self.delta = delta
     
-    def expand_to_scm(self):
+    def expand_to_scm(self, temporal_expansion_window_width=1, delta=0.1):
         """
         Expand the temporal system into a regular SCM by discretizing differential equations.
         Returns a regular SCMSystem.
@@ -150,7 +148,7 @@ class TemporalSCMSystem:
                 expanded_domains[initial_var] = self.domains[var_name]
             
             # Create time-stepped variables using Euler's method
-            for t in range(1, self.temporal_expansion_window_width + 1):
+            for t in range(1, temporal_expansion_window_width + 1):
                 current_var = f"{var_name}_{t}"
                 prev_var = f"{var_name}_{t-1}"
                 
@@ -172,7 +170,7 @@ class TemporalSCMSystem:
                             pass
                 
                 # Create the Euler step equation
-                euler_equation = f"{current_var} = {prev_var} + {self.delta} * ({expr_str})"
+                euler_equation = f"{current_var} = {prev_var} + {delta} * ({expr_str})"
                 expanded_components.append(Component(euler_equation))
                 
                 # Set domain for the new variable
@@ -459,6 +457,5 @@ def read_temporal_system_str(config_str, temporal_expansion_window_width=1, delt
                     for var in variables:
                         domains[var] = interval
 
-    return TemporalSCMSystem(components, differential_components, domains, 
-                           temporal_expansion_window_width, delta)
+    return TemporalSCMSystem(components, differential_components, domains)
 
