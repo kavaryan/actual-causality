@@ -23,6 +23,9 @@ class FailureSet(ABC):
     def depth(self, x: Union[np.ndarray, dict]) -> float:
         """Calculate the depth of a point within the failure set.
         
+        For points inside the failure set, returns the distance to the boundary.
+        For points outside the failure set, returns 0.
+        
         Args:
             x: A numpy array or dictionary representing the point.
         """
@@ -192,8 +195,7 @@ class QFFOFormulaFailureSet(FailureSet):
     def dist(self, x: dict[str, float]) -> float:
         """Calculate the distance of a point to the boundary of the failure set.
         
-        For numeric comparison formulas, this calculates the minimum distance
-        to make the formula evaluation flip.
+        For numeric comparison formulas, this calculates the distance to the threshold.
         
         The result is always non-negative.
 
@@ -222,13 +224,8 @@ class QFFOFormulaFailureSet(FailureSet):
                 if var_name in x:
                     var_value = x[var_name]
                     
-                    # Calculate distance to threshold
-                    if operator in ['>', '>=']:
-                        # For x > threshold, distance is max(0, threshold - x + epsilon)
-                        return max(0, threshold - var_value + 0.001)
-                    elif operator in ['<', '<=']:
-                        # For x < threshold, distance is max(0, x - threshold + epsilon)  
-                        return max(0, var_value - threshold + 0.001)
+                    # Calculate absolute distance to threshold
+                    return abs(var_value - threshold)
         
         # Fallback: return a small positive value
         return 0.1
