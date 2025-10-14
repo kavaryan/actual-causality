@@ -12,19 +12,19 @@ from core.scm import SCMSystem
 
 class FailureSet(ABC):
     @abstractmethod
-    def contains(self, x: np.ndarray) -> bool:
+    def contains(self, x: Union[np.ndarray, dict]) -> bool:
         """Check if a given point is in the failure set.
         
         Args:
-            x (np.ndarray): A numpy array representing the point.
+            x: A numpy array or dictionary representing the point.
         """
         ...
 
-    def depth(self, x: np.ndarray) -> float:
+    def depth(self, x: Union[np.ndarray, dict]) -> float:
         """Calculate the depth of a point within the failure set.
         
         Args:
-            x (np.ndarray): A numpy array representing the point.
+            x: A numpy array or dictionary representing the point.
         """
         if self.contains(x):
             return abs(self.dist(x))
@@ -32,11 +32,11 @@ class FailureSet(ABC):
             return 0
 
     @abstractmethod
-    def dist(self, x: np.ndarray) -> float:
+    def dist(self, x: Union[np.ndarray, dict]) -> float:
         """Calculate the distance of a point to the boundary of the failure set.
         
         Args:
-            x (np.ndarray): A numpy array representing the point.
+            x: A numpy array or dictionary representing the point.
         """
         ...
 
