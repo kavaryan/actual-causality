@@ -255,15 +255,22 @@ class SCMSystem:
     
     def _validate_domains(self):
         """
-        Validate that all endogenous variables have domains defined.
+        Validate that all variables that need domains have them defined.
         """
         missing_domains = []
+        
+        # Check endogenous variables
         for var in self.endogenous_vars:
             if var not in self.domains:
                 missing_domains.append(var)
         
+        # Check exogenous non-literal variables (needed for get_random_context)
+        for var in self.exogenous_nl_vars:
+            if var not in self.domains:
+                missing_domains.append(var)
+        
         if missing_domains:
-            raise ValueError(f"Missing domain definitions for endogenous variables: {missing_domains}")
+            raise ValueError(f"Missing domain definitions for variables: {missing_domains}")
     
     def get_state(self, context: dict[str,object], interventions: dict[str, object] = None):
         """
