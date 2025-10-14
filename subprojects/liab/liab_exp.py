@@ -69,24 +69,31 @@ def single_subject(scm: SCMSystem, spec_scm: SCMSystem, failure_formula: sp.Basi
     Returns:
         Dictionary with context and liability results
     """
-    # Find a context that satisfies the failure condition
-    context = find_failure_context(scm, failure_formula)
+    import traceback
     
-    # Create failure set
-    failure_set = QFFOFormulaFailureSet(failure_formula)
-    
-    # Compute k-leg liability
-    k_leg_result = k_leg_liab(scm, spec_scm, context, failure_set, k=k)
-    
-    # Compute Shapley liability
-    shapley_result = shapley_liab(scm, spec_scm, context, failure_set)
-    
-    return {
-        'context': context,
-        'k-leg': k_leg_result,
-        'shapley': shapley_result,
-        'k-of-k-leg': k
-    }
+    try:
+        # Find a context that satisfies the failure condition
+        context = find_failure_context(scm, failure_formula)
+        
+        # Create failure set
+        failure_set = QFFOFormulaFailureSet(failure_formula)
+        
+        # Compute k-leg liability
+        k_leg_result = k_leg_liab(scm, spec_scm, context, failure_set, k=k)
+        
+        # Compute Shapley liability
+        shapley_result = shapley_liab(scm, spec_scm, context, failure_set)
+        
+        return {
+            'context': context,
+            'k-leg': k_leg_result,
+            'shapley': shapley_result,
+            'k-of-k-leg': k
+        }
+    except Exception as e:
+        print(f"Full traceback for single_subject error:")
+        traceback.print_exc()
+        raise e
 
 
 def main():
@@ -173,7 +180,10 @@ def main():
             results.append(result)
             print(f"Completed experiment {i+1}/{args.num_exps}")
         except Exception as e:
+            import traceback
             print(f"Error in experiment {i+1}: {e}")
+            print(f"Full traceback:")
+            traceback.print_exc()
             continue
     
     if not results:
