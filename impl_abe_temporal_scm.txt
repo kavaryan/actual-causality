@@ -1,0 +1,11 @@
+[differential_equations]
+dA/dt = -0.5*A + B
+dB/dt = -0.8*B + 0.2*E
+
+[equations]
+E = 1.0
+
+[domains]
+A: Float(-10.0, 10.0)
+B: Float(-10.0, 10.0)
+E: Float(-10.0, 10.0)
