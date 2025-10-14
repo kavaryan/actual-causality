@@ -196,13 +196,13 @@ class SCMSystem:
         self.build_dag()
 
     @property
-    def exogenous_vars(self):
+    def exogenous_vars(self): # not on lhs of any equation or is a literal (constant) (the context can be used for changing exogenous vars)
         """Getter method for value (read-only property)."""
         ans = [node for node in self.dag.nodes() if node not in self.components or self.components[node].is_literal]
         return ans
     
     @property
-    def exogenous_nl_vars(self):
+    def exogenous_nl_vars(self): # not on lhs of any equation
         """Getter method for value (read-only property)."""
         ans = [node for node in self.dag.nodes() if node not in self.components]
         return ans
@@ -214,7 +214,7 @@ class SCMSystem:
         return ans
     
     @property
-    def endogenous_vars(self):
+    def endogenous_vars(self): # lhs of a non-constant equation
         """Getter method for value (read-only property)."""
         ans = list(set(self.vars) - set(self.exogenous_vars))
         return ans
