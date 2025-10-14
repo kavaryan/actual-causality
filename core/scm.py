@@ -428,9 +428,6 @@ def read_temporal_system_str(config_str, temporal_expansion_window_width=1, delt
         elif line == "[domains]":
             section = "domains"
             continue
-        elif line == "[temporal_params]":
-            section = "temporal_params"
-            continue
         
         # Parse equations
         if section == "equations":
@@ -439,13 +436,6 @@ def read_temporal_system_str(config_str, temporal_expansion_window_width=1, delt
         # Parse differential equations
         elif section == "differential_equations":
             differential_components.append(DifferentialComponent(line))
-        
-        # Parse temporal parameters
-        elif section == "temporal_params":
-            if line.startswith("window_width"):
-                temporal_expansion_window_width = int(line.split('=')[1].strip())
-            elif line.startswith("delta"):
-                delta = float(line.split('=')[1].strip())
         
         # Parse domains
         elif section == "domains":

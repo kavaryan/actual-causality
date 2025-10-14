@@ -12,17 +12,13 @@ class TestTemporalSCMSystem(unittest.TestCase):
     [equations]
     Y = 2
 
-    [temporal_params]
-    window_width = 2
-    delta = 0.1
-
     [domains]
     X: Float(-10.0, 10.0)
     Y: Float(-10.0, 10.0)
     """
         
         # Read the temporal system
-        temporal_system = read_temporal_system_str(config_str)
+        temporal_system = read_temporal_system_str(config_str, temporal_expansion_window_width=2, delta=0.1)
         
         # Check temporal system properties
         assert temporal_system.temporal_expansion_window_width == 2
