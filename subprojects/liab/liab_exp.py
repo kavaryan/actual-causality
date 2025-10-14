@@ -118,6 +118,14 @@ def single_subject(spec_scm: SCMSystem, impl_scm: SCMSystem, failure_formula: sp
         spec_state = spec_scm.get_state(context)
         impl_state = impl_scm.get_state(context)
         
+        # Debug output
+        print(f"Context: {context}")
+        print(f"Spec state: {spec_state}")
+        print(f"Impl state: {impl_state}")
+        print(f"Spec fails: {failure_set.contains(spec_state)}")
+        print(f"Impl fails: {failure_set.contains(impl_state)}")
+        print(f"Failure formula: {failure_formula}")
+        
         return {
             'context': context,
             'spec_state': spec_state,
