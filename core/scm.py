@@ -192,6 +192,7 @@ class SCMSystem:
         self.components = {comp.output: comp for comp in components}
         self.domains = domains
         self.build_dag()
+        self._validate_domains()
 
     @property
     def exogenous_vars(self): # not on lhs of any equation or is a literal (constant) (the context can be used for changing exogenous vars)
@@ -251,6 +252,18 @@ class SCMSystem:
         # Ensure the resulting graph is a DAG.
         if not nx.is_directed_acyclic_graph(self.dag):
             raise ValueError("The system configuration must be a Directed Acyclic Graph (DAG).")
+    
+    def _validate_domains(self):
+        """
+        Validate that all endogenous variables have domains defined.
+        """
+        missing_domains = []
+        for var in self.endogenous_vars:
+            if var not in self.domains:
+                missing_domains.append(var)
+        
+        if missing_domains:
+            raise ValueError(f"Missing domain definitions for endogenous variables: {missing_domains}")
     
     def get_state(self, context: dict[str,object], interventions: dict[str, object] = None):
         """
