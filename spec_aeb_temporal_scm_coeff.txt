@@ -1,0 +1,17 @@
+# python subprojects/liab/liab_exp.py spec_aeb_temporal_scm_coeff.txt impl_aeb_temporal_scm_coeff.txt --temporal --temporal_expansion_window_width 5 --k 4 --failure "B_5>0.5" --num-exps=1 
+
+[differential_equations]
+dA/dt = -0.5*A + B
+dB/dt = Coeff*B + 0.2*E
+
+[equations]
+E = 1.0
+Coeff=-coeff
+
+[domains]
+A: Float(-10.0, 10.0)
+B: Float(-10.0, 10.0)
+E: Float(-10.0, 10.0)
+A_0: Float(-2.0, 2.0)
+B_0: Float(-2.0, 2.0)
+coeff, Coeff: Int(1,2)

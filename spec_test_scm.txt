@@ -1,0 +1,7 @@
+[equations]
+A = a
+B = A**2
+C = A + B
+
+[domains]
+A,B,C,a: Int(0,10)
