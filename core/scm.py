@@ -193,7 +193,7 @@ class SCMSystem:
         new_components[new_comp.output] = new_comp
         return SCMSystem(list(new_components.values()), self.domains)
     
-    def display_dag(self):
+    def display_dag(self, plot_name=None):
         """
         Display the DAG of an SCMSystem with a left-to-right layout.
         
@@ -246,6 +246,8 @@ class SCMSystem:
         plt.axis('off')
         plt.tight_layout()
         plt.show()
+        if plot_name:
+            plt.savefig(plot_name, bbox_inches='tight')
 
 
 import re
