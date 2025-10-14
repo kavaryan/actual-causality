@@ -23,11 +23,6 @@ import sympy as sp
 
 def parse_failure_formula(failure_str: str) -> sp.Basic:
     """Parse a failure formula string into a sympy expression."""
-    # Replace comparison operators with sympy equivalents
-    failure_str = failure_str.replace('>', ' > ').replace('<', ' < ')
-    failure_str = failure_str.replace('>=', ' >= ').replace('<=', ' <= ')
-    failure_str = failure_str.replace('==', ' == ').replace('!=', ' != ')
-    
     try:
         return sp.sympify(failure_str)
     except Exception as e:
