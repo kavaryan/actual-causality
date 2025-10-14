@@ -72,7 +72,14 @@ def k_leg_liab(T: SCMSystem, S: SCMSystem, u: dict[str, float], F: FailureSet, *
             state_k = T_k.get_state(u)
             state_kx = T_kx.get_state(u)
             
+            print(f"Debug k-leg: X={X}, K={K}")
+            print(f"  state_k: {state_k}")
+            print(f"  state_kx: {state_kx}")
+            print(f"  F.depth(state_k): {F.depth(state_k)}")
+            print(f"  F.depth(state_kx): {F.depth(state_kx)}")
+            
             d = max(0, F.depth(state_k) - F.depth(state_kx))
+            print(f"  d: {d}")
             X_shares[Ki] = d
             
         liabs[Xi] = X_shares.mean()

@@ -59,10 +59,10 @@ def bf(T: SCMSystem, S: SCMSystem, X: Union[str,list[str]],
             return
 
         # BF2 axiom (in the paper)
-        # Create a new system with variables from Z replaced by their specification values
+        # Create a new system with variables from Y replaced by their specification values
         new_components = []
         for var, comp in T.components.items():
-            if var in Z:
+            if var in Y:
                 # Replace with specification component
                 if var in S.components:
                     new_components.append(S.components[var])
@@ -73,8 +73,12 @@ def bf(T: SCMSystem, S: SCMSystem, X: Union[str,list[str]],
                 new_components.append(comp)
         
         T_modified = SCMSystem(new_components, T.domains)
-        z_dict = T_modified.get_state(u)
-        bf_dict_[Y] = not F.contains(z_dict)
+        y_dict = T_modified.get_state(u)
+        print(f"Debug bf: Y={Y}, original_state={t_dict}, modified_state={y_dict}")
+        print(f"  F.contains(original): {F.contains(t_dict)}")
+        print(f"  F.contains(modified): {F.contains(y_dict)}")
+        bf_dict_[Y] = not F.contains(y_dict)
+        print(f"  bf_dict_[{Y}] = {bf_dict_[Y]}")
         
     _rec_bf(X)
     return bf_dict_[X]
