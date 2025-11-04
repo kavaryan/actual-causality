@@ -584,6 +584,7 @@ def main_rq1():
             fig_fallback, ax_fallback = plt.subplots(figsize=(8, 5))
             
             # Plot just the data points without any labels
+            df_success = df_rq1[df_rq1['success']].copy()
             methods = df_success['method_label'].unique()
             colors = ['blue', 'red', 'green']
             
