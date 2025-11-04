@@ -457,45 +457,58 @@ def main_rq1():
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
     print(f"✓ Results saved to: rq1_scalability_results.csv")
     
-    # Create and save plot with clean state
-    print("\nCreating plot with clean matplotlib state...")
+    # Create plot data summary for external plotting
+    print("\nCreating plot data summary...")
     df_success = df_rq1[df_rq1['success']].copy()
     
+    # Save plot data to CSV for external plotting
+    plot_data = []
+    methods = df_success['method_label'].unique()
+    
+    for method in methods:
+        method_data = df_success[df_success['method_label'] == method]
+        grouped = method_data.groupby('num_vars')['time'].mean()
+        for num_vars, mean_time in grouped.items():
+            plot_data.append({
+                'method': method,
+                'num_vars': num_vars,
+                'mean_time': mean_time
+            })
+    
+    plot_df = pd.DataFrame(plot_data)
+    plot_df.to_csv('rq1_plot_data.csv', index=False)
+    print(f"✓ Plot data saved to: rq1_plot_data.csv")
+    
+    # Try ultra-minimal plot creation
+    print("Creating ultra-minimal plot...")
     import time
     start_time = time.time()
     
-    # Create simple plot
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    # Plot data
-    methods = df_success['method_label'].unique()
-    colors = ['blue', 'red', 'green']
-    
-    for i, method in enumerate(methods):
-        method_data = df_success[df_success['method_label'] == method]
-        grouped = method_data.groupby('num_vars')['time'].mean()
-        ax.plot(grouped.index, grouped.values, 'o-', 
-               color=colors[i % len(colors)], label=method, 
-               linewidth=2, markersize=8)
-    
-    # Set labels
-    ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
-    ax.set_ylabel('Execution Time (seconds)', fontsize=12)
-    ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*', fontsize=14)
-    ax.legend(fontsize=11)
-    ax.grid(True, alpha=0.3)
-    
-    # Use log scale if needed
-    if df_success['time'].max() / df_success['time'].min() > 100:
-        ax.set_yscale('log')
-    
-    # Save plot quickly
-    fig.savefig('rq1_scalability_plot.png', dpi=100)
-    end_time = time.time()
-    
-    plt.close(fig)
-    
-    print(f"✓ Plot saved in {end_time - start_time:.3f} seconds as: rq1_scalability_plot.png")
+    try:
+        # Use absolute minimal matplotlib
+        import matplotlib.pyplot as plt
+        plt.ioff()  # Turn off interactive mode
+        
+        fig = plt.figure(figsize=(8, 5))
+        ax = fig.add_subplot(111)
+        
+        # Plot with minimal features - no labels, legend, or formatting
+        colors = ['b', 'r', 'g']
+        for i, method in enumerate(methods):
+            method_data = df_success[df_success['method_label'] == method]
+            grouped = method_data.groupby('num_vars')['time'].mean()
+            ax.plot(grouped.index, grouped.values, colors[i] + 'o-', linewidth=1, markersize=4)
+        
+        # Save with absolute minimal options
+        fig.savefig('rq1_minimal_plot.png', dpi=72, format='png')
+        plt.close(fig)
+        
+        end_time = time.time()
+        print(f"✓ Minimal plot saved in {end_time - start_time:.3f} seconds as: rq1_minimal_plot.png")
+        
+    except Exception as e:
+        print(f"✗ Even minimal plot failed: {e}")
+        print("Plot data is available in rq1_plot_data.csv for external plotting")
     
     print("\n" + "="*50)
     print("RQ1 STUDY COMPLETED!")
