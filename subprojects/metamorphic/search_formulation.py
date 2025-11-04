@@ -78,7 +78,7 @@ def hp_cause_mm(v, awt_thr, mms, search_space):
     h = h2
     
     start = frozenset()
-    if search_space.is_goal(start, v):
+    if search_space.is_goal(start, v, awt_thr):
         return start
 
     # priority queue stores (f = g + h, g, subset)
@@ -98,7 +98,7 @@ def hp_cause_mm(v, awt_thr, mms, search_space):
             if tentative_g < g_cost[Y]:
                 g_cost[Y] = tentative_g
                 f_Y = tentative_g + h(Y)
-                if search_space.is_goal(Y, v):    # goal found
+                if search_space.is_goal(Y, v, awt_thr):    # goal found
                     return Y
                 heapq.heappush(pq, (f_Y, tentative_g, Y))
 
