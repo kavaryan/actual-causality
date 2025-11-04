@@ -54,7 +54,7 @@ def hp_cause_bfs(v, awt_thr, search_space: SearchSpace):
         for Y in search_space.neighbors(X):
             if Y not in visited:
                 if search_space.is_goal(Y, v, awt_thr):  # goal test on generation
-                    yield Y
+                    return Y
                 visited.add(Y)
                 frontier.append(Y)
     return None
