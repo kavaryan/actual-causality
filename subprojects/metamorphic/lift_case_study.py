@@ -519,19 +519,94 @@ def main_rq1():
     
     # Save plot with error handling
     print("Attempting to save plot...")
+    
+    # First, let's debug what text elements are in the plot
+    print("DEBUG: Analyzing plot text elements...")
     try:
-        # Try simple save first
-        fig.savefig('rq1_scalability_plot.png', dpi=150)  # Lower DPI, no bbox_inches
-        print("Plot saved successfully with basic settings")
-    except Exception as e:
-        print(f"Error saving plot with basic settings: {e}")
+        # Get all text objects in the figure
+        all_texts = []
+        for ax in fig.get_axes():
+            # Get axis labels
+            if ax.get_xlabel():
+                all_texts.append(f"xlabel: '{ax.get_xlabel()}'")
+            if ax.get_ylabel():
+                all_texts.append(f"ylabel: '{ax.get_ylabel()}'")
+            if ax.get_title():
+                all_texts.append(f"title: '{ax.get_title()}'")
+            
+            # Get tick labels
+            for tick in ax.get_xticklabels():
+                if tick.get_text():
+                    all_texts.append(f"xtick: '{tick.get_text()}'")
+            for tick in ax.get_yticklabels():
+                if tick.get_text():
+                    all_texts.append(f"ytick: '{tick.get_text()}'")
+            
+            # Get legend texts
+            legend = ax.get_legend()
+            if legend:
+                for text in legend.get_texts():
+                    if text.get_text():
+                        all_texts.append(f"legend: '{text.get_text()}'")
+        
+        print(f"Found {len(all_texts)} text elements:")
+        for i, text in enumerate(all_texts[:20]):  # Show first 20
+            print(f"  {i+1}: {text}")
+        if len(all_texts) > 20:
+            print(f"  ... and {len(all_texts) - 20} more")
+            
+    except Exception as debug_e:
+        print(f"Error during text analysis: {debug_e}")
+    
+    # Try to save with progressively simpler approaches
+    save_attempts = [
+        ("basic settings", lambda: fig.savefig('rq1_scalability_plot.png', dpi=150)),
+        ("minimal settings", lambda: fig.savefig('rq1_scalability_plot.png')),
+        ("no text rendering", lambda: fig.savefig('rq1_scalability_plot.png', dpi=100, facecolor='white')),
+    ]
+    
+    saved = False
+    for attempt_name, save_func in save_attempts:
         try:
-            # Try even simpler save
-            fig.savefig('rq1_scalability_plot.png')
-            print("Plot saved with minimal settings")
-        except Exception as e2:
-            print(f"Error saving plot with minimal settings: {e2}")
-            print("Skipping plot save to avoid freeze")
+            print(f"Trying save with {attempt_name}...")
+            save_func()
+            print(f"Plot saved successfully with {attempt_name}")
+            saved = True
+            break
+        except Exception as e:
+            print(f"Error saving plot with {attempt_name}: {e}")
+            continue
+    
+    if not saved:
+        print("All save attempts failed. Creating text-free fallback plot...")
+        try:
+            # Create a completely minimal plot without any text
+            fig_fallback, ax_fallback = plt.subplots(figsize=(8, 5))
+            
+            # Plot just the data points without any labels
+            methods = df_success['method_label'].unique()
+            colors = ['blue', 'red', 'green']
+            
+            for i, method in enumerate(methods):
+                method_data = df_success[df_success['method_label'] == method]
+                grouped = method_data.groupby('num_vars')['time'].mean()
+                ax_fallback.plot(grouped.index, grouped.values, 'o-', 
+                               color=colors[i % len(colors)], linewidth=2, markersize=6)
+            
+            # Remove all text elements
+            ax_fallback.set_xticks([])
+            ax_fallback.set_yticks([])
+            ax_fallback.set_xlabel('')
+            ax_fallback.set_ylabel('')
+            ax_fallback.set_title('')
+            
+            # Save the text-free plot
+            fig_fallback.savefig('rq1_scalability_plot_minimal.png', dpi=100)
+            print("Minimal text-free plot saved as: rq1_scalability_plot_minimal.png")
+            
+        except Exception as fallback_e:
+            print(f"Even fallback plot failed: {fallback_e}")
+            print("Skipping plot save entirely")
     
     # Skip plt.show() as it might cause issues with Agg backend
     print("Skipping plt.show() with Agg backend")
