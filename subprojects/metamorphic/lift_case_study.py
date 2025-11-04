@@ -480,34 +480,46 @@ def main_rq1():
     plot_df.to_csv('rq1_plot_data.csv', index=False)
     print(f"✓ Plot data saved to: rq1_plot_data.csv")
     
-    # Try ultra-minimal plot creation
-    print("Creating ultra-minimal plot...")
+    # Create proper plot with labels
+    print("Creating plot with labels...")
     import time
     start_time = time.time()
     
     try:
-        # Use absolute minimal matplotlib
+        # Use clean matplotlib setup
         plt.ioff()  # Turn off interactive mode
         
-        fig = plt.figure(figsize=(8, 5))
-        ax = fig.add_subplot(111)
+        fig, ax = plt.subplots(figsize=(10, 6))
         
-        # Plot with minimal features - no labels, legend, or formatting
-        colors = ['b', 'r', 'g']
+        # Plot with proper labels and formatting
+        colors = ['blue', 'red', 'green', 'orange', 'purple']
         for i, method in enumerate(methods):
             method_data = df_success[df_success['method_label'] == method]
             grouped = method_data.groupby('num_vars')['time'].mean()
-            ax.plot(grouped.index, grouped.values, colors[i] + 'o-', linewidth=1, markersize=4)
+            ax.plot(grouped.index, grouped.values, 'o-', 
+                   color=colors[i % len(colors)], label=method, 
+                   linewidth=2, markersize=8)
         
-        # Save with absolute minimal options
-        fig.savefig('rq1_minimal_plot.png', dpi=72, format='png')
+        # Add proper labels and formatting
+        ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
+        ax.set_ylabel('Execution Time (seconds)', fontsize=12)
+        ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', fontsize=14)
+        ax.legend(fontsize=11)
+        ax.grid(True, alpha=0.3)
+        
+        # Use log scale if there's a wide range
+        if df_success['time'].max() / df_success['time'].min() > 100:
+            ax.set_yscale('log')
+        
+        # Save with reasonable options
+        fig.savefig('rq1_scalability_plot.png', dpi=150)
         plt.close(fig)
         
         end_time = time.time()
-        print(f"✓ Minimal plot saved in {end_time - start_time:.3f} seconds as: rq1_minimal_plot.png")
+        print(f"✓ Plot with labels saved in {end_time - start_time:.3f} seconds as: rq1_scalability_plot.png")
         
     except Exception as e:
-        print(f"✗ Even minimal plot failed: {e}")
+        print(f"✗ Plot creation failed: {e}")
         print("Plot data is available in rq1_plot_data.csv for external plotting")
     
     print("\n" + "="*50)
