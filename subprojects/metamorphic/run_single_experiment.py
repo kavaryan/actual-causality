@@ -33,10 +33,10 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
             sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
             
             if method == 'bfs':
-                X = hp_cause_bfs(V, v, awt_thr, search_space)
+                X = hp_cause_bfs(v, awt_thr, search_space)
             elif method == 'mm':
                 mms = [MonotoQual(i) for i in V]
-                X = hp_cause_mm(V, v, awt_thr, mms, search_space)
+                X = hp_cause_mm(v, awt_thr, mms, search_space)
             elif method == 'mm_bundled':
                 bundle_size = kwargs.get('bundle_size', 2)
                 mms = [MonotoQual(i) for i in V]
