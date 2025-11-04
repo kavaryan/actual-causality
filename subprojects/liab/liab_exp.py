@@ -75,6 +75,14 @@ def find_failure_context(spec_scm: SCMSystem, impl_scm: SCMSystem, failure_formu
         # Use the implementation system's exogenous variables for context generation
         # (assuming both systems have the same exogenous variables)
         context = impl_scm.get_random_context()
+
+        context.update(
+            {
+                "A_0": -5.627240503927933,
+                "B_0": 0.10710576206724731,
+                "coeff": 1.0
+            }
+        )
         
         spec_state = spec_scm.get_state(context)
         impl_state = impl_scm.get_state(context)

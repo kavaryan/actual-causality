@@ -22,7 +22,9 @@ import numpy as np
 def load_aeb_system():
     """Load the AEB system from the configuration file."""
     config_path = os.path.join(os.path.dirname(__file__), 'av.conf')
-    return read_system(config_path)
+    system = read_system(config_path)
+    system.display_dag('aeb_scm_dag.png')
+    return system
 
 def analyze_collision_scenario():
     """Analyze a scenario where collision occurs."""

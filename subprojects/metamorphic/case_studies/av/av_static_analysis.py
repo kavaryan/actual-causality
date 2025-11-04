@@ -21,7 +21,9 @@ import numpy as np
 def load_static_aeb_system():
     """Load the static AEB system from the configuration file."""
     config_path = os.path.join(os.path.dirname(__file__), 'av_static.conf')
-    return read_system(config_path)
+    system = read_system(config_path)
+    system.display_dag('av_static_scm_dag.png')
+    return system
 
 def analyze_collision_scenarios():
     """Analyze scenarios where collision occurs in the static model."""
