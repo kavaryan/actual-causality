@@ -300,6 +300,96 @@ def save_results_and_plots(df, wilcoxon_results, fig):
     fig.savefig('lift_case_study_plots.pdf', bbox_inches='tight')
     print(f"Plots saved to: lift_case_study_plots.png and lift_case_study_plots.pdf")
 
+def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50, 100, 500, 1000, 50000], 
+                             num_trials=10, awt_coeff=0.8, timeout=2):
+    """
+    Run RQ1 scalability study comparing BFS vs Bundled A* with 2-second timeout.
+    
+    For N in [5,10,15]: use bundle_size=5
+    For N >= 50: use bundle_size=N/10
+    """
+    results = []
+    
+    # Initialize simulator
+    simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
+    
+    for num_vars in tqdm(num_vars_list, desc="Problem Sizes"):
+        # Determine bundle size
+        if num_vars <= 15:
+            bundle_size = 5
+        else:
+            bundle_size = max(1, num_vars // 10)
+        
+        search_space = LiftSearchSpace(simulator.simulate, awt_thr=0.0, num_vars=num_vars)
+        
+        for trial in tqdm(range(num_trials), desc=f"N={num_vars}", leave=False):
+            # Generate random configuration
+            prob_active = 0.5
+            v = np.random.binomial(1, prob_active, size=num_vars)
+            
+            # Ensure at least one lift is active
+            if sum(v) == 0:
+                v[np.random.randint(num_vars)] = 1
+            
+            # Calculate initial AWT and threshold
+            initial_awt = simulator.simulate(sum(v))
+            awt_thr = initial_awt * awt_coeff
+            search_space.awt_thr = awt_thr
+            
+            # Test both methods on the same configuration
+            methods_to_test = [
+                ('bfs', {}),
+                ('mm_bundled', {'bundle_size': bundle_size})
+            ]
+            
+            for method, kwargs in methods_to_test:
+                result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
+                result.update({
+                    'num_vars': num_vars,
+                    'bundle_size': bundle_size,
+                    'trial': trial,
+                    'initial_awt': initial_awt,
+                    'awt_thr': awt_thr,
+                    'initial_active': sum(v),
+                    'prob_active': prob_active
+                })
+                results.append(result)
+    
+    return pd.DataFrame(results)
+
+def plot_rq1_results(df):
+    """Create RQ1 scalability plot comparing BFS vs Bundled A*."""
+    df['method_label'] = df.apply(create_method_label, axis=1)
+    
+    # Filter successful runs only
+    df_success = df[df['success']].copy()
+    
+    plt.figure(figsize=(12, 8))
+    
+    # Plot execution times (no log scale as requested)
+    sns.lineplot(data=df_success, x='num_vars', y='time', hue='method_label', 
+                marker='o', err_style='band', errorbar=('ci', 95), linewidth=2, markersize=8)
+    
+    plt.title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', 
+              fontsize=14, fontweight='bold')
+    plt.xlabel('Number of Variables (Lifts)', fontsize=12)
+    plt.ylabel('Execution Time (seconds)', fontsize=12)
+    plt.legend(title='Method', fontsize=11)
+    plt.grid(True, alpha=0.3)
+    
+    # Add timeout indicators
+    df_timeout = df[df['timeout']].copy()
+    if not df_timeout.empty:
+        timeout_summary = df_timeout.groupby(['num_vars', 'method_label']).size().reset_index(name='timeout_count')
+        for _, row in timeout_summary.iterrows():
+            plt.annotate(f'{row["timeout_count"]} timeouts', 
+                        xy=(row['num_vars'], 2), 
+                        xytext=(10, 10), textcoords='offset points',
+                        fontsize=9, alpha=0.7)
+    
+    plt.tight_layout()
+    return plt.gcf()
+
 def main():
     """Run the complete lift case study."""
     print("Starting Lift Case Study...")
@@ -341,6 +431,46 @@ def main():
     print("\n" + "="*80)
     print("CASE STUDY COMPLETED SUCCESSFULLY!")
     print("="*80)
+
+def main_rq1():
+    """Run RQ1 scalability study only."""
+    print("Starting RQ1 Scalability Study...")
+    print("Comparing BFS vs Bundled A* with 2-second timeout")
+    
+    # Run RQ1 experiments
+    df_rq1 = run_rq1_scalability_study()
+    
+    # Create and show plot
+    fig = plot_rq1_results(df_rq1)
+    
+    # Print summary
+    print("\n" + "="*50)
+    print("RQ1 SCALABILITY STUDY RESULTS")
+    print("="*50)
+    
+    df_rq1['method_label'] = df_rq1.apply(create_method_label, axis=1)
+    
+    # Success rates by method and problem size
+    success_summary = df_rq1.groupby(['num_vars', 'method_label']).agg({
+        'success': ['count', 'sum', 'mean'],
+        'timeout': 'sum',
+        'time': ['mean', 'median']
+    }).round(3)
+    print("\nSuccess rates and timing by problem size:")
+    print(success_summary)
+    
+    # Save results
+    df_rq1.to_csv('rq1_scalability_results.csv', index=False)
+    fig.savefig('rq1_scalability_plot.png', dpi=300, bbox_inches='tight')
+    fig.savefig('rq1_scalability_plot.pdf', bbox_inches='tight')
+    
+    plt.show()
+    
+    print(f"\nResults saved to: rq1_scalability_results.csv")
+    print(f"Plot saved to: rq1_scalability_plot.png and rq1_scalability_plot.pdf")
+    print("\n" + "="*50)
+    print("RQ1 STUDY COMPLETED!")
+    print("="*50)
 
 if __name__ == "__main__":
     main()
