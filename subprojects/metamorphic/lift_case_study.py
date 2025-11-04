@@ -364,6 +364,24 @@ def plot_rq1_results(df):
     # Filter successful runs only
     df_success = df[df['success']].copy()
     
+    print("\n" + "="*60)
+    print("DEBUG: DataFrame info before plotting")
+    print("="*60)
+    print(f"Total rows: {len(df)}")
+    print(f"Successful rows: {len(df_success)}")
+    print(f"Columns: {list(df.columns)}")
+    print("\nMethod distribution:")
+    print(df['method'].value_counts())
+    print("\nMethod label distribution:")
+    print(df['method_label'].value_counts())
+    print("\nSuccess rate by method:")
+    print(df.groupby('method_label')['success'].mean())
+    print("\nDataFrame to plot (first 10 rows):")
+    print(df_success[['num_vars', 'time', 'method_label', 'success']].head(10))
+    print("\nDataFrame dtypes:")
+    print(df_success[['num_vars', 'time', 'method_label']].dtypes)
+    print("="*60)
+    
     plt.figure(figsize=(12, 8))
     
     # Plot execution times (no log scale as requested)
