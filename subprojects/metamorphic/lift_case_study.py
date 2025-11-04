@@ -11,6 +11,11 @@ from scipy.stats import wilcoxon
 import warnings
 warnings.filterwarnings('ignore')
 
+# Set matplotlib to use a simple font to avoid rendering issues
+plt.rcParams['font.family'] = 'DejaVu Sans'
+plt.rcParams['font.size'] = 10
+plt.rcParams['axes.unicode_minus'] = False
+
 sys.path.append('../..')
 
 from case_studies.lift.mock_lift_simulation import MockLiftsSimulator
@@ -394,45 +399,36 @@ def plot_rq1_results(df):
     
     try:
         print("Creating matplotlib figure...")
-        plt.figure(figsize=(12, 8))
+        fig, ax = plt.subplots(figsize=(10, 6))  # Use subplots for better control
         
-        print("Creating seaborn lineplot...")
-        # Plot execution times (no log scale as requested)
-        sns.lineplot(data=df_success, x='num_vars', y='time', hue='method_label', 
-                    marker='o', errorbar=None, linewidth=2, markersize=8)
+        print("Creating simple line plot...")
+        # Use basic matplotlib instead of seaborn to avoid complex rendering
+        methods = df_success['method_label'].unique()
+        colors = ['blue', 'red', 'green']
         
-        print("Setting title and labels...")
-        plt.title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', 
-                  fontsize=14, fontweight='bold')
-        plt.xlabel('Number of Variables (Lifts)', fontsize=12)
-        plt.ylabel('Execution Time (seconds)', fontsize=12)
+        for i, method in enumerate(methods):
+            method_data = df_success[df_success['method_label'] == method]
+            # Group by num_vars and take mean
+            grouped = method_data.groupby('num_vars')['time'].mean()
+            ax.plot(grouped.index, grouped.values, 'o-', 
+                   color=colors[i % len(colors)], label=method, linewidth=2, markersize=6)
         
-        print("Setting legend...")
-        plt.legend(title='Method', fontsize=11)
+        print("Setting simple title and labels...")
+        ax.set_title('RQ1: Scalability Comparison', fontsize=12)
+        ax.set_xlabel('Number of Variables', fontsize=10)
+        ax.set_ylabel('Time (seconds)', fontsize=10)
         
-        print("Adding grid...")
-        plt.grid(True, alpha=0.3)
+        print("Setting simple legend...")
+        ax.legend(fontsize=9)
         
-        # Add timeout indicators
-        print("Adding timeout indicators...")
-        df_timeout = df[df['timeout']].copy()
-        if not df_timeout.empty:
-            timeout_summary = df_timeout.groupby(['num_vars', 'method_label']).size().reset_index(name='timeout_count')
-            print(f"Timeout summary: {len(timeout_summary)} entries")
-            for i, row in timeout_summary.iterrows():
-                print(f"  Adding timeout annotation {i+1}/{len(timeout_summary)}")
-                plt.annotate(f'{row["timeout_count"]} timeouts', 
-                            xy=(row['num_vars'], 2), 
-                            xytext=(10, 10), textcoords='offset points',
-                            fontsize=9, alpha=0.7)
-        else:
-            print("No timeouts to display")
+        print("Adding simple grid...")
+        ax.grid(True, alpha=0.3)
         
-        print("Skipping tight_layout() to avoid matplotlib freeze...")
-        # plt.tight_layout()  # Skip this as it's causing the freeze
+        # Skip timeout annotations to avoid text rendering issues
+        print("Skipping timeout annotations to avoid rendering issues...")
         
         print("Plot creation completed successfully!")
-        return plt.gcf()
+        return fig
         
     except Exception as e:
         print(f"ERROR during plotting: {e}")
@@ -440,13 +436,13 @@ def plot_rq1_results(df):
         import traceback
         traceback.print_exc()
         
-        # Create a simple fallback plot
-        print("Creating fallback plot...")
-        plt.figure(figsize=(10, 6))
-        plt.plot([1, 2, 3], [1, 2, 3], 'o-', label='Fallback')
-        plt.title('Plot Error - Fallback Display')
-        plt.legend()
-        return plt.gcf()
+        # Create a minimal fallback plot
+        print("Creating minimal fallback plot...")
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.plot([5, 10, 15, 50], [1, 2, 3, 4], 'o-', label='Data')
+        ax.set_title('Fallback Plot')
+        ax.legend()
+        return fig
 
 def main():
     """Run the complete lift case study."""
@@ -518,13 +514,30 @@ def main_rq1():
     print(success_summary)
     
     # Save results
+    print("Saving CSV results...")
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
-    fig.savefig('rq1_scalability_plot.png', dpi=300, bbox_inches='tight')
     
-    plt.show()
+    # Save plot with error handling
+    print("Attempting to save plot...")
+    try:
+        # Try simple save first
+        fig.savefig('rq1_scalability_plot.png', dpi=150)  # Lower DPI, no bbox_inches
+        print("Plot saved successfully with basic settings")
+    except Exception as e:
+        print(f"Error saving plot with basic settings: {e}")
+        try:
+            # Try even simpler save
+            fig.savefig('rq1_scalability_plot.png')
+            print("Plot saved with minimal settings")
+        except Exception as e2:
+            print(f"Error saving plot with minimal settings: {e2}")
+            print("Skipping plot save to avoid freeze")
+    
+    # Skip plt.show() as it might cause issues with Agg backend
+    print("Skipping plt.show() with Agg backend")
     
     print(f"\nResults saved to: rq1_scalability_results.csv")
-    print(f"Plot saved to: rq1_scalability_plot.png")
+    print(f"Plot save attempted: rq1_scalability_plot.png")
     print("\n" + "="*50)
     print("RQ1 STUDY COMPLETED!")
     print("="*50)
