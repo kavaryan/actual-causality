@@ -11,10 +11,13 @@ class LiftSearchSpace(SearchSpace):
         # Use provided awt_thr or fall back to instance variable
         threshold = awt_thr if awt_thr is not None else self.awt_thr
         
-        x = [v[i] for i in X]
-        rest = [v[i] for i in range(len(v)) if i not in X]
-        x_prime = [0 if x_i else 1 for x_i in x]
-        num_lifts = sum(rest) + sum(x_prime)
+        # X represents variables to flip from their original values in v
+        # Create the new configuration after interventions
+        v_new = v.copy()
+        for i in X:
+            v_new[i] = 1 - v_new[i]  # flip the bit
+        
+        num_lifts = sum(v_new)
         if num_lifts == 0:
             return False
         awt = self.simulate_lifts_func(num_lifts)
