@@ -9,10 +9,9 @@ from scipy.stats import wilcoxon
 import warnings
 warnings.filterwarnings('ignore')
 
-# Add the case-studies/lift directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'case_studies', 'lift'))
+sys.path.append('../..')
 
-from mock_lift_simulation import MockLiftsSimulator
+from case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from case_studies.lift.lift import LiftSearchSpace
 from run_single_experiment import run_single_experiment
 
