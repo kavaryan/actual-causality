@@ -45,7 +45,7 @@ def run_lift_case_study(num_vars_list=[5, 8, 10, 12, 15], num_trials=40, awt_coe
             average_max_time=1.0 + 0.1 * lambda_param,  # Vary based on demand
             simulator_startup_cost=simulator_startup_cost
         )
-        search_space = LiftSearchSpace(simulator.simulate, awt_thr=0.0)  # Will be updated per trial
+        search_space = LiftSearchSpace(simulator.simulate, awt_thr=0.0, num_vars=num_vars)  # Will be updated per trial
         
         for trial in tqdm(range(num_trials), desc=f"Subtype {subtype_idx+1} (N={num_vars}, λ={lambda_param})", leave=False):
             # Generate random configuration influenced by Poisson parameter

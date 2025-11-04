@@ -2,10 +2,10 @@ from search_formulation import SearchSpace
 
 
 class LiftSearchSpace(SearchSpace):
-    def __init__(self, simulate_lifts_func, awt_thr):
+    def __init__(self, simulate_lifts_func, awt_thr, num_vars):
         self.simulate_lifts_func = simulate_lifts_func
         self.awt_thr = awt_thr
-        super().__init__(list(range(len(simulate_lifts_func))))
+        super().__init__(list(range(num_vars)))
 
     def is_goal(self, X, v):
         x = [v[i] for i in X]
