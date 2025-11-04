@@ -171,7 +171,7 @@ def create_comprehensive_plots(df):
     
     # Plot 1: RQ1 - Scalability comparison (BFS vs A*)
     ax1 = plt.subplot(2, 3, 1)
-    df_rq1 = df[df['method'].isin(['bfs', 'mm']) & df['success']].copy()
+    df_rq1 = df[(df['method'].isin(['bfs', 'mm'])) & (df['success'])].copy()
     sns.lineplot(data=df_rq1, x='num_vars', y='time', hue='method_label', 
                 marker='o', ax=ax1, err_style='band', errorbar=('ci', 95))
     ax1.set_title('RQ1: Scalability Comparison\n(BFS vs A* Metamorphic)', fontsize=12, fontweight='bold')
@@ -183,7 +183,7 @@ def create_comprehensive_plots(df):
     
     # Plot 2: RQ2a - Effect of bundling (A* vs A* Bundled)
     ax2 = plt.subplot(2, 3, 2)
-    df_rq2a = df[df['method'].isin(['mm', 'mm_bundled']) & df['success']].copy()
+    df_rq2a = df[(df['method'].isin(['mm', 'mm_bundled'])) & (df['success'])].copy()
     sns.lineplot(data=df_rq2a, x='num_vars', y='time', hue='method_label', 
                 marker='o', ax=ax2, err_style='band', errorbar=('ci', 95))
     ax2.set_title('RQ2a: Effect of Bundling\n(A* vs A* Bundled)', fontsize=12, fontweight='bold')
@@ -194,7 +194,7 @@ def create_comprehensive_plots(df):
     
     # Plot 3: RQ2b - Bundle size comparison
     ax3 = plt.subplot(2, 3, 3)
-    df_rq2b = df[df['method'] == 'mm_bundled' & df['success']].copy()
+    df_rq2b = df[(df['method'] == 'mm_bundled') & (df['success'])].copy()
     sns.lineplot(data=df_rq2b, x='num_vars', y='time', hue='method_label', 
                 marker='o', ax=ax3, err_style='band', errorbar=('ci', 95))
     ax3.set_title('RQ2b: Bundle Size Effect\n(Different Bundle Sizes)', fontsize=12, fontweight='bold')
