@@ -22,10 +22,10 @@ class LiftSearchSpace(SearchSpace):
             return False
         awt = self.simulate_lifts_func(num_lifts)
         
-        # DEBUG: Print details for first few calls
-        if len(X) <= 1:  # Only debug empty set and single-variable sets
-            print(f"DEBUG is_goal: X={X}, v={list(v)}, v_new={list(v_new)}")
-            print(f"DEBUG is_goal: num_lifts={num_lifts}, awt={awt}, threshold={threshold}")
-            print(f"DEBUG is_goal: awt <= threshold = {awt <= threshold}")
+        # # DEBUG: Print details for first few calls
+        # if len(X) <= 1:  # Only debug empty set and single-variable sets
+        #     print(f"DEBUG is_goal: X={X}, v={list(v)}, v_new={list(v_new)}")
+        #     print(f"DEBUG is_goal: num_lifts={num_lifts}, awt={awt}, threshold={threshold}")
+        #     print(f"DEBUG is_goal: awt <= threshold = {awt <= threshold}")
         
         return awt <= threshold

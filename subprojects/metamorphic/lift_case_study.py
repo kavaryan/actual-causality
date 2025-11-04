@@ -98,17 +98,17 @@ def create_method_label(row):
     if row['method'] == 'bfs':
         return 'BFS (Exhaustive)'
     elif row['method'] == 'mm':
-        return 'A* (Metamorphic)'
+        return 'A_star (Metamorphic)'
     elif row['method'] == 'mm_bundled':
         bundle_size = row.get('bundle_size', 2)
         num_vars = row.get('num_vars', 10)
         
         if bundle_size == max(1, num_vars // 5):
-            return 'A* Bundled (N/5)'
+            return 'A_star Bundled (N p 5)'
         elif bundle_size == max(1, num_vars // 2):
-            return 'A* Bundled (N/2)'
+            return 'A_star Bundled (N p 2)'
         else:
-            return f'A* Bundled (size={bundle_size})'
+            return f'A_star Bundled (size={bundle_size})'
     return row['method']
 
 def perform_wilcoxon_tests(df):
@@ -419,6 +419,10 @@ def main_rq1():
     import gc
     import threading
     import matplotlib.pyplot as plt
+
+    matplotlib.rcParams['text.usetex'] = False
+    matplotlib.rcParams['mathtext.default'] = 'regular'  # no TeX parsing
+    matplotlib.rcParams['mathtext.fontset'] = 'dejavusans'
     
     # Clear tqdm state
     tqdm._instances.clear()
@@ -490,6 +494,11 @@ def main_rq1():
         plt.ioff()  # Turn off interactive mode
         
         fig, ax = plt.subplots(figsize=(10, 6))
+
+        from matplotlib.ticker import ScalarFormatter
+
+        ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
+        ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=False))
         
         # Plot with proper labels and formatting
         colors = ['blue', 'red', 'green', 'orange', 'purple']
@@ -503,7 +512,7 @@ def main_rq1():
         # Add proper labels and formatting
         ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
         ax.set_ylabel('Execution Time (seconds)', fontsize=12)
-        ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', fontsize=14)
+        ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A star (2-second timeout)', fontsize=14)
         ax.legend(fontsize=11)
         ax.grid(True, alpha=0.3)
         
@@ -512,7 +521,16 @@ def main_rq1():
             ax.set_yscale('log')
         
         # Save with reasonable options
-        fig.savefig('rq1_scalability_plot.png', dpi=150)
+        # fig.savefig('rq1_scalability_plot.png', dpi=150)
+        plt.rcParams['text.antialiased'] = False
+        plt.rcParams['lines.antialiased'] = False
+        fig.savefig(
+            'rq1_scalability_plot.png',
+            dpi=100,               # 100–150 is enough for paper-quality PNG
+            bbox_inches=None,      # avoid recomputing layout
+            pad_inches=0.05,
+            transparent=False
+        )
         plt.close(fig)
         
         end_time = time.time()
