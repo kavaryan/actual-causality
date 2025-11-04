@@ -408,15 +408,32 @@ def main():
     print("="*80)
 
 def main_rq1():
-    """Run RQ1 scalability study only - just collect data and save to CSV."""
+    """Run RQ1 scalability study with integrated plotting."""
     print("Starting RQ1 Scalability Study...")
     print("Comparing BFS vs Bundled A* with 2-second timeout")
     
     # Run RQ1 experiments
     df_rq1 = run_rq1_scalability_study()
     
-    # Clear tqdm state to avoid matplotlib interference
+    # Clean up threading and process state before plotting
+    import gc
+    import threading
+    
+    # Clear tqdm state
     tqdm._instances.clear()
+    
+    # Force garbage collection
+    gc.collect()
+    
+    # Clear any matplotlib state
+    plt.close('all')
+    plt.clf()
+    plt.cla()
+    
+    # Reset matplotlib to clean state
+    matplotlib.rcdefaults()
+    plt.rcParams['font.family'] = 'DejaVu Sans'
+    plt.rcParams['font.size'] = 10
     
     # Add method labels for summary
     df_rq1['method_label'] = df_rq1.apply(create_method_label, axis=1)
@@ -440,9 +457,48 @@ def main_rq1():
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
     print(f"✓ Results saved to: rq1_scalability_results.csv")
     
+    # Create and save plot with clean state
+    print("\nCreating plot with clean matplotlib state...")
+    df_success = df_rq1[df_rq1['success']].copy()
+    
+    import time
+    start_time = time.time()
+    
+    # Create simple plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Plot data
+    methods = df_success['method_label'].unique()
+    colors = ['blue', 'red', 'green']
+    
+    for i, method in enumerate(methods):
+        method_data = df_success[df_success['method_label'] == method]
+        grouped = method_data.groupby('num_vars')['time'].mean()
+        ax.plot(grouped.index, grouped.values, 'o-', 
+               color=colors[i % len(colors)], label=method, 
+               linewidth=2, markersize=8)
+    
+    # Set labels
+    ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
+    ax.set_ylabel('Execution Time (seconds)', fontsize=12)
+    ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*', fontsize=14)
+    ax.legend(fontsize=11)
+    ax.grid(True, alpha=0.3)
+    
+    # Use log scale if needed
+    if df_success['time'].max() / df_success['time'].min() > 100:
+        ax.set_yscale('log')
+    
+    # Save plot quickly
+    fig.savefig('rq1_scalability_plot.png', dpi=100)
+    end_time = time.time()
+    
+    plt.close(fig)
+    
+    print(f"✓ Plot saved in {end_time - start_time:.3f} seconds as: rq1_scalability_plot.png")
+    
     print("\n" + "="*50)
-    print("RQ1 DATA COLLECTION COMPLETED!")
-    print("Use 'python plot_rq1_results.py' to create plots from the saved data.")
+    print("RQ1 STUDY COMPLETED!")
     print("="*50)
 
 
