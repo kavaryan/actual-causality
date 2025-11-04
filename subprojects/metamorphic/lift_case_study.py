@@ -501,10 +501,10 @@ def main_rq1():
     
     # Try different save approaches with timing
     save_attempts = [
-        ("ultra-minimal", lambda: save_ultra_minimal_plot(df_rq1)),
         ("basic PNG", lambda: fig.savefig('rq1_scalability_plot.png', dpi=100)),
         ("low DPI", lambda: fig.savefig('rq1_scalability_plot_lowdpi.png', dpi=50)),
         ("SVG format", lambda: fig.savefig('rq1_scalability_plot.svg')),
+        ("ultra-minimal fallback", lambda: save_ultra_minimal_plot(df_rq1)),
     ]
     
     for attempt_name, save_func in save_attempts:
@@ -514,7 +514,8 @@ def main_rq1():
             save_func()
             end_time = time.time()
             print(f"✓ {attempt_name} saved in {end_time - start_time:.2f} seconds")
-            break  # Stop after first successful save
+            if "ultra-minimal" not in attempt_name:  # Only break if we got a proper plot with labels
+                break
         except Exception as e:
             print(f"✗ {attempt_name} failed: {e}")
             continue
@@ -531,14 +532,15 @@ def main_rq1():
     print("="*50)
 
 def save_ultra_minimal_plot(df_rq1):
-    """Create and save an ultra-minimal plot with no text at all."""
-    fig_ultra, ax_ultra = plt.subplots(figsize=(6, 4))
+    """Create and save a plot with labels but minimal complexity."""
+    print("Creating fallback plot with labels...")
+    fig_ultra, ax_ultra = plt.subplots(figsize=(8, 6))
     
     # Get successful data
     df_success = df_rq1[df_rq1['success']].copy()
     df_success['method_label'] = df_success.apply(create_method_label, axis=1)
     
-    # Plot just the lines with no text elements
+    # Plot the lines with labels (same as working test_plot.py approach)
     methods = df_success['method_label'].unique()
     colors = ['blue', 'red', 'green']
     
@@ -546,19 +548,18 @@ def save_ultra_minimal_plot(df_rq1):
         method_data = df_success[df_success['method_label'] == method]
         grouped = method_data.groupby('num_vars')['time'].mean()
         ax_ultra.plot(grouped.index, grouped.values, 'o-', 
-                     color=colors[i % len(colors)], linewidth=2, markersize=6)
+                     color=colors[i % len(colors)], label=method,
+                     linewidth=2, markersize=6)
     
-    # Remove ALL text elements to avoid any rendering issues
-    ax_ultra.set_xticks([])
-    ax_ultra.set_yticks([])
-    ax_ultra.set_xlabel('')
-    ax_ultra.set_ylabel('')
-    ax_ultra.set_title('')
-    if ax_ultra.get_legend():
-        ax_ultra.legend().remove()
+    # Add labels like the working test_plot.py
+    ax_ultra.set_xlabel('Number of Variables (Lifts)')
+    ax_ultra.set_ylabel('Execution Time (seconds)')
+    ax_ultra.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*')
+    ax_ultra.legend()
+    ax_ultra.grid(True, alpha=0.3)
     
-    # Save with minimal options
-    fig_ultra.savefig('rq1_scalability_plot_ultra_minimal.png', dpi=72, bbox_inches=None)
+    # Save with minimal options (same as test_plot.py)
+    fig_ultra.savefig('rq1_scalability_plot_with_labels.png', dpi=100)
     plt.close(fig_ultra)
 
 if __name__ == "__main__":
