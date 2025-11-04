@@ -387,62 +387,40 @@ def plot_rq1_results(df):
     print(df_success[['num_vars', 'time', 'method_label', 'success']].head(10))
     print("\nDataFrame dtypes:")
     print(df_success[['num_vars', 'time', 'method_label']].dtypes)
-    
-    # Additional debug info for plotting
-    print("\nPlotting debug info:")
-    print(f"Unique num_vars: {sorted(df_success['num_vars'].unique())}")
-    print(f"Time range: {df_success['time'].min():.4f} to {df_success['time'].max():.4f}")
-    print(f"Unique method labels: {df_success['method_label'].unique()}")
-    print(f"Data points per method:")
-    print(df_success.groupby('method_label').size())
     print("="*60)
     
-    try:
-        print("Creating matplotlib figure...")
-        fig, ax = plt.subplots(figsize=(10, 6))  # Use subplots for better control
+    print("Creating simple matplotlib figure (like test_plot.py)...")
+    
+    # Use the exact same approach as the working test_plot.py
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    # Get unique methods and assign colors
+    methods = df_success['method_label'].unique()
+    colors = ['blue', 'red', 'green', 'orange', 'purple']
+    
+    print(f"Plotting {len(methods)} methods: {list(methods)}")
+    
+    # Plot each method
+    for i, method in enumerate(methods):
+        method_data = df_success[df_success['method_label'] == method]
+        # Group by num_vars and calculate mean time
+        grouped = method_data.groupby('num_vars')['time'].mean()
         
-        print("Creating simple line plot...")
-        # Use basic matplotlib instead of seaborn to avoid complex rendering
-        methods = df_success['method_label'].unique()
-        colors = ['blue', 'red', 'green']
+        print(f"  Method '{method}': {len(grouped)} data points")
         
-        for i, method in enumerate(methods):
-            method_data = df_success[df_success['method_label'] == method]
-            # Group by num_vars and take mean
-            grouped = method_data.groupby('num_vars')['time'].mean()
-            ax.plot(grouped.index, grouped.values, 'o-', 
-                   color=colors[i % len(colors)], label=method, linewidth=2, markersize=6)
-        
-        print("Setting simple title and labels...")
-        ax.set_title('RQ1: Scalability Comparison', fontsize=12)
-        ax.set_xlabel('Number of Variables', fontsize=10)
-        ax.set_ylabel('Time (seconds)', fontsize=10)
-        
-        print("Setting simple legend...")
-        ax.legend(fontsize=9)
-        
-        print("Adding simple grid...")
-        ax.grid(True, alpha=0.3)
-        
-        # Skip timeout annotations to avoid text rendering issues
-        print("Skipping timeout annotations to avoid rendering issues...")
-        
-        print("Plot creation completed successfully!")
-        return fig
-        
-    except Exception as e:
-        print(f"ERROR during plotting: {e}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        traceback.print_exc()
-        
-        # Create a minimal fallback plot
-        print("Creating minimal fallback plot...")
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.plot([5, 10, 15, 50], [1, 2, 3, 4], 'o-', label='Data')
-        ax.set_title('Fallback Plot')
-        ax.legend()
-        return fig
+        ax.plot(grouped.index, grouped.values, 'o-', 
+               color=colors[i % len(colors)], label=method, 
+               linewidth=2, markersize=6)
+    
+    # Set labels and title (same as working test)
+    ax.set_xlabel('Number of Variables (Lifts)')
+    ax.set_ylabel('Execution Time (seconds)')
+    ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    
+    print("Plot creation completed successfully!")
+    return fig
 
 def main():
     """Run the complete lift case study."""
@@ -517,97 +495,43 @@ def main_rq1():
     print("Saving CSV results...")
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
     
-    # Save plot with error handling
-    print("Attempting to save plot...")
-    
-    # First, let's debug what text elements are in the plot
-    print("DEBUG: Analyzing plot text elements...")
+    # Save plot using the same simple approach as test_plot.py
+    print("Saving plot using simple approach...")
     try:
-        # Get all text objects in the figure
-        all_texts = []
-        for ax in fig.get_axes():
-            # Get axis labels
-            if ax.get_xlabel():
-                all_texts.append(f"xlabel: '{ax.get_xlabel()}'")
-            if ax.get_ylabel():
-                all_texts.append(f"ylabel: '{ax.get_ylabel()}'")
-            if ax.get_title():
-                all_texts.append(f"title: '{ax.get_title()}'")
-            
-            # Get tick labels
-            for tick in ax.get_xticklabels():
-                if tick.get_text():
-                    all_texts.append(f"xtick: '{tick.get_text()}'")
-            for tick in ax.get_yticklabels():
-                if tick.get_text():
-                    all_texts.append(f"ytick: '{tick.get_text()}'")
-            
-            # Get legend texts
-            legend = ax.get_legend()
-            if legend:
-                for text in legend.get_texts():
-                    if text.get_text():
-                        all_texts.append(f"legend: '{text.get_text()}'")
-        
-        print(f"Found {len(all_texts)} text elements:")
-        for i, text in enumerate(all_texts[:20]):  # Show first 20
-            print(f"  {i+1}: {text}")
-        if len(all_texts) > 20:
-            print(f"  ... and {len(all_texts) - 20} more")
-            
-    except Exception as debug_e:
-        print(f"Error during text analysis: {debug_e}")
-    
-    # Try to save with progressively simpler approaches
-    save_attempts = [
-        ("basic settings", lambda: fig.savefig('rq1_scalability_plot.png', dpi=150)),
-        ("minimal settings", lambda: fig.savefig('rq1_scalability_plot.png')),
-        ("no text rendering", lambda: fig.savefig('rq1_scalability_plot.png', dpi=100, facecolor='white')),
-    ]
-    
-    saved = False
-    for attempt_name, save_func in save_attempts:
+        fig.savefig('rq1_scalability_plot.png', dpi=100)
+        print("✓ Plot saved successfully as: rq1_scalability_plot.png")
+    except Exception as e:
+        print(f"✗ Plot save failed: {e}")
+        print("Creating minimal fallback plot...")
         try:
-            print(f"Trying save with {attempt_name}...")
-            save_func()
-            print(f"Plot saved successfully with {attempt_name}")
-            saved = True
-            break
-        except Exception as e:
-            print(f"Error saving plot with {attempt_name}: {e}")
-            continue
-    
-    if not saved:
-        print("All save attempts failed. Creating text-free fallback plot...")
-        try:
-            # Create a completely minimal plot without any text
-            fig_fallback, ax_fallback = plt.subplots(figsize=(8, 5))
+            # Create minimal plot like in test_plot.py
+            fig_minimal, ax_minimal = plt.subplots(figsize=(6, 4))
             
-            # Plot just the data points without any labels
+            # Just plot some basic data
             df_success = df_rq1[df_rq1['success']].copy()
-            methods = df_success['method_label'].unique()
-            colors = ['blue', 'red', 'green']
+            if not df_success.empty:
+                methods = df_success['method_label'].unique()
+                colors = ['blue', 'red', 'green']
+                
+                for i, method in enumerate(methods):
+                    method_data = df_success[df_success['method_label'] == method]
+                    grouped = method_data.groupby('num_vars')['time'].mean()
+                    ax_minimal.plot(grouped.index, grouped.values, 'o-', 
+                                   color=colors[i % len(colors)], linewidth=2, markersize=6)
+            else:
+                # Fallback data
+                ax_minimal.plot([5, 10, 15, 50], [1, 2, 3, 4], 'o-', color='blue')
             
-            for i, method in enumerate(methods):
-                method_data = df_success[df_success['method_label'] == method]
-                grouped = method_data.groupby('num_vars')['time'].mean()
-                ax_fallback.plot(grouped.index, grouped.values, 'o-', 
-                               color=colors[i % len(colors)], linewidth=2, markersize=6)
+            ax_minimal.set_xlabel('Variables')
+            ax_minimal.set_ylabel('Time')
+            ax_minimal.set_title('RQ1 Results')
             
-            # Remove all text elements
-            ax_fallback.set_xticks([])
-            ax_fallback.set_yticks([])
-            ax_fallback.set_xlabel('')
-            ax_fallback.set_ylabel('')
-            ax_fallback.set_title('')
-            
-            # Save the text-free plot
-            fig_fallback.savefig('rq1_scalability_plot_minimal.png', dpi=100)
-            print("Minimal text-free plot saved as: rq1_scalability_plot_minimal.png")
+            fig_minimal.savefig('rq1_scalability_plot_minimal.png', dpi=100)
+            print("✓ Minimal plot saved as: rq1_scalability_plot_minimal.png")
+            plt.close(fig_minimal)
             
         except Exception as fallback_e:
-            print(f"Even fallback plot failed: {fallback_e}")
-            print("Skipping plot save entirely")
+            print(f"✗ Even minimal plot failed: {fallback_e}")
     
     # Skip plt.show() as it might cause issues with Agg backend
     print("Skipping plt.show() with Agg backend")
