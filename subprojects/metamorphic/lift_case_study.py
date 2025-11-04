@@ -418,6 +418,7 @@ def main_rq1():
     # Clean up threading and process state before plotting
     import gc
     import threading
+    import matplotlib.pyplot as plt
     
     # Clear tqdm state
     tqdm._instances.clear()
@@ -486,7 +487,6 @@ def main_rq1():
     
     try:
         # Use absolute minimal matplotlib
-        import matplotlib.pyplot as plt
         plt.ioff()  # Turn off interactive mode
         
         fig = plt.figure(figsize=(8, 5))
