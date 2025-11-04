@@ -41,9 +41,9 @@ class SearchSpace:
     def is_goal(self, X, v):
         pass
 
-def hp_cause_bfs(v, search_space: SearchSpace):
+def hp_cause_bfs(v, awt_thr, search_space: SearchSpace):
     start = frozenset()                     # begin with no flips
-    if search_space.is_goal(start, v):
+    if search_space.is_goal(start, v, awt_thr):
         return start
 
     frontier = deque([start])
@@ -53,7 +53,7 @@ def hp_cause_bfs(v, search_space: SearchSpace):
         X = frontier.popleft()
         for Y in search_space.neighbors(X):
             if Y not in visited:
-                if search_space.is_goal(Y, v):  # goal test on generation
+                if search_space.is_goal(Y, v, awt_thr):  # goal test on generation
                     yield Y
                 visited.add(Y)
                 frontier.append(Y)
