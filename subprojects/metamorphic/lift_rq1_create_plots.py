@@ -22,15 +22,7 @@ def create_method_label(row):
     elif row['method'] == 'mm':
         return 'A* (Metamorphic)'
     elif row['method'] == 'mm_bundled':
-        bundle_size = row.get('bundle_size', 2)
-        num_vars = row.get('num_vars', 10)
-        
-        if bundle_size == max(1, num_vars // 5):
-            return 'A* Bundled (N/5)'
-        elif bundle_size == max(1, num_vars // 2):
-            return 'A* Bundled (N/2)'
-        else:
-            return f'A* Bundled (size={bundle_size})'
+        return 'A* Bundled (size=5)'
     return row['method']
 
 def load_and_plot_rq1_results(csv_file='rq1_scalability_results.csv',adf=None):
@@ -88,7 +80,7 @@ def load_and_plot_rq1_results(csv_file='rq1_scalability_results.csv',adf=None):
     # Set labels and formatting
     ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
     ax.set_ylabel('Execution Time (seconds)', fontsize=12)
-    # ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*', fontsize=14)
+    ax.set_title('RQ1: Scalability Comparison - BFS vs A* Bundled (size=5)', fontsize=14)
     ax.legend(fontsize=11)
     ax.grid(True, alpha=0.3)
     

@@ -22,8 +22,7 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
     """
     Run RQ1 scalability study comparing BFS vs Bundled A* with 2-second timeout.
     
-    For N in [5,10,15]: use bundle_size=5
-    For N >= 50: use bundle_size=N/10
+    Uses fixed bundle_size=5 for all problem sizes.
     """
     results = []
     
@@ -31,11 +30,8 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
     simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
     
     for num_vars in tqdm(num_vars_list, desc="Problem Sizes"):
-        # Determine bundle size
-        if num_vars <= 15:
-            bundle_size = 5
-        else:
-            bundle_size = max(1, num_vars // 10)
+        # Use fixed bundle size of 5
+        bundle_size = 5
         
         search_space = LiftSearchSpace(simulator.simulate, awt_thr=0.0, num_vars=num_vars)
         
