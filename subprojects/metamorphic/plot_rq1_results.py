@@ -89,19 +89,26 @@ def load_and_plot_rq1_results(csv_file='rq1_scalability_results.csv'):
     
     print("✓ Plot created successfully")
     
-    # Save plot
+    # Save plot - test what was causing the slowdown
     print("Saving plot...")
-    try:
-        fig.savefig('rq1_scalability_plot.png', dpi=150, bbox_inches='tight')
-        print("✓ Plot saved as: rq1_scalability_plot.png")
-    except Exception as e:
-        print(f"✗ Error saving plot: {e}")
-        # Try minimal save
+    import time
+    
+    # Test different save options to identify the culprit
+    save_tests = [
+        ("without bbox_inches", lambda: fig.savefig('rq1_scalability_plot.png', dpi=150)),
+        ("with bbox_inches='tight'", lambda: fig.savefig('rq1_scalability_plot_tight.png', dpi=150, bbox_inches='tight')),
+        ("low dpi", lambda: fig.savefig('rq1_scalability_plot_lowdpi.png', dpi=100)),
+    ]
+    
+    for test_name, save_func in save_tests:
         try:
-            fig.savefig('rq1_scalability_plot_minimal.png', dpi=100)
-            print("✓ Minimal plot saved as: rq1_scalability_plot_minimal.png")
-        except Exception as e2:
-            print(f"✗ Even minimal save failed: {e2}")
+            print(f"Testing save {test_name}...")
+            start_time = time.time()
+            save_func()
+            end_time = time.time()
+            print(f"✓ {test_name}: {end_time - start_time:.3f} seconds")
+        except Exception as e:
+            print(f"✗ {test_name} failed: {e}")
     
     plt.close(fig)
     
