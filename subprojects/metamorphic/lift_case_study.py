@@ -462,12 +462,11 @@ def main_rq1():
     # Save results
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
     fig.savefig('rq1_scalability_plot.png', dpi=300, bbox_inches='tight')
-    fig.savefig('rq1_scalability_plot.pdf', bbox_inches='tight')
     
     plt.show()
     
     print(f"\nResults saved to: rq1_scalability_results.csv")
-    print(f"Plot saved to: rq1_scalability_plot.png and rq1_scalability_plot.pdf")
+    print(f"Plot saved to: rq1_scalability_plot.png")
     print("\n" + "="*50)
     print("RQ1 STUDY COMPLETED!")
     print("="*50)
