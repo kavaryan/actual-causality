@@ -1,4 +1,4 @@
-from subprojects.metamorphic.search_formulation import SearchSpace
+from ...search_formulation import SearchSpace
 
 
 class LiftSearchSpace(SearchSpace):

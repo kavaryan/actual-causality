@@ -7,8 +7,7 @@ import seaborn as sns
 import heapq
 from collections import deque, defaultdict
 
-# FIXME: remove
-from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
+# FIXME: remove - removed circular import
 
 class MonotoQual:
     def __init__(self, var: int):
@@ -61,7 +60,7 @@ def hp_cause_bfs(v, search_space: SearchSpace):
     return None
 
 
-def hp_cause_mm(v, awt_thr, mms, search_space: LiftSearchSpace):
+def hp_cause_mm(v, awt_thr, mms, search_space):
     Q_f = set(mn.var for mn in mms if isinstance(mn, MonotoQual))
     Q_r = set(mn.var for mn in mms if isinstance(mn, RevMonotoQual))
     def h1(X):
@@ -106,7 +105,7 @@ def hp_cause_mm(v, awt_thr, mms, search_space: LiftSearchSpace):
     return None   # no solution within search space
 
 
-def hp_cause_mm_bundled(V, v, awt_thr, mms, bundles, search_space: LiftSearchSpace):
+def hp_cause_mm_bundled(V, v, awt_thr, mms, bundles, search_space):
     """
     A* search that flips variables in bundles together to reduce simulator calls.
     
