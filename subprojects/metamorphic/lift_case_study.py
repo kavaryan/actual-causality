@@ -368,7 +368,7 @@ def plot_rq1_results(df):
     
     # Plot execution times (no log scale as requested)
     sns.lineplot(data=df_success, x='num_vars', y='time', hue='method_label', 
-                marker='o', err_style='band', errorbar=('ci', 95), linewidth=2, markersize=8)
+                marker='o', errorbar=None, linewidth=2, markersize=8)
     
     plt.title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', 
               fontsize=14, fontweight='bold')
