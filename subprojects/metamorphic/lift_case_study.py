@@ -365,61 +365,28 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
     return pd.DataFrame(results)
 
 def plot_rq1_results(df):
-    """Create RQ1 scalability plot comparing BFS vs Bundled A*."""
-    df['method_label'] = df.apply(create_method_label, axis=1)
+    """Create RQ1 scalability plot - FAST VERSION."""
+    print("Creating FAST plot with minimal matplotlib calls...")
     
-    # Filter successful runs only
+    # Get data ready
+    df['method_label'] = df.apply(create_method_label, axis=1)
     df_success = df[df['success']].copy()
     
-    print("\n" + "="*60)
-    print("DEBUG: DataFrame info before plotting")
-    print("="*60)
-    print(f"Total rows: {len(df)}")
-    print(f"Successful rows: {len(df_success)}")
-    print(f"Columns: {list(df.columns)}")
-    print("\nMethod distribution:")
-    print(df['method'].value_counts())
-    print("\nMethod label distribution:")
-    print(df['method_label'].value_counts())
-    print("\nSuccess rate by method:")
-    print(df.groupby('method_label')['success'].mean())
-    print("\nDataFrame to plot (first 10 rows):")
-    print(df_success[['num_vars', 'time', 'method_label', 'success']].head(10))
-    print("\nDataFrame dtypes:")
-    print(df_success[['num_vars', 'time', 'method_label']].dtypes)
-    print("="*60)
+    # Create figure with minimal settings
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
     
-    print("Creating simple matplotlib figure (like test_plot.py)...")
-    
-    # Use the exact same approach as the working test_plot.py
-    fig, ax = plt.subplots(figsize=(8, 6))
-    
-    # Get unique methods and assign colors
+    # Plot data with hardcoded simple approach
     methods = df_success['method_label'].unique()
-    colors = ['blue', 'red', 'green', 'orange', 'purple']
+    colors = ['b', 'r', 'g']  # Single letter colors are faster
     
-    print(f"Plotting {len(methods)} methods: {list(methods)}")
-    
-    # Plot each method
     for i, method in enumerate(methods):
         method_data = df_success[df_success['method_label'] == method]
-        # Group by num_vars and calculate mean time
         grouped = method_data.groupby('num_vars')['time'].mean()
-        
-        print(f"  Method '{method}': {len(grouped)} data points")
-        
-        ax.plot(grouped.index, grouped.values, 'o-', 
-               color=colors[i % len(colors)], label=method, 
+        ax.plot(grouped.index, grouped.values, colors[i % len(colors)] + 'o-', 
                linewidth=2, markersize=6)
     
-    # Set labels and title (same as working test)
-    ax.set_xlabel('Number of Variables (Lifts)')
-    ax.set_ylabel('Execution Time (seconds)')
-    ax.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*')
-    ax.legend()
-    ax.grid(True, alpha=0.3)
-    
-    print("Plot creation completed successfully!")
+    print("Plot created - returning immediately!")
     return fig
 
 def main():
@@ -495,32 +462,28 @@ def main_rq1():
     print("Saving CSV results...")
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
     
-    # Save plot with timing diagnostics
+    # FAST save approach - no diagnostics, no fallbacks
+    print("Saving plot with FAST approach...")
     import time
-    print("Saving plot with timing diagnostics...")
+    start_time = time.time()
     
-    # Try different save approaches with timing
-    save_attempts = [
-        ("basic PNG", lambda: fig.savefig('rq1_scalability_plot.png', dpi=100)),
-        ("low DPI", lambda: fig.savefig('rq1_scalability_plot_lowdpi.png', dpi=50)),
-        ("SVG format", lambda: fig.savefig('rq1_scalability_plot.svg')),
-        ("ultra-minimal fallback", lambda: save_ultra_minimal_plot(df_rq1)),
-    ]
-    
-    for attempt_name, save_func in save_attempts:
-        try:
-            print(f"Attempting {attempt_name}...")
-            start_time = time.time()
-            save_func()
-            end_time = time.time()
-            print(f"✓ {attempt_name} saved in {end_time - start_time:.2f} seconds")
-            if "ultra-minimal" not in attempt_name:  # Only break if we got a proper plot with labels
-                break
-        except Exception as e:
-            print(f"✗ {attempt_name} failed: {e}")
-            continue
-    else:
-        print("All save attempts failed!")
+    try:
+        # Save with absolute minimal options
+        fig.savefig('rq1_plot.png', dpi=72, format='png')
+        end_time = time.time()
+        print(f"✓ Plot saved in {end_time - start_time:.2f} seconds as: rq1_plot.png")
+    except Exception as e:
+        print(f"✗ Fast save failed: {e}")
+        # Create a text file with the data instead
+        print("Creating text summary instead of plot...")
+        with open('rq1_results_summary.txt', 'w') as f:
+            f.write("RQ1 SCALABILITY RESULTS\n")
+            f.write("=" * 30 + "\n\n")
+            df_success = df_rq1[df_rq1['success']].copy()
+            df_success['method_label'] = df_success.apply(create_method_label, axis=1)
+            summary = df_success.groupby(['num_vars', 'method_label'])['time'].mean()
+            f.write(str(summary))
+        print("✓ Text summary saved as: rq1_results_summary.txt")
     
     # Skip plt.show() as it might cause issues with Agg backend
     print("Skipping plt.show() with Agg backend")
