@@ -464,6 +464,37 @@ def main():
     print("CASE STUDY COMPLETED SUCCESSFULLY!")
     print("="*80)
 
+def save_ultra_minimal_plot(df_rq1):
+    """Create and save an ultra-minimal plot with no text at all."""
+    fig_ultra, ax_ultra = plt.subplots(figsize=(6, 4))
+    
+    # Get successful data
+    df_success = df_rq1[df_rq1['success']].copy()
+    df_success['method_label'] = df_success.apply(create_method_label, axis=1)
+    
+    # Plot just the lines with no text elements
+    methods = df_success['method_label'].unique()
+    colors = ['blue', 'red', 'green']
+    
+    for i, method in enumerate(methods):
+        method_data = df_success[df_success['method_label'] == method]
+        grouped = method_data.groupby('num_vars')['time'].mean()
+        ax_ultra.plot(grouped.index, grouped.values, 'o-', 
+                     color=colors[i % len(colors)], linewidth=2, markersize=6)
+    
+    # Remove ALL text elements to avoid any rendering issues
+    ax_ultra.set_xticks([])
+    ax_ultra.set_yticks([])
+    ax_ultra.set_xlabel('')
+    ax_ultra.set_ylabel('')
+    ax_ultra.set_title('')
+    if ax_ultra.get_legend():
+        ax_ultra.legend().remove()
+    
+    # Save with minimal options
+    fig_ultra.savefig('rq1_scalability_plot_ultra_minimal.png', dpi=72, bbox_inches=None)
+    plt.close(fig_ultra)
+
 def main_rq1():
     """Run RQ1 scalability study only."""
     print("Starting RQ1 Scalability Study...")
@@ -495,43 +526,61 @@ def main_rq1():
     print("Saving CSV results...")
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
     
-    # Save plot using the same simple approach as test_plot.py
-    print("Saving plot using simple approach...")
-    try:
-        fig.savefig('rq1_scalability_plot.png', dpi=100)
-        print("✓ Plot saved successfully as: rq1_scalability_plot.png")
-    except Exception as e:
-        print(f"✗ Plot save failed: {e}")
-        print("Creating minimal fallback plot...")
+    # Save plot with timing diagnostics
+    import time
+    print("Saving plot with timing diagnostics...")
+    
+    # Try different save approaches with timing
+    save_attempts = [
+        ("ultra-minimal", lambda: save_ultra_minimal_plot(df_rq1)),
+        ("basic PNG", lambda: fig.savefig('rq1_scalability_plot.png', dpi=100)),
+        ("low DPI", lambda: fig.savefig('rq1_scalability_plot_lowdpi.png', dpi=50)),
+        ("SVG format", lambda: fig.savefig('rq1_scalability_plot.svg')),
+    ]
+    
+    for attempt_name, save_func in save_attempts:
         try:
-            # Create minimal plot like in test_plot.py
-            fig_minimal, ax_minimal = plt.subplots(figsize=(6, 4))
-            
-            # Just plot some basic data
-            df_success = df_rq1[df_rq1['success']].copy()
-            if not df_success.empty:
-                methods = df_success['method_label'].unique()
-                colors = ['blue', 'red', 'green']
-                
-                for i, method in enumerate(methods):
-                    method_data = df_success[df_success['method_label'] == method]
-                    grouped = method_data.groupby('num_vars')['time'].mean()
-                    ax_minimal.plot(grouped.index, grouped.values, 'o-', 
-                                   color=colors[i % len(colors)], linewidth=2, markersize=6)
-            else:
-                # Fallback data
-                ax_minimal.plot([5, 10, 15, 50], [1, 2, 3, 4], 'o-', color='blue')
-            
-            ax_minimal.set_xlabel('Variables')
-            ax_minimal.set_ylabel('Time')
-            ax_minimal.set_title('RQ1 Results')
-            
-            fig_minimal.savefig('rq1_scalability_plot_minimal.png', dpi=100)
-            print("✓ Minimal plot saved as: rq1_scalability_plot_minimal.png")
-            plt.close(fig_minimal)
-            
-        except Exception as fallback_e:
-            print(f"✗ Even minimal plot failed: {fallback_e}")
+            print(f"Attempting {attempt_name}...")
+            start_time = time.time()
+            save_func()
+            end_time = time.time()
+            print(f"✓ {attempt_name} saved in {end_time - start_time:.2f} seconds")
+            break  # Stop after first successful save
+        except Exception as e:
+            print(f"✗ {attempt_name} failed: {e}")
+            continue
+    else:
+        print("All save attempts failed!")
+
+def save_ultra_minimal_plot(df_rq1):
+    """Create and save an ultra-minimal plot with no text at all."""
+    fig_ultra, ax_ultra = plt.subplots(figsize=(6, 4))
+    
+    # Get successful data
+    df_success = df_rq1[df_rq1['success']].copy()
+    df_success['method_label'] = df_success.apply(create_method_label, axis=1)
+    
+    # Plot just the lines with no text elements
+    methods = df_success['method_label'].unique()
+    colors = ['blue', 'red', 'green']
+    
+    for i, method in enumerate(methods):
+        method_data = df_success[df_success['method_label'] == method]
+        grouped = method_data.groupby('num_vars')['time'].mean()
+        ax_ultra.plot(grouped.index, grouped.values, 'o-', 
+                     color=colors[i % len(colors)], linewidth=2, markersize=6)
+    
+    # Remove ALL text elements to avoid any rendering issues
+    ax_ultra.set_xticks([])
+    ax_ultra.set_yticks([])
+    ax_ultra.set_xlabel('')
+    ax_ultra.set_ylabel('')
+    ax_ultra.set_title('')
+    ax_ultra.legend().remove() if ax_ultra.get_legend() else None
+    
+    # Save with minimal options
+    fig_ultra.savefig('rq1_scalability_plot_ultra_minimal.png', dpi=72, bbox_inches=None)
+    plt.close(fig_ultra)
     
     # Skip plt.show() as it might cause issues with Agg backend
     print("Skipping plt.show() with Agg backend")
