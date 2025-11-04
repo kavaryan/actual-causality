@@ -415,6 +415,9 @@ def main_rq1():
     # Run RQ1 experiments
     df_rq1 = run_rq1_scalability_study()
     
+    # Clear tqdm state to avoid matplotlib interference
+    tqdm._instances.clear()
+    
     # Add method labels for summary
     df_rq1['method_label'] = df_rq1.apply(create_method_label, axis=1)
     
