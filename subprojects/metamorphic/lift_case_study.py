@@ -364,30 +364,6 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
     
     return pd.DataFrame(results)
 
-def plot_rq1_results(df):
-    """Create RQ1 scalability plot - FAST VERSION."""
-    print("Creating FAST plot with minimal matplotlib calls...")
-    
-    # Get data ready
-    df['method_label'] = df.apply(create_method_label, axis=1)
-    df_success = df[df['success']].copy()
-    
-    # Create figure with minimal settings
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111)
-    
-    # Plot data with hardcoded simple approach
-    methods = df_success['method_label'].unique()
-    colors = ['b', 'r', 'g']  # Single letter colors are faster
-    
-    for i, method in enumerate(methods):
-        method_data = df_success[df_success['method_label'] == method]
-        grouped = method_data.groupby('num_vars')['time'].mean()
-        ax.plot(grouped.index, grouped.values, colors[i % len(colors)] + 'o-', 
-               linewidth=2, markersize=6)
-    
-    print("Plot created - returning immediately!")
-    return fig
 
 def main():
     """Run the complete lift case study."""
@@ -432,22 +408,20 @@ def main():
     print("="*80)
 
 def main_rq1():
-    """Run RQ1 scalability study only."""
+    """Run RQ1 scalability study only - just collect data and save to CSV."""
     print("Starting RQ1 Scalability Study...")
     print("Comparing BFS vs Bundled A* with 2-second timeout")
     
     # Run RQ1 experiments
     df_rq1 = run_rq1_scalability_study()
     
-    # Create and show plot
-    fig = plot_rq1_results(df_rq1)
+    # Add method labels for summary
+    df_rq1['method_label'] = df_rq1.apply(create_method_label, axis=1)
     
     # Print summary
     print("\n" + "="*50)
     print("RQ1 SCALABILITY STUDY RESULTS")
     print("="*50)
-    
-    df_rq1['method_label'] = df_rq1.apply(create_method_label, axis=1)
     
     # Success rates by method and problem size
     success_summary = df_rq1.groupby(['num_vars', 'method_label']).agg({
@@ -458,72 +432,16 @@ def main_rq1():
     print("\nSuccess rates and timing by problem size:")
     print(success_summary)
     
-    # Save results
+    # Save results to CSV
     print("Saving CSV results...")
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
+    print(f"✓ Results saved to: rq1_scalability_results.csv")
     
-    # FAST save approach - no diagnostics, no fallbacks
-    print("Saving plot with FAST approach...")
-    import time
-    start_time = time.time()
-    
-    try:
-        # Save with absolute minimal options
-        fig.savefig('rq1_plot.png', dpi=72, format='png')
-        end_time = time.time()
-        print(f"✓ Plot saved in {end_time - start_time:.2f} seconds as: rq1_plot.png")
-    except Exception as e:
-        print(f"✗ Fast save failed: {e}")
-        # Create a text file with the data instead
-        print("Creating text summary instead of plot...")
-        with open('rq1_results_summary.txt', 'w') as f:
-            f.write("RQ1 SCALABILITY RESULTS\n")
-            f.write("=" * 30 + "\n\n")
-            df_success = df_rq1[df_rq1['success']].copy()
-            df_success['method_label'] = df_success.apply(create_method_label, axis=1)
-            summary = df_success.groupby(['num_vars', 'method_label'])['time'].mean()
-            f.write(str(summary))
-        print("✓ Text summary saved as: rq1_results_summary.txt")
-    
-    # Skip plt.show() as it might cause issues with Agg backend
-    print("Skipping plt.show() with Agg backend")
-    
-    print(f"\nResults saved to: rq1_scalability_results.csv")
-    print(f"Plot save attempted: rq1_scalability_plot.png")
     print("\n" + "="*50)
-    print("RQ1 STUDY COMPLETED!")
+    print("RQ1 DATA COLLECTION COMPLETED!")
+    print("Use 'python plot_rq1_results.py' to create plots from the saved data.")
     print("="*50)
 
-def save_ultra_minimal_plot(df_rq1):
-    """Create and save a plot with labels but minimal complexity."""
-    print("Creating fallback plot with labels...")
-    fig_ultra, ax_ultra = plt.subplots(figsize=(8, 6))
-    
-    # Get successful data
-    df_success = df_rq1[df_rq1['success']].copy()
-    df_success['method_label'] = df_success.apply(create_method_label, axis=1)
-    
-    # Plot the lines with labels (same as working test_plot.py approach)
-    methods = df_success['method_label'].unique()
-    colors = ['blue', 'red', 'green']
-    
-    for i, method in enumerate(methods):
-        method_data = df_success[df_success['method_label'] == method]
-        grouped = method_data.groupby('num_vars')['time'].mean()
-        ax_ultra.plot(grouped.index, grouped.values, 'o-', 
-                     color=colors[i % len(colors)], label=method,
-                     linewidth=2, markersize=6)
-    
-    # Add labels like the working test_plot.py
-    ax_ultra.set_xlabel('Number of Variables (Lifts)')
-    ax_ultra.set_ylabel('Execution Time (seconds)')
-    ax_ultra.set_title('RQ1: Scalability Comparison - BFS vs Bundled A*')
-    ax_ultra.legend()
-    ax_ultra.grid(True, alpha=0.3)
-    
-    # Save with minimal options (same as test_plot.py)
-    fig_ultra.savefig('rq1_scalability_plot_with_labels.png', dpi=100)
-    plt.close(fig_ultra)
 
 if __name__ == "__main__":
     main()
