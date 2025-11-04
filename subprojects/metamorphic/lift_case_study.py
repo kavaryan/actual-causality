@@ -464,37 +464,6 @@ def main():
     print("CASE STUDY COMPLETED SUCCESSFULLY!")
     print("="*80)
 
-def save_ultra_minimal_plot(df_rq1):
-    """Create and save an ultra-minimal plot with no text at all."""
-    fig_ultra, ax_ultra = plt.subplots(figsize=(6, 4))
-    
-    # Get successful data
-    df_success = df_rq1[df_rq1['success']].copy()
-    df_success['method_label'] = df_success.apply(create_method_label, axis=1)
-    
-    # Plot just the lines with no text elements
-    methods = df_success['method_label'].unique()
-    colors = ['blue', 'red', 'green']
-    
-    for i, method in enumerate(methods):
-        method_data = df_success[df_success['method_label'] == method]
-        grouped = method_data.groupby('num_vars')['time'].mean()
-        ax_ultra.plot(grouped.index, grouped.values, 'o-', 
-                     color=colors[i % len(colors)], linewidth=2, markersize=6)
-    
-    # Remove ALL text elements to avoid any rendering issues
-    ax_ultra.set_xticks([])
-    ax_ultra.set_yticks([])
-    ax_ultra.set_xlabel('')
-    ax_ultra.set_ylabel('')
-    ax_ultra.set_title('')
-    if ax_ultra.get_legend():
-        ax_ultra.legend().remove()
-    
-    # Save with minimal options
-    fig_ultra.savefig('rq1_scalability_plot_ultra_minimal.png', dpi=72, bbox_inches=None)
-    plt.close(fig_ultra)
-
 def main_rq1():
     """Run RQ1 scalability study only."""
     print("Starting RQ1 Scalability Study...")
@@ -551,6 +520,15 @@ def main_rq1():
             continue
     else:
         print("All save attempts failed!")
+    
+    # Skip plt.show() as it might cause issues with Agg backend
+    print("Skipping plt.show() with Agg backend")
+    
+    print(f"\nResults saved to: rq1_scalability_results.csv")
+    print(f"Plot save attempted: rq1_scalability_plot.png")
+    print("\n" + "="*50)
+    print("RQ1 STUDY COMPLETED!")
+    print("="*50)
 
 def save_ultra_minimal_plot(df_rq1):
     """Create and save an ultra-minimal plot with no text at all."""
@@ -576,20 +554,12 @@ def save_ultra_minimal_plot(df_rq1):
     ax_ultra.set_xlabel('')
     ax_ultra.set_ylabel('')
     ax_ultra.set_title('')
-    ax_ultra.legend().remove() if ax_ultra.get_legend() else None
+    if ax_ultra.get_legend():
+        ax_ultra.legend().remove()
     
     # Save with minimal options
     fig_ultra.savefig('rq1_scalability_plot_ultra_minimal.png', dpi=72, bbox_inches=None)
     plt.close(fig_ultra)
-    
-    # Skip plt.show() as it might cause issues with Agg backend
-    print("Skipping plt.show() with Agg backend")
-    
-    print(f"\nResults saved to: rq1_scalability_results.csv")
-    print(f"Plot save attempted: rq1_scalability_plot.png")
-    print("\n" + "="*50)
-    print("RQ1 STUDY COMPLETED!")
-    print("="*50)
 
 if __name__ == "__main__":
     main()
