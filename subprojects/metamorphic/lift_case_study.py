@@ -382,33 +382,71 @@ def plot_rq1_results(df):
     print(df_success[['num_vars', 'time', 'method_label', 'success']].head(10))
     print("\nDataFrame dtypes:")
     print(df_success[['num_vars', 'time', 'method_label']].dtypes)
+    
+    # Additional debug info for plotting
+    print("\nPlotting debug info:")
+    print(f"Unique num_vars: {sorted(df_success['num_vars'].unique())}")
+    print(f"Time range: {df_success['time'].min():.4f} to {df_success['time'].max():.4f}")
+    print(f"Unique method labels: {df_success['method_label'].unique()}")
+    print(f"Data points per method:")
+    print(df_success.groupby('method_label').size())
     print("="*60)
     
-    plt.figure(figsize=(12, 8))
-    
-    # Plot execution times (no log scale as requested)
-    sns.lineplot(data=df_success, x='num_vars', y='time', hue='method_label', 
-                marker='o', errorbar=None, linewidth=2, markersize=8)
-    
-    plt.title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', 
-              fontsize=14, fontweight='bold')
-    plt.xlabel('Number of Variables (Lifts)', fontsize=12)
-    plt.ylabel('Execution Time (seconds)', fontsize=12)
-    plt.legend(title='Method', fontsize=11)
-    plt.grid(True, alpha=0.3)
-    
-    # Add timeout indicators
-    df_timeout = df[df['timeout']].copy()
-    if not df_timeout.empty:
-        timeout_summary = df_timeout.groupby(['num_vars', 'method_label']).size().reset_index(name='timeout_count')
-        for _, row in timeout_summary.iterrows():
-            plt.annotate(f'{row["timeout_count"]} timeouts', 
-                        xy=(row['num_vars'], 2), 
-                        xytext=(10, 10), textcoords='offset points',
-                        fontsize=9, alpha=0.7)
-    
-    plt.tight_layout()
-    return plt.gcf()
+    try:
+        print("Creating matplotlib figure...")
+        plt.figure(figsize=(12, 8))
+        
+        print("Creating seaborn lineplot...")
+        # Plot execution times (no log scale as requested)
+        sns.lineplot(data=df_success, x='num_vars', y='time', hue='method_label', 
+                    marker='o', errorbar=None, linewidth=2, markersize=8)
+        
+        print("Setting title and labels...")
+        plt.title('RQ1: Scalability Comparison - BFS vs Bundled A*\n(2-second timeout)', 
+                  fontsize=14, fontweight='bold')
+        plt.xlabel('Number of Variables (Lifts)', fontsize=12)
+        plt.ylabel('Execution Time (seconds)', fontsize=12)
+        
+        print("Setting legend...")
+        plt.legend(title='Method', fontsize=11)
+        
+        print("Adding grid...")
+        plt.grid(True, alpha=0.3)
+        
+        # Add timeout indicators
+        print("Adding timeout indicators...")
+        df_timeout = df[df['timeout']].copy()
+        if not df_timeout.empty:
+            timeout_summary = df_timeout.groupby(['num_vars', 'method_label']).size().reset_index(name='timeout_count')
+            print(f"Timeout summary: {len(timeout_summary)} entries")
+            for i, row in timeout_summary.iterrows():
+                print(f"  Adding timeout annotation {i+1}/{len(timeout_summary)}")
+                plt.annotate(f'{row["timeout_count"]} timeouts', 
+                            xy=(row['num_vars'], 2), 
+                            xytext=(10, 10), textcoords='offset points',
+                            fontsize=9, alpha=0.7)
+        else:
+            print("No timeouts to display")
+        
+        print("Skipping tight_layout() to avoid matplotlib freeze...")
+        # plt.tight_layout()  # Skip this as it's causing the freeze
+        
+        print("Plot creation completed successfully!")
+        return plt.gcf()
+        
+    except Exception as e:
+        print(f"ERROR during plotting: {e}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Create a simple fallback plot
+        print("Creating fallback plot...")
+        plt.figure(figsize=(10, 6))
+        plt.plot([1, 2, 3], [1, 2, 3], 'o-', label='Fallback')
+        plt.title('Plot Error - Fallback Display')
+        plt.legend()
+        return plt.gcf()
 
 def main():
     """Run the complete lift case study."""
