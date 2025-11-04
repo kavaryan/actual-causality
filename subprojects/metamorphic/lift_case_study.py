@@ -300,7 +300,7 @@ def save_results_and_plots(df, wilcoxon_results, fig):
     fig.savefig('lift_case_study_plots.pdf', bbox_inches='tight')
     print(f"Plots saved to: lift_case_study_plots.png and lift_case_study_plots.pdf")
 
-def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50, 100, 500, 1000, 50000], 
+def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50], 
                              num_trials=10, awt_coeff=0.8, timeout=2):
     """
     Run RQ1 scalability study comparing BFS vs Bundled A* with 2-second timeout.
