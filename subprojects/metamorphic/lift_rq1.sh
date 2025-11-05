@@ -10,7 +10,7 @@ echo "=========================================="
 
 # Step 1: Generate CSV data
 echo "Step 1: Generating CSV data..."
-# python3 subprojects/metamorphic/lift_rq1_generate_data.py
+python3 subprojects/metamorphic/lift_rq1_generate_data.py
 
 # Check if data generation was successful
 if [ $? -eq 0 ] && [ -f "rq1_scalability_results.csv" ]; then

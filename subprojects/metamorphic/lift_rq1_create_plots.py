@@ -80,7 +80,7 @@ def load_and_plot_rq1_results(csv_file='rq1_scalability_results.csv',adf=None):
     # Set labels and formatting
     ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
     ax.set_ylabel('Execution Time (seconds)', fontsize=12)
-    ax.set_title('RQ1: Scalability Comparison - BFS vs A* Bundled (size=5)', fontsize=14)
+    # ax.set_title('RQ1: Scalability Comparison - BFS vs A* Bundled (size=5)', fontsize=14)
     ax.legend(fontsize=11)
     ax.grid(True, alpha=0.3)
     
