@@ -17,8 +17,8 @@ echo "- Timeout: 30 seconds per experiment"
 echo ""
 
 # Check if we're in the right directory
-if [ ! -f "rq2_generate_data.py" ]; then
-    echo "Error: rq2_generate_data.py not found!"
+if [ ! -f "lift_rq2_generate_data.py" ]; then
+    echo "Error: lift_rq2_generate_data.py not found!"
     echo "Please run this script from the subprojects/metamorphic directory"
     exit 1
 fi
@@ -28,7 +28,7 @@ echo "Step 1: Generating experimental data..."
 echo "This may take 30-60 minutes depending on your system..."
 echo ""
 
-python3 rq2_generate_data.py
+python3 lift_rq2_generate_data.py
 
 if [ $? -ne 0 ]; then
     echo "Error: Data generation failed!"
@@ -43,7 +43,7 @@ echo ""
 echo "Step 2: Analyzing results and creating visualizations..."
 echo ""
 
-python3 rq2_analyze_results.py
+python3 lift_rq2_analyze_results.py
 
 if [ $? -ne 0 ]; then
     echo "Error: Analysis failed!"
@@ -60,10 +60,10 @@ echo "RQ2 STUDY COMPLETED!"
 echo "=========================================="
 echo ""
 echo "Generated files:"
-echo "- rq2_ablation_results.csv       (raw experimental data)"
-echo "- rq2_wilcoxon_tests.csv         (statistical test results)"
-echo "- rq2_ablation_plots.png         (visualizations)"
-echo "- rq2_ablation_plots.pdf         (visualizations)"
+echo "- lift_rq2_ablation_results.csv       (raw experimental data)"
+echo "- lift_rq2_wilcoxon_tests.csv         (statistical test results)"
+echo "- lift_rq2_ablation_plots.png         (visualizations)"
+echo "- lift_rq2_ablation_plots.pdf         (visualizations)"
 echo ""
 echo "You can now examine the results to answer RQ2:"
 echo "What is the effect of bundling and different bundle sizes"

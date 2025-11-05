@@ -222,10 +222,10 @@ def main():
     """Analyze RQ2 results and create visualizations."""
     # Load results
     try:
-        df = pd.read_csv('rq2_ablation_results.csv')
+        df = pd.read_csv('lift_rq2_ablation_results.csv')
     except FileNotFoundError:
-        print("Error: rq2_ablation_results.csv not found!")
-        print("Please run rq2_generate_data.py first to generate the data.")
+        print("Error: lift_rq2_ablation_results.csv not found!")
+        print("Please run lift_rq2_generate_data.py first to generate the data.")
         return
     
     # Add method labels
@@ -251,13 +251,13 @@ def main():
     print(wilcoxon_results.to_string(index=False))
     
     # Save results
-    wilcoxon_results.to_csv('rq2_wilcoxon_tests.csv', index=False)
-    print(f"\nWilcoxon test results saved to: rq2_wilcoxon_tests.csv")
+    wilcoxon_results.to_csv('lift_rq2_wilcoxon_tests.csv', index=False)
+    print(f"\nWilcoxon test results saved to: lift_rq2_wilcoxon_tests.csv")
     
     # Save plots
-    fig.savefig('rq2_ablation_plots.png', dpi=300, bbox_inches='tight')
-    fig.savefig('rq2_ablation_plots.pdf', bbox_inches='tight')
-    print(f"Plots saved to: rq2_ablation_plots.png and rq2_ablation_plots.pdf")
+    fig.savefig('lift_rq2_ablation_plots.png', dpi=300, bbox_inches='tight')
+    fig.savefig('lift_rq2_ablation_plots.pdf', bbox_inches='tight')
+    print(f"Plots saved to: lift_rq2_ablation_plots.png and lift_rq2_ablation_plots.pdf")
     
     print("\n" + "="*80)
     print("RQ2 ANALYSIS COMPLETED SUCCESSFULLY!")

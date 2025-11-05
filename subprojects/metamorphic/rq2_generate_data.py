@@ -98,8 +98,8 @@ def main():
     
     # Save results to CSV
     print("Saving CSV results...")
-    df_rq2.to_csv('rq2_ablation_results.csv', index=False)
-    print(f"✓ Results saved to: rq2_ablation_results.csv")
+    df_rq2.to_csv('lift_rq2_ablation_results.csv', index=False)
+    print(f"✓ Results saved to: lift_rq2_ablation_results.csv")
     
     # Print summary
     print("\n" + "="*50)
