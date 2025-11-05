@@ -28,9 +28,6 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
     def target():
         nonlocal result
         try:
-            # tic = time.time()
-            sim_time_start = search_space.simulator.get_total_time()
-            
             if method == 'bfs':
                 X = hp_cause_bfs(v, awt_thr, search_space)
             elif method == 'mm':
@@ -50,11 +47,8 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
             else:
                 raise ValueError(f"Unknown method: {method}")
             
-            # toc = time.time()
-            sim_time_end = search_space.simulator.get_total_time()
-            
-            # total_time = (toc - tic) + (sim_time_end - sim_time_start)
-            total_time = sim_time_end - sim_time_start
+            # Get total simulation time for this experiment
+            total_time = search_space.simulator.get_total_time()
             
             result.update({
                 'success': True,
