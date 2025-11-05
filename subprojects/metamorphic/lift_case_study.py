@@ -20,7 +20,7 @@ sys.path.append('../..')
 
 from case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from case_studies.lift.lift import LiftSearchSpace
-from run_single_experiment import run_single_experiment
+from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
 def run_lift_case_study(num_vars_list=[5, 8, 10, 12, 15], num_trials=40, awt_coeff=0.8, 
                        timeout=60, simulator_startup_cost=0.1, poisson_lambdas=[2.0, 3.0, 4.0]):
@@ -78,7 +78,7 @@ def run_lift_case_study(num_vars_list=[5, 8, 10, 12, 15], num_trials=40, awt_coe
             ]
             
             for method, kwargs in methods_to_test:
-                result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
+                result = lift_run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
                 result.update({
                     'subtype': subtype_idx + 1,
                     'num_vars': num_vars,
@@ -350,7 +350,7 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
             ]
             
             for method, kwargs in methods_to_test:
-                result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
+                result = lift_run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
                 result.update({
                     'num_vars': num_vars,
                     'bundle_size': bundle_size,

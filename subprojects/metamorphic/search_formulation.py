@@ -63,6 +63,7 @@ def hp_cause_bfs(v, awt_thr, search_space: SearchSpace):
 def hp_cause_mm(v, awt_thr, mms, search_space):
     Q_f = set(mn.var for mn in mms if isinstance(mn, MonotoQual))
     Q_r = set(mn.var for mn in mms if isinstance(mn, RevMonotoQual))
+    
     def h1(X):
         s = 0
         for i in X & Q_f:
@@ -72,8 +73,10 @@ def hp_cause_mm(v, awt_thr, mms, search_space):
     def h2(X):
         s = 0
         for i in X & Q_f:
-            s += -1 if v[i] else 1 
-        return -s
+            s += -1 if v[i] else 1 # already 0, will be flipped to 1, better, so 1 | already 1, will be flipped to 0, worse, so -1
+        for i in X & Q_r:
+            s += 1 if v[i] else -1
+        return s
     
     h = h2
     

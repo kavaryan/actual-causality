@@ -6,7 +6,7 @@ from search_formulation import MonotoQual, RevMonotoQual, SearchSpace, AdditiveB
 class TimeoutError(Exception):
     pass
 
-def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs):
+def lift_run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs):
     """
     Run a single experiment with the given parameters using threading timeout.
     
@@ -31,7 +31,7 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
             if method == 'bfs':
                 X = hp_cause_bfs(v, awt_thr, search_space)
             elif method == 'mm':
-                mms = [MonotoQual(i) for i in V]
+                mms = [RevMonotoQual(i) for i in V]
                 X = hp_cause_mm(v, awt_thr, mms, search_space)
             elif method == 'mm_bundled':
                 bundle_size = kwargs.get('bundle_size', 2)

@@ -15,7 +15,7 @@ sys.path.append('.')
 
 from subprojects.metamorphic.case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
-from run_single_experiment import run_single_experiment
+from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
 def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50], 
                              num_trials=10, awt_coeff=0.8, timeout=2):
@@ -55,7 +55,7 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
                 simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
                 search_space = LiftSearchSpace(simulator, awt_thr=awt_thr, num_vars=num_vars)
                 
-                result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
+                result = lift_run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
                 result.update({
                     'num_vars': num_vars,
                     'bundle_size': bundle_size,

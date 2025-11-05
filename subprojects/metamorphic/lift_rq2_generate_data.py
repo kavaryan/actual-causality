@@ -16,11 +16,11 @@ sys.path.append('.')
 
 from case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from case_studies.lift.lift import LiftSearchSpace
-from run_single_experiment import run_single_experiment
+from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
 def run_rq2_ablation_study(num_vars_list=[40, 60], 
                           bundle_sizes=[5, 10, 20],
-                          num_trials=20, awt_coeff=0.8, timeout=30):
+                          num_trials=2, awt_coeff=0.9, timeout=30):
     """
     Run RQ2 ablation study comparing A* vs A* Bundled with different fixed bundle sizes.
     
@@ -36,11 +36,14 @@ def run_rq2_ablation_study(num_vars_list=[40, 60],
         for trial in tqdm(range(num_trials), desc=f"N={num_vars}", leave=False):
             # Generate random configuration
             prob_active = 0.5
-            v = np.random.binomial(1, prob_active, size=num_vars)
+            v = np.zeros(num_vars, dtype=int)
+            while not (num_vars//4 < sum(v) < num_vars//2):
+                v = np.random.binomial(1, prob_active, size=num_vars)
             
-            # Ensure at least one lift is active
-            if sum(v) == 0:
-                v[np.random.randint(num_vars)] = 1
+            # print('*** Generated configuration:', v)
+            # # Ensure at least one lift is active
+            # if sum(v) == 0:
+            #     v[np.random.randint(num_vars)] = 1
             
             # Calculate initial AWT and threshold using a temporary simulator
             temp_simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
@@ -60,7 +63,7 @@ def run_rq2_ablation_study(num_vars_list=[40, 60],
                 simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
                 search_space = LiftSearchSpace(simulator, awt_thr=awt_thr, num_vars=num_vars)
                 
-                result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
+                result = lift_run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
                 result.update({
                     'num_vars': num_vars,
                     'bundle_size': kwargs.get('bundle_size', None),

@@ -10,7 +10,7 @@ echo "=========================================="
 
 # Step 1: Generate CSV data
 echo "Step 1: Generating CSV data..."
-python3 subprojects/metamorphic/lift_rq2_generate_data.py
+# python3 subprojects/metamorphic/lift_rq2_generate_data.py
 
 # Check if data generation was successful
 if [ $? -eq 0 ] && [ -f "lift_rq2_ablation_results.csv" ]; then
@@ -22,7 +22,7 @@ fi
 
 echo ""
 echo "Step 2: Creating plots from CSV data..."
-python3 subprojects/metamorphic/lift_rq2_analyze_results.py
+python3 subprojects/metamorphic/lift_rq2_create_plots.py
 
 # Check if plotting was successful
 if [ $? -eq 0 ] && [ -f "lift_rq2_ablation_plots.png" ]; then

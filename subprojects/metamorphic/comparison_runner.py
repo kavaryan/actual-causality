@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'case-studies', 'lift'))
 
 from mock_lift_simulation import MockLiftsSimulator
 from search_formulation import SearchSpace
-from run_single_experiment import run_single_experiment
+from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
 def run_comparison_study(num_vars_list = [5, 10, 15], num_trials = 20, awt_coeff = 0.8,
         timeout = 30, simulator_startup_cost=0.1):
@@ -41,7 +41,7 @@ def run_comparison_study(num_vars_list = [5, 10, 15], num_trials = 20, awt_coeff
             ]
             
             for method, kwargs in methods_to_test:
-                result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
+                result = lift_run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
                 result.update({
                     'num_vars': num_vars,
                     'trial': trial,

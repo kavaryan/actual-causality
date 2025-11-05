@@ -5,7 +5,7 @@ class MockLiftsSimulator:
         self.total_time = 0.0
 
     def simulate(self, num_lifts):
-        # Calculate simulation time based on number of lifts
+        # Calculate simulation time (i.e., AWT) based on number of active lifts
         sim_time = ((self.stretch_coefficient / num_lifts) if num_lifts else float('inf')) + self.startup_cost
         
         # Add to total tracked time
