@@ -10,7 +10,7 @@ import sys
 import os
 
 # Add path to access the case study modules
-# sys.path.append('.')
+sys.path.append('.')
 # sys.path.append('case_studies/lift')
 
 from subprojects.metamorphic.case_studies.lift.mock_lift_simulation import MockLiftsSimulator

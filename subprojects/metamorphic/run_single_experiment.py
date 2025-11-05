@@ -29,7 +29,7 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
     def target():
         nonlocal result
         try:
-            tic = time.time()
+            # tic = time.time()
             sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
             
             if method == 'bfs':
@@ -51,10 +51,11 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
             else:
                 raise ValueError(f"Unknown method: {method}")
             
-            toc = time.time()
+            # toc = time.time()
             sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
             
-            total_time = (toc - tic) + (sim_time_end - sim_time_start)
+            # total_time = (toc - tic) + (sim_time_end - sim_time_start)
+            total_time = sim_time_end - sim_time_start
             
             result.update({
                 'success': True,
