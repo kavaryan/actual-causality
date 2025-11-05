@@ -81,6 +81,40 @@ def perform_wilcoxon_tests(df):
     
     return pd.DataFrame(results)
 
+def create_simple_rq2_plot(df):
+    """Create a simple single plot for RQ2 (similar to RQ1 style)."""
+    # Filter successful runs
+    df_success = df[df['success']].copy()
+    
+    # Create plot
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    # Get unique methods and colors
+    methods = df_success['method_label'].unique()
+    colors = ['blue', 'red', 'green', 'orange', 'purple']
+    
+    # Plot each method
+    for i, method in enumerate(methods):
+        method_data = df_success[df_success['method_label'] == method]
+        # Group by num_vars and calculate mean time
+        grouped = method_data.groupby('num_vars')['time'].mean()
+        
+        ax.plot(grouped.index, grouped.values, 'o-', 
+               color=colors[i % len(colors)], label=method, 
+               linewidth=2, markersize=8)
+    
+    # Set labels and formatting
+    ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
+    ax.set_ylabel('Execution Time (seconds)', fontsize=12)
+    ax.legend(fontsize=11)
+    ax.grid(True, alpha=0.3)
+    
+    # Set log scale for y-axis if there's a wide range
+    if df_success['time'].max() / df_success['time'].min() > 100:
+        ax.set_yscale('log')
+    
+    return fig
+
 def create_rq2_plots(df):
     """Create comprehensive plots for RQ2 ablation study."""
     # Set up the plotting style
@@ -238,8 +272,11 @@ def main():
     wilcoxon_results = perform_wilcoxon_tests(df)
     
     # Create plots
-    print("\nCreating plots...")
+    print("\nCreating comprehensive plots...")
     fig = create_rq2_plots(df)
+    
+    print("Creating simple plot...")
+    simple_fig = create_simple_rq2_plot(df)
     
     # Print summary
     print_summary_statistics(df)
@@ -257,7 +294,12 @@ def main():
     # Save plots
     fig.savefig('lift_rq2_ablation_plots.png', dpi=300, bbox_inches='tight')
     fig.savefig('lift_rq2_ablation_plots.pdf', bbox_inches='tight')
-    print(f"Plots saved to: lift_rq2_ablation_plots.png and lift_rq2_ablation_plots.pdf")
+    print(f"Comprehensive plots saved to: lift_rq2_ablation_plots.png and lift_rq2_ablation_plots.pdf")
+    
+    simple_fig.savefig('rq2_scalability_plot.png', dpi=150, bbox_inches='tight')
+    print(f"Simple plot saved to: rq2_scalability_plot.png")
+    
+    plt.close(simple_fig)
     
     print("\n" + "="*80)
     print("RQ2 ANALYSIS COMPLETED SUCCESSFULLY!")
