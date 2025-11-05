@@ -26,14 +26,9 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
     """
     results = []
     
-    # Initialize simulator
-    simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
-    
     for num_vars in tqdm(num_vars_list, desc="Problem Sizes"):
         # Use fixed bundle size of 5
         bundle_size = 5
-        
-        search_space = LiftSearchSpace(simulator.simulate, awt_thr=0.0, num_vars=num_vars)
         
         for trial in tqdm(range(num_trials), desc=f"N={num_vars}", leave=False):
             # Generate random configuration
@@ -44,10 +39,10 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
             if sum(v) == 0:
                 v[np.random.randint(num_vars)] = 1
             
-            # Calculate initial AWT and threshold
-            initial_awt = simulator.simulate(sum(v))
+            # Calculate initial AWT and threshold using a temporary simulator
+            temp_simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
+            initial_awt = temp_simulator.simulate(sum(v))
             awt_thr = initial_awt * awt_coeff
-            search_space.awt_thr = awt_thr
             
             # Test both methods on the same configuration
             methods_to_test = [
@@ -56,6 +51,10 @@ def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50],
             ]
             
             for method, kwargs in methods_to_test:
+                # Create fresh simulator and search space for each experiment
+                simulator = MockLiftsSimulator(average_max_time=1.0, simulator_startup_cost=0.1)
+                search_space = LiftSearchSpace(simulator, awt_thr=awt_thr, num_vars=num_vars)
+                
                 result = run_single_experiment(awt_thr, v, method, search_space, timeout, **kwargs)
                 result.update({
                     'num_vars': num_vars,

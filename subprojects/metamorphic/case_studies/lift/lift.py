@@ -2,8 +2,8 @@ from search_formulation import SearchSpace
 
 
 class LiftSearchSpace(SearchSpace):
-    def __init__(self, simulate_lifts_func, awt_thr, num_vars):
-        self.simulate_lifts_func = simulate_lifts_func
+    def __init__(self, simulator, awt_thr, num_vars):
+        self.simulator = simulator
         self.awt_thr = awt_thr
         super().__init__(list(range(num_vars)))
 
@@ -20,7 +20,7 @@ class LiftSearchSpace(SearchSpace):
         num_lifts = sum(v_new)
         if num_lifts == 0:
             return False
-        awt = self.simulate_lifts_func(num_lifts)
+        awt = self.simulator.simulate(num_lifts)
         
         # # DEBUG: Print details for first few calls
         # if len(X) <= 1:  # Only debug empty set and single-variable sets

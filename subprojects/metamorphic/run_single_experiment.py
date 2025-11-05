@@ -21,8 +21,7 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
     V = list(range(len(v)))
     
     # Reset simulator time tracking
-    if hasattr(search_space.simulate_lifts_func, '__self__'):
-        search_space.simulate_lifts_func.__self__.reset_time()
+    search_space.simulator.reset_time()
     
     result = {'success': False, 'timeout': True, 'method': method, **kwargs}
     
@@ -30,7 +29,7 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
         nonlocal result
         try:
             # tic = time.time()
-            sim_time_start = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
+            sim_time_start = search_space.simulator.get_total_time()
             
             if method == 'bfs':
                 X = hp_cause_bfs(v, awt_thr, search_space)
@@ -52,7 +51,7 @@ def run_single_experiment(awt_thr, v, method, search_space, timeout=30, **kwargs
                 raise ValueError(f"Unknown method: {method}")
             
             # toc = time.time()
-            sim_time_end = search_space.simulate_lifts_func.__self__.get_total_time() if hasattr(search_space.simulate_lifts_func, '__self__') else 0
+            sim_time_end = search_space.simulator.get_total_time()
             
             # total_time = (toc - tic) + (sim_time_end - sim_time_start)
             total_time = sim_time_end - sim_time_start
