@@ -26,6 +26,23 @@ class TestMockLiftsSimulator(unittest.TestCase):
         self.assertGreater(time_5_lifts, 0)
         self.assertLess(time_5_lifts, time_2_lifts)
     
+    def test_speed_affects_simulation_time(self):
+        """Test that different speeds produce different simulation times."""
+        # Test with slow speed
+        slow_simulator = MockLiftsSimulator(average_max_time=10.0, speed=0.5)
+        slow_time = slow_simulator.simulate(2)
+        
+        # Test with fast speed
+        fast_simulator = MockLiftsSimulator(average_max_time=10.0, speed=2.0)
+        fast_time = fast_simulator.simulate(2)
+        
+        # Fast speed should result in shorter simulation time
+        self.assertGreater(slow_time, fast_time)
+        
+        # Both should be positive
+        self.assertGreater(slow_time, 0)
+        self.assertGreater(fast_time, 0)
+    
     def test_edge_cases_and_error_handling(self):
         """Test edge cases like zero lifts and invalid speed."""
         # Test with zero lifts - should return infinity
