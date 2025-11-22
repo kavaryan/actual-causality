@@ -1,138 +1,220 @@
 #!/usr/bin/env python3
 """
 Load RQ1 results from CSV and create plots.
-Separated from data collection to avoid matplotlib issues.
+Analyzes improvement ratios across speed and call density classes.
 """
 
 import pandas as pd
 import matplotlib
-
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+from statsmodels.formula.api import ols
+from statsmodels.stats.anova import anova_lm
+import warnings
+warnings.filterwarnings('ignore')
 
 # Set matplotlib to use a simple font to avoid rendering issues
 plt.rcParams['font.family'] = 'DejaVu Sans'
 plt.rcParams['font.size'] = 10
 plt.rcParams['axes.unicode_minus'] = False
 
-def create_method_label(row):
-    """Create readable labels for methods."""
-    if row['method'] == 'bfs':
-        return 'BFS (Exhaustive)'
-    elif row['method'] == 'mm':
-        return 'A* (Metamorphic)'
-    elif row['method'] == 'mm_bundled':
-        return 'A* Bundled (size=5)'
-    return row['method']
-
-def load_and_plot_rq1_results(csv_file='rq1_scalability_results.csv',adf=None):
-    """Load RQ1 results from CSV and create plot."""
-    print(f"Loading results from {csv_file}...")
-    
-    if adf is None:
-        matplotlib.use('Agg')  # Use non-interactive backend
-        
-        try:
-            df = pd.read_csv(csv_file)
-            print(f"✓ Loaded {len(df)} rows of data")
-        except FileNotFoundError:
-            print(f"✗ File {csv_file} not found. Run lift_rq1_generate_data.py first to generate data.")
-            return
-        except Exception as e:
-            print(f"✗ Error loading CSV: {e}")
-            return
-    else:
-        df = adf
-    
-    # Add method labels
-    df['method_label'] = df.apply(create_method_label, axis=1)
-    
-    # Filter successful runs
+def calculate_improvement_ratios(df):
+    """Calculate log ratio of improvement (BFS time / Bundled time)."""
+    # Filter successful runs only
     df_success = df[df['success']].copy()
-    print(f"✓ Found {len(df_success)} successful runs out of {len(df)} total")
     
-    # Print data summary
-    print("\nData summary:")
-    print(f"Methods: {list(df_success['method_label'].unique())}")
-    print(f"Problem sizes: {sorted(df_success['num_vars'].unique())}")
-    print(f"Time range: {df_success['time'].min():.3f} to {df_success['time'].max():.3f} seconds")
+    # Pivot to get BFS and bundled times side by side
+    pivot_df = df_success.pivot_table(
+        index=['speed_class', 'density_class', 'num_lifts', 'trial'],
+        columns='method',
+        values='time',
+        aggfunc='first'
+    ).reset_index()
     
-    # Create plot
-    print("\nCreating plot...")
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # Calculate improvement ratio and log ratio
+    pivot_df['improvement_ratio'] = pivot_df['bfs'] / pivot_df['mm_bundled']
+    pivot_df['log_ratio'] = np.log(pivot_df['improvement_ratio'])
     
-    # Get unique methods and colors
-    methods = df_success['method_label'].unique()
-    colors = ['blue', 'red', 'green', 'orange', 'purple']
+    # Remove rows where either method failed
+    pivot_df = pivot_df.dropna(subset=['bfs', 'mm_bundled'])
     
-    # Plot each method
-    for i, method in enumerate(methods):
-        method_data = df_success[df_success['method_label'] == method]
-        # Group by num_vars and calculate mean time
-        grouped = method_data.groupby('num_vars')['time'].mean()
-        
-        print(f"  Plotting {method}: {len(grouped)} data points")
-        
-        ax.plot(grouped.index, grouped.values, 'o-', 
-               color=colors[i % len(colors)], label=method, 
-               linewidth=2, markersize=8)
+    return pivot_df
+
+def create_improvement_plots(df_ratios, save_plots=True):
+    """Create grid plot showing log improvement ratios."""
+    # Create 2x2 subplot grid
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    fig.suptitle('Log Improvement Ratio (BFS/Bundled) by Speed and Call Density', fontsize=14)
     
-    # Set labels and formatting
-    ax.set_xlabel('Number of Variables (Lifts)', fontsize=12)
-    ax.set_ylabel('Execution Time (seconds)', fontsize=12)
-    # ax.set_title('RQ1: Scalability Comparison - BFS vs A* Bundled (size=5)', fontsize=14)
-    ax.legend(fontsize=11)
-    ax.grid(True, alpha=0.3)
+    speed_classes = ['slow', 'fast']
+    density_classes = ['low', 'high']
     
-    # Set log scale for y-axis if there's a wide range
-    if df_success['time'].max() / df_success['time'].min() > 100:
-        ax.set_yscale('log')
-        print("  Using log scale for y-axis due to wide time range")
+    for i, speed in enumerate(speed_classes):
+        for j, density in enumerate(density_classes):
+            ax = axes[i, j]
+            
+            # Filter data for this speed/density combination
+            subset = df_ratios[
+                (df_ratios['speed_class'] == speed) & 
+                (df_ratios['density_class'] == density)
+            ]
+            
+            if len(subset) > 0:
+                # Create box plot
+                box_data = []
+                positions = []
+                labels = []
+                
+                for k, num_lifts in enumerate(sorted(subset['num_lifts'].unique())):
+                    lift_data = subset[subset['num_lifts'] == num_lifts]['log_ratio']
+                    if len(lift_data) > 0:
+                        box_data.append(lift_data)
+                        positions.append(k)
+                        labels.append(str(num_lifts))
+                
+                if box_data:
+                    bp = ax.boxplot(box_data, positions=positions, patch_artist=True)
+                    for patch in bp['boxes']:
+                        patch.set_facecolor('lightblue')
+                    
+                    ax.set_xticks(positions)
+                    ax.set_xticklabels(labels)
+                    ax.set_xlabel('Number of Lifts')
+                    ax.set_ylabel('Log Improvement Ratio')
+                    ax.set_title(f'Speed: {speed.title()}, Density: {density.title()}')
+                    ax.grid(True, alpha=0.3)
+                    ax.axhline(y=0, color='red', linestyle='--', alpha=0.5)
+            else:
+                ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
+                ax.set_title(f'Speed: {speed.title()}, Density: {density.title()}')
     
-    print("✓ Plot created successfully")
+    plt.tight_layout()
     
-    # Save plot
-    if adf is None:
-        print("Saving plot...")
-        fig.savefig('rq1_scalability_plot.png', dpi=150, bbox_inches='tight')
-        print(f"✓ Plot saved as: rq1_scalability_plot.png")    
+    if save_plots:
+        fig.savefig('rq1_improvement_ratios.png', dpi=150, bbox_inches='tight')
         plt.close(fig)
     else:
         plt.show()
+
+def perform_ols_analysis(df_ratios):
+    """Perform OLS analysis on log improvement ratios."""
+    print("OLS Analysis Results:")
+    print("=" * 50)
     
-    # Print final summary
-    print("\nFinal summary:")
-    summary = df_success.groupby(['num_vars', 'method_label'])['time'].agg(['count', 'mean', 'std']).round(3)
-    print(summary)
+    # Prepare data for OLS
+    df_ols = df_ratios.copy()
+    df_ols['elevators'] = df_ols['num_lifts'].astype(str)
     
-    # Save plot data to CSV for external use
-    plot_data = []
-    for method in methods:
-        method_data = df_success[df_success['method_label'] == method]
-        grouped = method_data.groupby('num_vars')['time'].mean()
-        for num_vars, mean_time in grouped.items():
-            plot_data.append({
-                'method': method,
-                'num_vars': num_vars,
-                'mean_time': mean_time
-            })
+    # Fit OLS model
+    model = ols("log_ratio ~ C(speed_class) * C(density_class) * C(elevators)", data=df_ols).fit()
     
-    plot_df = pd.DataFrame(plot_data)
-    plot_df.to_csv('rq1_plot_data.csv', index=False)
-    print(f"✓ Plot data saved to: rq1_plot_data.csv")
+    # Print model summary
+    print(model.summary())
+    
+    # Print ANOVA table
+    print("\nANOVA Table:")
+    print("=" * 30)
+    anova_table = anova_lm(model, typ=2)
+    print(anova_table)
+    
+    return model
+
+def plot_residuals(model, df_ratios, save_plots=True):
+    """Plot residual diagnostics."""
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    fig.suptitle('Residual Diagnostics', fontsize=14)
+    
+    residuals = model.resid
+    fitted = model.fittedvalues
+    
+    # Residuals vs Fitted
+    axes[0, 0].scatter(fitted, residuals, alpha=0.6)
+    axes[0, 0].axhline(y=0, color='red', linestyle='--')
+    axes[0, 0].set_xlabel('Fitted Values')
+    axes[0, 0].set_ylabel('Residuals')
+    axes[0, 0].set_title('Residuals vs Fitted')
+    axes[0, 0].grid(True, alpha=0.3)
+    
+    # Q-Q plot
+    from scipy import stats
+    stats.probplot(residuals, dist="norm", plot=axes[0, 1])
+    axes[0, 1].set_title('Q-Q Plot')
+    axes[0, 1].grid(True, alpha=0.3)
+    
+    # Histogram of residuals
+    axes[1, 0].hist(residuals, bins=15, alpha=0.7, edgecolor='black')
+    axes[1, 0].set_xlabel('Residuals')
+    axes[1, 0].set_ylabel('Frequency')
+    axes[1, 0].set_title('Histogram of Residuals')
+    axes[1, 0].grid(True, alpha=0.3)
+    
+    # Residuals vs Speed/Density
+    df_plot = df_ratios.copy()
+    df_plot['residuals'] = residuals
+    df_plot['condition'] = df_plot['speed_class'] + '_' + df_plot['density_class']
+    
+    conditions = df_plot['condition'].unique()
+    for i, condition in enumerate(conditions):
+        subset = df_plot[df_plot['condition'] == condition]
+        axes[1, 1].scatter(subset['num_lifts'], subset['residuals'], 
+                          label=condition, alpha=0.6)
+    
+    axes[1, 1].axhline(y=0, color='red', linestyle='--')
+    axes[1, 1].set_xlabel('Number of Lifts')
+    axes[1, 1].set_ylabel('Residuals')
+    axes[1, 1].set_title('Residuals vs Conditions')
+    axes[1, 1].legend()
+    axes[1, 1].grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    
+    if save_plots:
+        fig.savefig('rq1_residual_diagnostics.png', dpi=150, bbox_inches='tight')
+        plt.close(fig)
+    else:
+        plt.show()
 
 def main():
-    """Main function to create plots from saved data."""
-    print("=" * 60)
-    print("RQ1 RESULTS PLOTTER")
-    print("=" * 60)
-    
-    # Create plot from CSV data
-    load_and_plot_rq1_results()
-    
-    print("\n" + "=" * 60)
-    print("PLOTTING COMPLETED!")
-    print("=" * 60)
+    """Main function to create plots and analysis from saved data."""
+    try:
+        # Load data
+        df = pd.read_csv('rq1_scalability_results.csv')
+        print(f"Loaded {len(df)} rows of data")
+        
+        # Calculate improvement ratios
+        df_ratios = calculate_improvement_ratios(df)
+        print(f"Calculated improvement ratios for {len(df_ratios)} valid comparisons")
+        
+        # Print basic statistics
+        print("\nImprovement Ratio Statistics:")
+        print("=" * 40)
+        print(f"Mean log ratio: {df_ratios['log_ratio'].mean():.3f}")
+        print(f"Std log ratio: {df_ratios['log_ratio'].std():.3f}")
+        print(f"Min improvement ratio: {df_ratios['improvement_ratio'].min():.3f}")
+        print(f"Max improvement ratio: {df_ratios['improvement_ratio'].max():.3f}")
+        
+        # Create improvement plots
+        matplotlib.use('Agg')
+        create_improvement_plots(df_ratios, save_plots=True)
+        print("Improvement ratio plots saved as: rq1_improvement_ratios.png")
+        
+        # Perform OLS analysis
+        model = perform_ols_analysis(df_ratios)
+        
+        # Plot residuals
+        plot_residuals(model, df_ratios, save_plots=True)
+        print("Residual diagnostics saved as: rq1_residual_diagnostics.png")
+        
+        # Save processed data
+        df_ratios.to_csv('rq1_improvement_ratios.csv', index=False)
+        print("Improvement ratios saved to: rq1_improvement_ratios.csv")
+        
+    except FileNotFoundError:
+        print("File rq1_scalability_results.csv not found. Run lift_rq1_generate_data.py first.")
+    except Exception as e:
+        print(f"Error: {e}")
+        raise
 
 if __name__ == "__main__":
     main()
