@@ -1,4 +1,5 @@
 import time
+from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.naive_bayes import abstractmethod
@@ -18,7 +19,7 @@ class RevMonotoQual:
         self.var = var
 
 class AdditiveBundle:
-    def __init__(self, vars: list[int]):
+    def __init__(self, vars: List[int]):
         self.vars = vars
 
 class SearchSpace:
