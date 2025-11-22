@@ -25,7 +25,7 @@ echo "Step 2: Creating plots from CSV data..."
 python3 subprojects/metamorphic/lift_rq1_create_plots.py
 
 # Check if plotting was successful
-if [ $? -eq 0 ] && [ -f "rq1_scalability_plot.png" ]; then
+if [ $? -eq 0 ] && [ -f "rq1_improvement_ratios.png" ]; then
     echo "✓ Plot creation completed successfully"
 else
     echo "✗ Plot creation failed"
@@ -38,6 +38,7 @@ echo "RQ1 Study Complete!"
 echo "=========================================="
 echo "Generated files:"
 echo "  - rq1_scalability_results.csv (raw data)"
-echo "  - rq1_plot_data.csv (plot data)"
-echo "  - rq1_scalability_plot.png (visualization)"
+echo "  - rq1_improvement_ratios.csv (processed ratios)"
+echo "  - rq1_improvement_ratios.png (improvement visualization)"
+echo "  - rq1_residual_diagnostics.png (residual plots)"
 echo "=========================================="
