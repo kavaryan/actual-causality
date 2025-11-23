@@ -13,37 +13,56 @@ import os
 # Add path to access the case study modules
 sys.path.append('.')
 
+# Configuration constants
+DEFAULT_NUM_LIFTS_LIST = [10, 20, 30]
+DEFAULT_NUM_TRIALS = 5
+DEFAULT_AWT_COEFF = 0.8
+DEFAULT_TIMEOUT = 30
+SPEED_CLASSES = {'slow': 0.5, 'fast': 2.0}
+DENSITY_CLASSES = {'low': 0.1, 'high': 0.5}
+AVERAGE_MAX_TIME = 2.0
+PROB_ACTIVE = 0.7
+BUNDLE_SIZE = 5
+
 from subprojects.metamorphic.case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
 from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
-def run_rq1_scalability_study(num_lifts_list=[10, 20, 30], 
-                             num_trials=5, awt_coeff=0.8, timeout=30):
+def run_rq1_scalability_study(num_lifts_list=None, 
+                             num_trials=None, awt_coeff=None, timeout=None):
     """
     Run RQ1 scalability study comparing BFS vs Bundled A*.
     
     Tests 4 subject classes:
     - 2 speed classes: slow (0.5), fast (2.0)
     - 2 call density classes: low (0.1), high (0.5)
-    - 3 lift counts: 10, 20, 100
-    - 5 trials each
+    - Configurable lift counts and trials
     """
+    # Use defaults if not provided
+    if num_lifts_list is None:
+        num_lifts_list = DEFAULT_NUM_LIFTS_LIST
+    if num_trials is None:
+        num_trials = DEFAULT_NUM_TRIALS
+    if awt_coeff is None:
+        awt_coeff = DEFAULT_AWT_COEFF
+    if timeout is None:
+        timeout = DEFAULT_TIMEOUT
+    
     results = []
     
-    # Define subject classes
-    speed_classes = {'slow': 0.5, 'fast': 2.0}
-    density_classes = {'low': 0.1, 'high': 0.5}
+    # Use global constants for subject classes
+    speed_classes = SPEED_CLASSES
+    density_classes = DENSITY_CLASSES
     
     # Shared average_max_time that works for all configurations
-    average_max_time = 2.0
+    average_max_time = AVERAGE_MAX_TIME
     
     for speed_name, speed_val in speed_classes.items():
         for density_name, density_val in density_classes.items():
             for num_lifts in tqdm(num_lifts_list, desc=f"Speed={speed_name}, Density={density_name}"):
                 for trial in tqdm(range(num_trials), desc=f"N={num_lifts}", leave=False):
                     # Generate random configuration
-                    prob_active = 0.7  # Higher probability to ensure reasonable number of active lifts
-                    v = np.random.binomial(1, prob_active, size=num_lifts)
+                    v = np.random.binomial(1, PROB_ACTIVE, size=num_lifts)
                     
                     # Ensure at least one lift is active
                     if sum(v) == 0:
@@ -62,7 +81,7 @@ def run_rq1_scalability_study(num_lifts_list=[10, 20, 30],
                     # Test both methods on the same configuration
                     methods_to_test = [
                         ('bfs', {}),
-                        ('mm_bundled', {'bundle_size': 5})
+                        ('mm_bundled', {'bundle_size': BUNDLE_SIZE})
                     ]
                     
                     for method, kwargs in methods_to_test:
@@ -86,7 +105,7 @@ def run_rq1_scalability_study(num_lifts_list=[10, 20, 30],
                             'initial_awt': initial_awt,
                             'awt_thr': awt_thr,
                             'initial_active': sum(v),
-                            'prob_active': prob_active
+                            'prob_active': PROB_ACTIVE
                         })
                         results.append(result)
     
@@ -95,8 +114,11 @@ def run_rq1_scalability_study(num_lifts_list=[10, 20, 30],
 def main():
     """Generate RQ1 data and save to CSV."""
     print("Starting RQ1 Scalability Study Data Generation...")
-    print("Testing 4 subject classes: 2 speed × 2 call density")
-    print("Lift counts: 10, 20, 100 with 5 trials each")
+    print(f"Testing {len(SPEED_CLASSES)} speed × {len(DENSITY_CLASSES)} call density = {len(SPEED_CLASSES) * len(DENSITY_CLASSES)} subject classes")
+    print(f"Speed classes: {list(SPEED_CLASSES.keys())} (values: {list(SPEED_CLASSES.values())})")
+    print(f"Density classes: {list(DENSITY_CLASSES.keys())} (values: {list(DENSITY_CLASSES.values())})")
+    print(f"Lift counts: {DEFAULT_NUM_LIFTS_LIST} with {DEFAULT_NUM_TRIALS} trials each")
+    print(f"Bundle size: {BUNDLE_SIZE}, Timeout: {DEFAULT_TIMEOUT}s")
     
     # Run RQ1 experiments
     df_rq1 = run_rq1_scalability_study()
