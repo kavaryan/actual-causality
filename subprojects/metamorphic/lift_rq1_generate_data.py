@@ -17,7 +17,7 @@ from subprojects.metamorphic.case_studies.lift.mock_lift_simulation import MockL
 from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
 from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
-def run_rq1_scalability_study(num_lifts_list=[10, 20, 100], 
+def run_rq1_scalability_study(num_lifts_list=[10, 20, 30], 
                              num_trials=5, awt_coeff=0.8, timeout=30):
     """
     Run RQ1 scalability study comparing BFS vs Bundled A*.
