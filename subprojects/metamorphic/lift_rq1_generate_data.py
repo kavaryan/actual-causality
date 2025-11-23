@@ -48,6 +48,14 @@ def run_rq1_scalability_study(num_lifts_list=None,
     if timeout is None:
         timeout = DEFAULT_TIMEOUT
     
+    # Print actual configuration being used
+    print("Starting RQ1 Scalability Study Data Generation...")
+    print(f"Testing {len(SPEED_CLASSES)} speed × {len(DENSITY_CLASSES)} call density = {len(SPEED_CLASSES) * len(DENSITY_CLASSES)} subject classes")
+    print(f"Speed classes: {list(SPEED_CLASSES.keys())} (values: {list(SPEED_CLASSES.values())})")
+    print(f"Density classes: {list(DENSITY_CLASSES.keys())} (values: {list(DENSITY_CLASSES.values())})")
+    print(f"Lift counts: {num_lifts_list} with {num_trials} trials each")
+    print(f"Bundle size: {BUNDLE_SIZE}, Timeout: {timeout}s")
+    
     results = []
     
     # Use global constants for subject classes
@@ -113,13 +121,6 @@ def run_rq1_scalability_study(num_lifts_list=None,
 
 def main():
     """Generate RQ1 data and save to CSV."""
-    print("Starting RQ1 Scalability Study Data Generation...")
-    print(f"Testing {len(SPEED_CLASSES)} speed × {len(DENSITY_CLASSES)} call density = {len(SPEED_CLASSES) * len(DENSITY_CLASSES)} subject classes")
-    print(f"Speed classes: {list(SPEED_CLASSES.keys())} (values: {list(SPEED_CLASSES.values())})")
-    print(f"Density classes: {list(DENSITY_CLASSES.keys())} (values: {list(DENSITY_CLASSES.values())})")
-    print(f"Lift counts: {DEFAULT_NUM_LIFTS_LIST} with {DEFAULT_NUM_TRIALS} trials each")
-    print(f"Bundle size: {BUNDLE_SIZE}, Timeout: {DEFAULT_TIMEOUT}s")
-    
     # Run RQ1 experiments
     df_rq1 = run_rq1_scalability_study(
         num_lifts_list=DEFAULT_NUM_LIFTS_LIST,
