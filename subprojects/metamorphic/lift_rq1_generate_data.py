@@ -121,7 +121,12 @@ def main():
     print(f"Bundle size: {BUNDLE_SIZE}, Timeout: {DEFAULT_TIMEOUT}s")
     
     # Run RQ1 experiments
-    df_rq1 = run_rq1_scalability_study()
+    df_rq1 = run_rq1_scalability_study(
+        num_lifts_list=DEFAULT_NUM_LIFTS_LIST,
+        num_trials=DEFAULT_NUM_TRIALS,
+        awt_coeff=DEFAULT_AWT_COEFF,
+        timeout=DEFAULT_TIMEOUT
+    )
     
     # Save results to CSV
     df_rq1.to_csv('rq1_scalability_results.csv', index=False)
