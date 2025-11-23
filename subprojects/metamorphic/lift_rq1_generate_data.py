@@ -14,12 +14,12 @@ import os
 sys.path.append('.')
 
 # Configuration constants
-DEFAULT_NUM_LIFTS_LIST = [10, 20, 30]
+DEFAULT_NUM_LIFTS_LIST = [1,2,3,4,5]
 DEFAULT_NUM_TRIALS = 5
 DEFAULT_AWT_COEFF = 0.8
-DEFAULT_TIMEOUT = 30
-SPEED_CLASSES = {'slow': 0.5, 'fast': 2.0}
-DENSITY_CLASSES = {'low': 0.1, 'high': 0.5}
+DEFAULT_TIMEOUT = 5
+SPEED_CLASSES = {'S1': 0.5, 'S2': 1.0, 'S3': 1.5, 'S4': 2.0, 'S5': 2.5, 'S6': 3.0}
+DENSITY_CLASSES = {'C1': 0.5, 'C2': 1.0, 'C3': 1.5, 'C4': 2.0, 'C5': 2.5, 'C6': 3.0}
 AVERAGE_MAX_TIME = 2.0
 PROB_ACTIVE = 0.7
 BUNDLE_SIZE = 5
