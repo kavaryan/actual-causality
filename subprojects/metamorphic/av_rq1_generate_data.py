@@ -16,7 +16,7 @@ from subprojects.metamorphic.case_studies.av.mock_av_simulation import MockAVSim
 from subprojects.metamorphic.case_studies.av.av import AVSearchSpace
 from subprojects.metamorphic.av_run_single_experiment import av_run_single_experiment
 
-def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 50], 
+def run_rq1_scalability_study(num_vars_list=[5, 10, 15, 20, 25, 30], 
                              num_trials=10, td_coeff=0.8, timeout=2):
     """
     Run RQ1 scalability study comparing BFS vs A* with 2-second timeout.
