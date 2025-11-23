@@ -13,5 +13,5 @@ PROB_ACTIVE = 0.7
 BUNDLE_SIZE = 5
 
 # Subject classes - 6 speed × 6 call density = 36 combinations
-SPEED_CLASSES = {'S1': 0.5, 'S2': 1.0, 'S3': 1.5, 'S4': 2.0, 'S5': 2.5, 'S6': 3.0}
-DENSITY_CLASSES = {'C1': 0.5, 'C2': 1.0, 'C3': 1.5, 'C4': 2.0, 'C5': 2.5, 'C6': 3.0}
+SPEED_CLASSES = {'S1': 0.5, 'S2': 1.0, 'S3': 1.5}
+DENSITY_CLASSES = {'C1': 0.5, 'C2': 1.0, 'C3': 1.5}
