@@ -14,6 +14,9 @@ from statsmodels.stats.anova import anova_lm
 import warnings
 warnings.filterwarnings('ignore')
 
+# Import shared configuration
+from lift_rq1_settings import SPEED_CLASSES, DENSITY_CLASSES
+
 # Set matplotlib to use a simple font to avoid rendering issues
 plt.rcParams['font.family'] = 'DejaVu Sans'
 plt.rcParams['font.size'] = 10
@@ -43,12 +46,23 @@ def calculate_improvement_ratios(df):
 
 def create_improvement_plots(df_ratios, save_plots=True):
     """Create grid plot showing log improvement ratios."""
-    # Create 2x2 subplot grid
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    # Get unique speed and density classes from the data
+    speed_classes = sorted(df_ratios['speed_class'].unique())
+    density_classes = sorted(df_ratios['density_class'].unique())
+    
+    # Create subplot grid based on actual data
+    n_speed = len(speed_classes)
+    n_density = len(density_classes)
+    fig, axes = plt.subplots(n_speed, n_density, figsize=(4*n_density, 4*n_speed))
     fig.suptitle('Log Improvement Ratio (BFS/Bundled) by Speed and Call Density', fontsize=14)
     
-    speed_classes = ['slow', 'fast']
-    density_classes = ['low', 'high']
+    # Handle case where we have only one row or column
+    if n_speed == 1 and n_density == 1:
+        axes = [[axes]]
+    elif n_speed == 1:
+        axes = [axes]
+    elif n_density == 1:
+        axes = [[ax] for ax in axes]
     
     for i, speed in enumerate(speed_classes):
         for j, density in enumerate(density_classes):

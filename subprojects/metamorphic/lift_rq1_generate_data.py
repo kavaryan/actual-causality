@@ -13,16 +13,11 @@ import os
 # Add path to access the case study modules
 sys.path.append('.')
 
-# Configuration constants
-DEFAULT_NUM_LIFTS_LIST = [1,2,3,4,5]
-DEFAULT_NUM_TRIALS = 5
-DEFAULT_AWT_COEFF = 0.8
-DEFAULT_TIMEOUT = 5
-SPEED_CLASSES = {'S1': 0.5, 'S2': 1.0, 'S3': 1.5, 'S4': 2.0, 'S5': 2.5, 'S6': 3.0}
-DENSITY_CLASSES = {'C1': 0.5, 'C2': 1.0, 'C3': 1.5, 'C4': 2.0, 'C5': 2.5, 'C6': 3.0}
-AVERAGE_MAX_TIME = 2.0
-PROB_ACTIVE = 0.7
-BUNDLE_SIZE = 5
+# Import shared configuration
+from lift_rq1_settings import (
+    DEFAULT_NUM_LIFTS_LIST, DEFAULT_NUM_TRIALS, DEFAULT_AWT_COEFF, DEFAULT_TIMEOUT,
+    SPEED_CLASSES, DENSITY_CLASSES, AVERAGE_MAX_TIME, PROB_ACTIVE, BUNDLE_SIZE
+)
 
 from subprojects.metamorphic.case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
