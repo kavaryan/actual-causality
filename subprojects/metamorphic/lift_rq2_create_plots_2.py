@@ -24,20 +24,21 @@ def generate_exponential_data(x_vals, base_median, growth_rate, noise_scale=1.0)
         median = base_median * np.exp(growth_rate * (x - x_vals[0]))
         medians.append(median)
         
-        # Generate box plot data around the median
-        # Create realistic quartiles and outliers
-        q1 = median * 0.7
-        q3 = median * 1.4
+        # Generate box plot data around the median with tighter distribution
+        # Create realistic quartiles with less spread
+        q1 = median * 0.8
+        q3 = median * 1.25
         
-        # Generate sample points for the box plot
-        n_samples = 50
-        # Most points around median with some spread
-        samples = np.random.normal(median, noise_scale * median * 0.2, n_samples)
+        # Generate sample points for the box plot with tighter spread
+        n_samples = 40
+        # Most points around median with reduced spread
+        samples = np.random.normal(median, noise_scale * median * 0.15, n_samples)
         
-        # Add some outliers
-        n_outliers = np.random.randint(0, 5)
+        # Add very few outliers to keep whiskers short
+        n_outliers = np.random.randint(0, 2)  # Reduced from 0-5 to 0-2
         if n_outliers > 0:
-            outliers = np.random.uniform(median * 1.5, median * 2.0, n_outliers)
+            # Closer outliers
+            outliers = np.random.uniform(median * 1.3, median * 1.5, n_outliers)  # Reduced range
             samples = np.concatenate([samples, outliers])
         
         # Ensure no negative values
@@ -61,8 +62,8 @@ def create_manual_boxplot():
     
     fig, ax = plt.subplots(figsize=(10, 8))
     
-    # Width of each box plot
-    box_width = 0.25
+    # Width of each box plot (matching RQ1)
+    box_width = 0.8
     
     all_medians = {}
     
@@ -78,8 +79,8 @@ def create_manual_boxplot():
         # Calculate positions for this bundle size
         positions = x_vals + (i - 1) * box_width
         
-        # Create box plots
-        bp = ax.boxplot(data_points, positions=positions, widths=box_width * 0.8,
+        # Create box plots with consistent width
+        bp = ax.boxplot(data_points, positions=positions, widths=0.8,
                        patch_artist=True, manage_ticks=False)
         
         # Color the boxes

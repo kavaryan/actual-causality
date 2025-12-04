@@ -131,12 +131,14 @@ def create_aggregated_box_plot(df_ratios, save_plots=True):
             labels.append(str(num_lifts))
     
     if box_data:
-        bp = ax.boxplot(box_data, positions=positions, patch_artist=True)
+        # Use actual lift counts as positions instead of sequential positions
+        actual_positions = sorted(df_ratios['num_lifts'].unique())
+        bp = ax.boxplot(box_data, positions=actual_positions, widths=0.8, patch_artist=True)
         for patch in bp['boxes']:
             patch.set_facecolor('lightblue')
         
-        ax.set_xticks(positions)
-        ax.set_xticklabels(labels)
+        ax.set_xticks(actual_positions)
+        ax.set_xticklabels([str(x) for x in actual_positions])
         ax.set_xlabel('Number of Lifts', fontsize=24)
         ax.set_ylabel('Log Improvement Ratio', fontsize=24)
         ax.tick_params(axis='both', which='major', labelsize=20)
