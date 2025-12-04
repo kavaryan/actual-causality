@@ -54,7 +54,7 @@ def create_improvement_plots(df_ratios, save_plots=True):
     n_speed = len(speed_classes)
     n_density = len(density_classes)
     fig, axes = plt.subplots(n_speed, n_density, figsize=(4*n_density, 4*n_speed))
-    fig.suptitle('Log Improvement Ratio (BFS/Bundled) by Speed and Call Density', fontsize=14)
+    # fig.suptitle('Log Improvement Ratio (BFS/Bundled) by Speed and Call Density', fontsize=14)
     
     # Handle case where we have only one row or column
     if n_speed == 1 and n_density == 1:
