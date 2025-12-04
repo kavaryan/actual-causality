@@ -111,6 +111,45 @@ def create_improvement_plots(df_ratios, save_plots=True):
     else:
         plt.show()
 
+def create_aggregated_box_plot(df_ratios, save_plots=True):
+    """Create aggregated box plot of log ratios by number of lifts."""
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    # Get unique lift counts
+    lift_counts = sorted(df_ratios['num_lifts'].unique())
+    
+    # Prepare data for box plot
+    box_data = []
+    positions = []
+    labels = []
+    
+    for i, num_lifts in enumerate(lift_counts):
+        lift_data = df_ratios[df_ratios['num_lifts'] == num_lifts]['log_ratio']
+        if len(lift_data) > 0:
+            box_data.append(lift_data)
+            positions.append(i)
+            labels.append(str(num_lifts))
+    
+    if box_data:
+        bp = ax.boxplot(box_data, positions=positions, patch_artist=True)
+        for patch in bp['boxes']:
+            patch.set_facecolor('lightblue')
+        
+        ax.set_xticks(positions)
+        ax.set_xticklabels(labels)
+        ax.set_xlabel('Number of Lifts')
+        ax.set_ylabel('Log Improvement Ratio')
+        ax.grid(True, alpha=0.3)
+        ax.axhline(y=0, color='red', linestyle='--', alpha=0.5)
+    
+    plt.tight_layout()
+    
+    if save_plots:
+        fig.savefig('rq1_aggregated_log_ratios.png', dpi=150, bbox_inches='tight')
+        plt.close(fig)
+    else:
+        plt.show()
+
 def perform_ols_analysis(df_ratios):
     """Perform OLS analysis on log improvement ratios."""
     print("OLS Analysis Results:")
@@ -212,6 +251,10 @@ def main():
         matplotlib.use('Agg')
         create_improvement_plots(df_ratios, save_plots=True)
         print("Improvement ratio plots saved as: rq1_improvement_ratios.png")
+        
+        # Create aggregated box plot
+        create_aggregated_box_plot(df_ratios, save_plots=True)
+        print("Aggregated log ratio plot saved as: rq1_aggregated_log_ratios.png")
         
         # Perform OLS analysis
         model = perform_ols_analysis(df_ratios)
