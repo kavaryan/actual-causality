@@ -49,7 +49,7 @@ def run_rq1_scalability_study(num_vars_list=None,
     print(f"Testing {len(SPEED_CLASSES)} speed × {len(DISTANCE_CLASSES)} distance = {len(SPEED_CLASSES) * len(DISTANCE_CLASSES)} subject classes")
     print(f"Speed classes: {list(SPEED_CLASSES.keys())} (values: {list(SPEED_CLASSES.values())})")
     print(f"Distance classes: {list(DISTANCE_CLASSES.keys())} (values: {list(DISTANCE_CLASSES.values())})")
-    print(f"Obstacle counts: {num_vars_list} with {num_trials} trials each")
+    print(f"Obstacle positions: {num_vars_list} with {num_trials} trials each")
     print(f"Timeout: {timeout}s")
     
     results = []
