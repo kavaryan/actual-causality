@@ -137,9 +137,9 @@ def create_aggregated_box_plot(df_ratios, save_plots=True):
         
         ax.set_xticks(positions)
         ax.set_xticklabels(labels)
-        ax.set_xlabel('Number of Lifts', fontsize=18)
-        ax.set_ylabel('Log Improvement Ratio', fontsize=18)
-        ax.tick_params(axis='both', which='major', labelsize=16)
+        ax.set_xlabel('Number of Lifts', fontsize=24)
+        ax.set_ylabel('Log Improvement Ratio', fontsize=24)
+        ax.tick_params(axis='both', which='major', labelsize=20)
         ax.grid(True, alpha=0.3)
         ax.axhline(y=0, color='red', linestyle='--', alpha=0.5)
     
