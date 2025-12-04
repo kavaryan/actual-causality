@@ -60,7 +60,7 @@ def create_manual_boxplot():
         {'size': 5, 'color': 'red', 'base_median': 2.0, 'growth_rate': 0.10}
     ]
     
-    fig, ax = plt.subplots(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(8, 6))
     
     # Width of each box plot (matching RQ1)
     box_width = 0.8
