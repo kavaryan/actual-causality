@@ -5,8 +5,8 @@ Defines subject classes and experimental parameters.
 """
 
 # Default experimental parameters
-DEFAULT_NUM_VARS_LIST = [5, 10, 15, 20, 25, 30]
-DEFAULT_NUM_TRIALS = 10
+DEFAULT_NUM_VARS_LIST = [5, 10, 15, 20]
+DEFAULT_NUM_TRIALS = 5
 DEFAULT_TD_COEFF = 0.8
 DEFAULT_TIMEOUT = 2
 
