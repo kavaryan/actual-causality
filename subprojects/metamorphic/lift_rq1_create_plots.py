@@ -106,7 +106,7 @@ def create_improvement_plots(df_ratios, save_plots=True):
     plt.tight_layout()
     
     if save_plots:
-        fig.savefig('rq1_improvement_ratios.png', dpi=150, bbox_inches='tight')
+        fig.savefig('lift_rq1_improvement_ratios.png', dpi=150, bbox_inches='tight')
         plt.close(fig)
     else:
         plt.show()
@@ -145,7 +145,7 @@ def create_aggregated_box_plot(df_ratios, save_plots=True):
     plt.tight_layout()
     
     if save_plots:
-        fig.savefig('rq1_aggregated_log_ratios.png', dpi=150, bbox_inches='tight')
+        fig.savefig('lift_rq1_aggregated_log_ratios.png', dpi=150, bbox_inches='tight')
         plt.close(fig)
     else:
         plt.show()
@@ -223,7 +223,7 @@ def plot_residuals(model, df_ratios, save_plots=True):
     plt.tight_layout()
     
     if save_plots:
-        fig.savefig('rq1_residual_diagnostics.png', dpi=150, bbox_inches='tight')
+        fig.savefig('lift_rq1_residual_diagnostics.png', dpi=150, bbox_inches='tight')
         plt.close(fig)
     else:
         plt.show()
@@ -250,18 +250,18 @@ def main():
         # Create improvement plots
         matplotlib.use('Agg')
         create_improvement_plots(df_ratios, save_plots=True)
-        print("Improvement ratio plots saved as: rq1_improvement_ratios.png")
+        print("Improvement ratio plots saved as: lift_rq1_improvement_ratios.png")
         
         # Create aggregated box plot
         create_aggregated_box_plot(df_ratios, save_plots=True)
-        print("Aggregated log ratio plot saved as: rq1_aggregated_log_ratios.png")
+        print("Aggregated log ratio plot saved as: lift_rq1_aggregated_log_ratios.png")
         
         # Perform OLS analysis
         model = perform_ols_analysis(df_ratios)
         
         # Plot residuals
         plot_residuals(model, df_ratios, save_plots=True)
-        print("Residual diagnostics saved as: rq1_residual_diagnostics.png")
+        print("Residual diagnostics saved as: lift_rq1_residual_diagnostics.png")
         
         # Save processed data
         df_ratios.to_csv('rq1_improvement_ratios.csv', index=False)
