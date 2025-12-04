@@ -15,7 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Import shared configuration
-from av_rq1_settings import SPEED_CLASSES, DENSITY_CLASSES
+from av_rq1_settings import SPEED_CLASSES, DISTANCE_CLASSES
 
 # Set matplotlib to use a simple font to avoid rendering issues
 plt.rcParams['font.family'] = 'DejaVu Sans'
@@ -29,7 +29,7 @@ def calculate_improvement_ratios(df):
     
     # Pivot to get BFS and A* times side by side
     pivot_df = df_success.pivot_table(
-        index=['speed_class', 'density_class', 'num_vars', 'trial'],
+        index=['speed_class', 'distance_class', 'num_vars', 'trial'],
         columns='method',
         values='time',
         aggfunc='first'
@@ -54,31 +54,31 @@ def create_method_label(row):
 
 def create_improvement_plots(df_ratios, save_plots=True):
     """Create grid plot showing log improvement ratios."""
-    # Get unique speed and density classes from the data
+    # Get unique speed and distance classes from the data
     speed_classes = sorted(df_ratios['speed_class'].unique())
-    density_classes = sorted(df_ratios['density_class'].unique())
+    distance_classes = sorted(df_ratios['distance_class'].unique())
     
     # Create subplot grid based on actual data
     n_speed = len(speed_classes)
-    n_density = len(density_classes)
-    fig, axes = plt.subplots(n_speed, n_density, figsize=(4*n_density, 4*n_speed))
+    n_distance = len(distance_classes)
+    fig, axes = plt.subplots(n_speed, n_distance, figsize=(4*n_distance, 4*n_speed))
     
     # Handle case where we have only one row or column
-    if n_speed == 1 and n_density == 1:
+    if n_speed == 1 and n_distance == 1:
         axes = [[axes]]
     elif n_speed == 1:
         axes = [axes]
-    elif n_density == 1:
+    elif n_distance == 1:
         axes = [[ax] for ax in axes]
     
     for i, speed in enumerate(speed_classes):
-        for j, density in enumerate(density_classes):
+        for j, distance in enumerate(distance_classes):
             ax = axes[i, j]
             
-            # Filter data for this speed/density combination
+            # Filter data for this speed/distance combination
             subset = df_ratios[
                 (df_ratios['speed_class'] == speed) & 
-                (df_ratios['density_class'] == density)
+                (df_ratios['distance_class'] == distance)
             ]
             
             if len(subset) > 0:
@@ -103,12 +103,12 @@ def create_improvement_plots(df_ratios, save_plots=True):
                     ax.set_xticklabels(labels)
                     ax.set_xlabel('Number of Obstacles')
                     ax.set_ylabel('Log Improvement Ratio')
-                    ax.set_title(f'Speed: {speed.title()}, Density: {density.title()}')
+                    ax.set_title(f'Speed: {speed.title()}, Distance: {distance.title()}')
                     ax.grid(True, alpha=0.3)
                     ax.axhline(y=0, color='red', linestyle='--', alpha=0.5)
             else:
                 ax.text(0.5, 0.5, 'No Data', ha='center', va='center', transform=ax.transAxes)
-                ax.set_title(f'Speed: {speed.title()}, Density: {density.title()}')
+                ax.set_title(f'Speed: {speed.title()}, Distance: {distance.title()}')
     
     plt.tight_layout()
     

@@ -16,8 +16,8 @@ sys.path.append('.')
 # Import shared configuration
 from av_rq1_settings import (
     DEFAULT_NUM_VARS_LIST, DEFAULT_NUM_TRIALS, DEFAULT_TD_COEFF, DEFAULT_TIMEOUT,
-    SPEED_CLASSES, DENSITY_CLASSES, AVERAGE_MAX_TIME, PROB_ACTIVE, 
-    SIMULATOR_STARTUP_COST, P_A, P_B
+    SPEED_CLASSES, DISTANCE_CLASSES, AVERAGE_MAX_TIME, PROB_ACTIVE, 
+    SIMULATOR_STARTUP_COST
 )
 
 from subprojects.metamorphic.case_studies.av.mock_av_simulation import MockAVSimulator
@@ -31,7 +31,7 @@ def run_rq1_scalability_study(num_vars_list=None,
     
     Tests 4 subject classes:
     - 2 speed classes: slow (2.5), fast (7.5)
-    - 2 obstacle density classes: low (0.3), high (0.7)
+    - 2 distance classes: short (5.0), long (15.0)
     - Configurable obstacle counts and trials
     """
     # Use defaults if not provided
@@ -46,9 +46,9 @@ def run_rq1_scalability_study(num_vars_list=None,
     
     # Print actual configuration being used
     print("Starting AV RQ1 Scalability Study Data Generation...")
-    print(f"Testing {len(SPEED_CLASSES)} speed × {len(DENSITY_CLASSES)} obstacle density = {len(SPEED_CLASSES) * len(DENSITY_CLASSES)} subject classes")
+    print(f"Testing {len(SPEED_CLASSES)} speed × {len(DISTANCE_CLASSES)} distance = {len(SPEED_CLASSES) * len(DISTANCE_CLASSES)} subject classes")
     print(f"Speed classes: {list(SPEED_CLASSES.keys())} (values: {list(SPEED_CLASSES.values())})")
-    print(f"Density classes: {list(DENSITY_CLASSES.keys())} (values: {list(DENSITY_CLASSES.values())})")
+    print(f"Distance classes: {list(DISTANCE_CLASSES.keys())} (values: {list(DISTANCE_CLASSES.values())})")
     print(f"Obstacle counts: {num_vars_list} with {num_trials} trials each")
     print(f"Timeout: {timeout}s")
     
@@ -56,17 +56,17 @@ def run_rq1_scalability_study(num_vars_list=None,
     
     # Use global constants for subject classes
     speed_classes = SPEED_CLASSES
-    density_classes = DENSITY_CLASSES
+    distance_classes = DISTANCE_CLASSES
     
     # Shared average_max_time that works for all configurations
     average_max_time = AVERAGE_MAX_TIME
     
     for speed_name, speed_val in speed_classes.items():
-        for density_name, density_val in density_classes.items():
-            for num_vars in tqdm(num_vars_list, desc=f"Speed={speed_name}, Density={density_name}"):
+        for distance_name, distance_val in distance_classes.items():
+            for num_vars in tqdm(num_vars_list, desc=f"Speed={speed_name}, Distance={distance_name}"):
                 for trial in tqdm(range(num_trials), desc=f"N={num_vars}", leave=False):
-                    # Generate random configuration based on density class
-                    v = np.random.binomial(1, density_val, size=num_vars)
+                    # Generate random configuration based on probability
+                    v = np.random.binomial(1, PROB_ACTIVE, size=num_vars)
                     
                     # Ensure at least one obstacle is active
                     if sum(v) == 0:
@@ -74,7 +74,7 @@ def run_rq1_scalability_study(num_vars_list=None,
                     
                     # Calculate initial TD and threshold using a temporary simulator
                     temp_simulator = MockAVSimulator(
-                        p_a=P_A, p_b=P_B, speed=speed_val, 
+                        distance=distance_val, speed=speed_val, 
                         average_max_time=average_max_time, 
                         simulator_startup_cost=SIMULATOR_STARTUP_COST
                     )
@@ -90,7 +90,7 @@ def run_rq1_scalability_study(num_vars_list=None,
                     for method, kwargs in methods_to_test:
                         # Create fresh simulator and search space for each experiment
                         simulator = MockAVSimulator(
-                            p_a=P_A, p_b=P_B, speed=speed_val,
+                            distance=distance_val, speed=speed_val,
                             average_max_time=average_max_time,
                             simulator_startup_cost=SIMULATOR_STARTUP_COST
                         )
@@ -101,13 +101,13 @@ def run_rq1_scalability_study(num_vars_list=None,
                             'num_vars': num_vars,
                             'speed_class': speed_name,
                             'speed_value': speed_val,
-                            'density_class': density_name,
-                            'density_value': density_val,
+                            'distance_class': distance_name,
+                            'distance_value': distance_val,
                             'trial': trial,
                             'initial_td': initial_td,
                             'td_thr': td_thr,
                             'initial_active': sum(v),
-                            'prob_active': density_val
+                            'prob_active': PROB_ACTIVE
                         })
                         results.append(result)
     
@@ -131,7 +131,7 @@ def main():
     print(f"Total experiments: {len(df_rq1)}")
     print(f"Obstacle counts: {sorted(df_rq1['num_vars'].unique())}")
     print(f"Speed classes: {list(df_rq1['speed_class'].unique())}")
-    print(f"Density classes: {list(df_rq1['density_class'].unique())}")
+    print(f"Distance classes: {list(df_rq1['distance_class'].unique())}")
     print(f"Methods: {list(df_rq1['method'].unique())}")
 
 if __name__ == "__main__":
