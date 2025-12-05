@@ -4,10 +4,10 @@ Shared settings for RQ1 lift case study experiments.
 """
 
 # Experiment parameters
-DEFAULT_NUM_LIFTS_LIST = [1, 2, 3, 4, 5]
+DEFAULT_NUM_LIFTS_LIST = [5, 8, 20]
 DEFAULT_NUM_TRIALS = 5
 DEFAULT_AWT_COEFF = 0.8
-DEFAULT_TIMEOUT = 5
+DEFAULT_TIMEOUT = 30
 AVERAGE_MAX_TIME = 2.0
 PROB_ACTIVE = 0.7
 BUNDLE_SIZE = 5
