@@ -42,26 +42,30 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label
     delta_norms_all = []
 
     for _ in range(repeats):
-        W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
-        b = np.random.randn(n)
-        c = np.zeros(n); c[-1] = 1
-        thr = np.random.uniform(-1, 1)
+        try:
+            W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
+            b = np.random.randn(n)
+            c = np.zeros(n); c[-1] = 1
+            thr = np.random.uniform(-1, 1)
 
-        cause_sizes_rep = []
-        delta_norms_rep = []
+            cause_sizes_rep = []
+            delta_norms_rep = []
 
-        for lmbda in lambdas:
-            res = diffalgo(W, b, c, thr, lmbda)
-            cause_sizes_rep.append(res['cause_size'])
-            # Fix: recalculate delta_norm from res['delta_star'] to avoid bug
-            delta = res.get('delta_star', None)
-            if delta is not None:
-                delta_norms_rep.append(np.linalg.norm(delta, 1))
-            else:
-                delta_norms_rep.append(np.nan)
+            for lmbda in lambdas:
+                res = diffalgo(W, b, c, thr, lmbda)
+                cause_sizes_rep.append(res['cause_size'])
+                # Fix: recalculate delta_norm from res['delta_star'] to avoid bug
+                delta = res.get('delta_star', None)
+                if delta is not None:
+                    delta_norms_rep.append(np.linalg.norm(delta, 1))
+                else:
+                    delta_norms_rep.append(np.nan)
 
-        cause_sizes_all.append(cause_sizes_rep)
-        delta_norms_all.append(delta_norms_rep)
+            cause_sizes_all.append(cause_sizes_rep)
+            delta_norms_all.append(delta_norms_rep)
+        except Exception as e:
+            print(f"Experiment failed with error: {e}")
+            continue
 
     cause_sizes_all = np.array(cause_sizes_all)
     delta_norms_all = np.array(delta_norms_all)
@@ -165,7 +169,7 @@ if __name__ == "__main__":
 
     # --- Plot 2: Cause size vs lambda (4 experiments per lambda)
     lambdas = np.logspace(-2, 2, 15)
-    plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=lambdas, repeats=10)
+    plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=lambdas, repeats=25)
 
     # --- Plot 3: Robustness vs lambda (4 experiments per lambda)
     plot_robustness_vs_lambda(n=10, p=0.3, lambdas=lambdas, repeats=10)
