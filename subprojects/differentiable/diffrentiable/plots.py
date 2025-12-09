@@ -86,7 +86,15 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label
     # plt.close()
 
     plt.figure()
-    plt.errorbar(lambdas, delta_norms_mean, yerr=delta_norms_std, marker='s', capsize=5, label=r'$\ell_1$-norm')
+    plt.plot(lambdas, delta_norms_mean, marker='s', label=r'$\ell_1$-norm')
+    plt.fill_between(
+        lambdas,
+        delta_norms_mean - delta_norms_std,
+        delta_norms_mean + delta_norms_std,
+        color='C0',
+        alpha=0.3,
+        label='Std. dev.'
+    )
     plt.xlabel(fr'Sparsity parameter {lmbda_label}')
     plt.ylabel(r'Intervention norm ($\|\delta\|_1$)')
     plt.xscale('log')
@@ -128,12 +136,21 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
         robustnesses_std.append(np.std(robustnesses_exp))
     
     plt.figure()
-    plt.errorbar(lambdas, robustnesses_mean, yerr=robustnesses_std, marker='o', capsize=5)
+    plt.plot(lambdas, robustnesses_mean, marker='o', label='Mean robustness')
+    plt.fill_between(
+        lambdas,
+        np.array(robustnesses_mean) - np.array(robustnesses_std),
+        np.array(robustnesses_mean) + np.array(robustnesses_std),
+        color='C0',
+        alpha=0.3,
+        label='Std. dev.'
+    )
     plt.xlabel(r'Sparsity parameter $\lambda$')
     plt.ylabel('Robustness $c^T x - thr$')
     plt.xscale('log')
     plt.grid(True)
     plt.title(r'Discovered Cause Robustness vs $\lambda$')
+    plt.legend()
     
     # Create directory if it doesn't exist
     os.makedirs('images/differentiable', exist_ok=True)
