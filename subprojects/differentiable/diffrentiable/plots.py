@@ -1,4 +1,5 @@
 from diffalgo import diffalgo
+from graphs import erdos_renyi_dag
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,7 +33,7 @@ def plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=4):
     plt.savefig('images/diffrentiable/1_runtime_vs_n.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_cause_size_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
+def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4):
     if lambdas is None:
         lambdas = np.logspace(-2, 2, 15)
     
@@ -61,20 +62,20 @@ def plot_cause_size_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
         delta_norms_std.append(np.std(delta_norms_exp))
     
     # Plot cause sizes
-    plt.figure()
-    plt.errorbar(lambdas, cause_sizes_mean, yerr=cause_sizes_std, marker='o', 
-                 capsize=5, label=r'Nonzero $\delta_j$')
-    plt.xlabel(r'Sparsity parameter $\lambda$')
-    plt.ylabel('Size of discovered cause (nonzero interventions)')
-    plt.title(r'Causal Set Size vs $\lambda$')
-    plt.xscale('log')
-    plt.grid(True)
-    plt.legend()
+    # plt.figure()
+    # plt.errorbar(lambdas, cause_sizes_mean, yerr=cause_sizes_std, marker='o', 
+    #              capsize=5, label=r'Nonzero $\delta_j$')
+    # plt.xlabel(r'Sparsity parameter $\lambda$')
+    # plt.ylabel('Size of discovered cause (nonzero interventions)')
+    # plt.title(r'Causal Set Size vs $\lambda$')
+    # plt.xscale('log')
+    # plt.grid(True)
+    # plt.legend()
     
     # Create directory if it doesn't exist
     os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/2_cause_size_vs_lambda.png', dpi=300, bbox_inches='tight')
-    plt.close()
+    # plt.savefig('images/diffrentiable/2_cause_size_vs_lambda.png', dpi=300, bbox_inches='tight')
+    # plt.close()
     
     # Plot L1 norm
     plt.figure()
@@ -127,30 +128,15 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     plt.savefig('images/diffrentiable/4_robustness_vs_lambda.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-# Example erdos_renyi_dag function:
-def erdos_renyi_dag(n, p=0.3, seed=None, draw=True):
-    """
-    Generates a random lower-triangular adjacency matrix for a DAG.
-    """
-    rng = np.random.default_rng(seed)
-    W = np.tril(rng.random((n, n)) < p, k=-1).astype(float)
-    W *= rng.uniform(0.5, 1.5, size=(n, n))  # random edge weights
-    if draw:
-        import networkx as nx
-        G = nx.DiGraph(W)
-        pos = nx.spring_layout(G)
-        nx.draw(G, pos, with_labels=True)
-    return W
-
 # ================== Example usage ======================
 if __name__ == "__main__":
     # --- Plot 1: Runtime vs n
     n_list = [5, 10, 15, 20, 25, 30]
-    plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=4)
+    plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=10)
 
     # --- Plot 2: Cause size vs lambda (4 experiments per lambda)
     lambdas = np.logspace(-2, 2, 15)
-    plot_cause_size_vs_lambda(n=10, p=0.3, lambdas=lambdas, repeats=4)
+    plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=lambdas, repeats=10)
 
     # --- Plot 3: Robustness vs lambda (4 experiments per lambda)
-    plot_robustness_vs_lambda(n=10, p=0.3, lambdas=lambdas, repeats=4)
+    plot_robustness_vs_lambda(n=10, p=0.3, lambdas=lambdas, repeats=10)
