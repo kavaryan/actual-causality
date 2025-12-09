@@ -29,7 +29,7 @@ def plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=4):
     
     # Create directory if it doesn't exist
     os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/runtime_vs_n.png', dpi=300, bbox_inches='tight')
+    plt.savefig('images/diffrentiable/1_runtime_vs_n.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 def plot_cause_size_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
@@ -73,7 +73,7 @@ def plot_cause_size_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     
     # Create directory if it doesn't exist
     os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/cause_size_vs_lambda.png', dpi=300, bbox_inches='tight')
+    plt.savefig('images/diffrentiable/2_cause_size_vs_lambda.png', dpi=300, bbox_inches='tight')
     plt.close()
     
     # Plot L1 norm
@@ -89,7 +89,7 @@ def plot_cause_size_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     
     # Create directory if it doesn't exist
     os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/l1_norm_vs_lambda.png', dpi=300, bbox_inches='tight')
+    plt.savefig('images/diffrentiable/3_l1_norm_vs_lambda.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
@@ -124,7 +124,7 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     
     # Create directory if it doesn't exist
     os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/robustness_vs_lambda.png', dpi=300, bbox_inches='tight')
+    plt.savefig('images/diffrentiable/4_robustness_vs_lambda.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 # Example erdos_renyi_dag function:
