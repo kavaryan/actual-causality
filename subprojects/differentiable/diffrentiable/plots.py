@@ -53,7 +53,12 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label
         for lmbda in lambdas:
             res = diffalgo(W, b, c, thr, lmbda)
             cause_sizes_rep.append(res['cause_size'])
-            delta_norms_rep.append(res['delta_norm'])
+            # Fix: recalculate delta_norm from res['delta_star'] to avoid bug
+            delta = res.get('delta_star', None)
+            if delta is not None:
+                delta_norms_rep.append(np.linalg.norm(delta, 1))
+            else:
+                delta_norms_rep.append(np.nan)
 
         cause_sizes_all.append(cause_sizes_rep)
         delta_norms_all.append(delta_norms_rep)
