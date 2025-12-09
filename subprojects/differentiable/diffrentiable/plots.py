@@ -37,29 +37,38 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4):
     if lambdas is None:
         lambdas = np.logspace(-2, 2, 15)
     
-    cause_sizes_mean = []
-    cause_sizes_std = []
-    delta_norms_mean = []
-    delta_norms_std = []
+    # Store results for each repeat and lambda
+    cause_sizes_all = []
+    delta_norms_all = []
     
-    for lmbda in lambdas:
-        cause_sizes_exp = []
-        delta_norms_exp = []
+    for _ in range(repeats):
+        # Generate one random DAG per repeat
+        W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
+        b = np.random.randn(n)
+        c = np.zeros(n)
+        c[-1] = 1  # sink node
+        thr = np.random.uniform(-1, 1)
         
-        for _ in range(repeats):
-            W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
-            b = np.random.randn(n)
-            c = np.zeros(n)
-            c[-1] = 1  # sink node
-            thr = np.random.uniform(-1, 1)
+        cause_sizes_rep = []
+        delta_norms_rep = []
+        
+        # Run through full lambda spectrum for this DAG
+        for lmbda in lambdas:
             result = diffalgo(W, b, c, thr, lmbda)
-            cause_sizes_exp.append(result['cause_size'])
-            delta_norms_exp.append(result['delta_norm'])
+            cause_sizes_rep.append(result['cause_size'])
+            delta_norms_rep.append(result['delta_norm'])
         
-        cause_sizes_mean.append(np.mean(cause_sizes_exp))
-        cause_sizes_std.append(np.std(cause_sizes_exp))
-        delta_norms_mean.append(np.mean(delta_norms_exp))
-        delta_norms_std.append(np.std(delta_norms_exp))
+        cause_sizes_all.append(cause_sizes_rep)
+        delta_norms_all.append(delta_norms_rep)
+    
+    # Calculate means and stds across repeats
+    cause_sizes_all = np.array(cause_sizes_all)
+    delta_norms_all = np.array(delta_norms_all)
+    
+    cause_sizes_mean = np.mean(cause_sizes_all, axis=0)
+    cause_sizes_std = np.std(cause_sizes_all, axis=0)
+    delta_norms_mean = np.mean(delta_norms_all, axis=0)
+    delta_norms_std = np.std(delta_norms_all, axis=0)
     
     # Plot cause sizes
     # plt.figure()
