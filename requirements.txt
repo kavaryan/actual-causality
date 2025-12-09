@@ -9,3 +9,5 @@ scikit-learn
 #pydot
 tqdm
 #torch
+cvxpy
+ecos
