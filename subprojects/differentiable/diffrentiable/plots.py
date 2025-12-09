@@ -15,7 +15,11 @@ def plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=4):
             b = np.random.randn(n)
             c = np.zeros(n)
             c[-1] = 1  # sink node
-            thr = np.random.uniform(-1, 1)
+            # Ensure property is satisfied at initial state, then set thr so that reverting is required
+            x0 = np.linalg.inv(np.eye(n) - W) @ b
+            robustness0 = c @ x0
+            margin = 0.5  # can be adjusted
+            thr = robustness0 - margin  # property is satisfied at start (robustness0 > thr), intervention must revert
             result = diffalgo(W, b, c, thr, lmbda)
             t_all.append(result['runtime'])
         runtimes_mean.append(np.mean(t_all))
@@ -46,7 +50,11 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label
             W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
             b = np.random.randn(n)
             c = np.zeros(n); c[-1] = 1
-            thr = np.random.uniform(-1, 1)
+            # Ensure property is satisfied at initial state, then set thr so that reverting is required
+            x0 = np.linalg.inv(np.eye(n) - W) @ b
+            robustness0 = c @ x0
+            margin = 0.5  # can be adjusted
+            thr = robustness0 - margin  # property is satisfied at start (robustness0 > thr), intervention must revert
 
             cause_sizes_rep = []
             delta_norms_rep = []
@@ -132,7 +140,11 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
             b = np.random.randn(n)
             c = np.zeros(n)
             c[-1] = 1  # sink node
-            thr = np.random.uniform(-1, 1)
+            # Ensure property is satisfied at initial state, then set thr so that reverting is required
+            x0 = np.linalg.inv(np.eye(n) - W) @ b
+            robustness0 = c @ x0
+            margin = 0.5  # can be adjusted
+            thr = robustness0 - margin  # property is satisfied at start (robustness0 > thr), intervention must revert
             result = diffalgo(W, b, c, thr, lmbda)
             robustnesses_exp.append(result['robustness'])
         
