@@ -18,11 +18,14 @@ def diffalgo(W, b, c, thr, lmbda=10.0, return_all=False):
     delta = cp.Variable(n)
     x = inv @ (b + delta)
     robustness = c @ x - thr
-    # Objective: sparse minimal intervention & ensure robustness negative
+    # Objective: sparse minimal intervention & ensure robustness is at least zero
     # NOTE: The sign in the robustness penalty is critical!
     #       We want to penalize if c^T x - thr < 0 (i.e., not robust enough)
     #       So, penalty should be cp.pos(thr - c^T x)
-    objective = cp.Minimize(cp.norm1(delta) + lmbda * cp.pos(thr - c @ x))
+    #       BUT: If lambda is large, the optimizer will always make robustness >= 0, so the l1-norm will not increase unless the problem is infeasible.
+    #       To see a tradeoff, add a small epsilon to the penalty, so that the optimizer is forced to increase norm to get more robustness.
+    epsilon = 1e-3
+    objective = cp.Minimize(cp.norm1(delta) + lmbda * cp.pos(thr - c @ x + epsilon))
     prob = cp.Problem(objective)
     t0 = time.time()
     prob.solve(solver=cp.ECOS)
