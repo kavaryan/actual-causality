@@ -111,7 +111,7 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label
     )
     plt.xlabel(fr'Sparsity parameter {lmbda_label}')
     plt.ylabel(r'Intervention norm ($\|\delta\|_1$)')
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.grid(True)
     plt.legend()
     plt.title(r'$\ell_1$-norm of Intervention vs $\lambda$')
@@ -166,7 +166,7 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     )
     plt.xlabel(r'Sparsity parameter $\lambda$')
     plt.ylabel('Robustness $c^T x - thr$')
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.grid(True)
     plt.title(r'Discovered Cause Robustness vs $\lambda$')
     plt.legend()
@@ -183,7 +183,8 @@ if __name__ == "__main__":
     plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=10)
 
     # --- Plot 2: Cause size vs lambda (4 experiments per lambda)
-    lambdas = np.logspace(-2, 2, 15)
+    # lambdas = np.logspace(-3, 3, 15)
+    lambdas = np.linspace(0, 1000, 25)
     plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=lambdas, repeats=25)
 
     # --- Plot 3: Robustness vs lambda (4 experiments per lambda)
