@@ -12,13 +12,14 @@ def plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=4):
         t_all = []
         for _ in range(repeats):
             W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
-            b = np.random.randn(n)
+            # Make reversion not easy: choose b and c so that robustness0 is large
+            b = np.random.uniform(2, 4, size=n)  # larger b
             c = np.zeros(n)
             c[-1] = 1  # sink node
             # Ensure property is satisfied at initial state, then set thr so that reverting is required
             x0 = np.linalg.inv(np.eye(n) - W) @ b
             robustness0 = c @ x0
-            margin = 0.5  # can be adjusted
+            margin = np.abs(robustness0) * 0.8 + 1.0  # large margin, so reversion is hard
             thr = robustness0 - margin  # property is satisfied at start (robustness0 > thr), intervention must revert
             result = diffalgo(W, b, c, thr, lmbda)
             t_all.append(result['runtime'])
@@ -48,12 +49,13 @@ def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label
     for _ in range(repeats):
         try:
             W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
-            b = np.random.randn(n)
+            # Make reversion not easy: choose b and c so that robustness0 is large
+            b = np.random.uniform(2, 4, size=n)  # larger b
             c = np.zeros(n); c[-1] = 1
             # Ensure property is satisfied at initial state, then set thr so that reverting is required
             x0 = np.linalg.inv(np.eye(n) - W) @ b
             robustness0 = c @ x0
-            margin = 0.5  # can be adjusted
+            margin = np.abs(robustness0) * 0.8 + 1.0  # large margin, so reversion is hard
             thr = robustness0 - margin  # property is satisfied at start (robustness0 > thr), intervention must revert
 
             cause_sizes_rep = []
@@ -137,13 +139,14 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
         
         for _ in range(repeats):
             W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
-            b = np.random.randn(n)
+            # Make reversion not easy: choose b and c so that robustness0 is large
+            b = np.random.uniform(2, 4, size=n)  # larger b
             c = np.zeros(n)
             c[-1] = 1  # sink node
             # Ensure property is satisfied at initial state, then set thr so that reverting is required
             x0 = np.linalg.inv(np.eye(n) - W) @ b
             robustness0 = c @ x0
-            margin = 0.5  # can be adjusted
+            margin = np.abs(robustness0) * 0.8 + 1.0  # large margin, so reversion is hard
             thr = robustness0 - margin  # property is satisfied at start (robustness0 > thr), intervention must revert
             result = diffalgo(W, b, c, thr, lmbda)
             robustnesses_exp.append(result['robustness'])
