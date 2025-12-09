@@ -29,78 +29,76 @@ def plot_runtime_vs_n(n_list, p=0.3, lmbda=10.0, repeats=4):
     plt.grid(True)
     
     # Create directory if it doesn't exist
-    os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/1_runtime_vs_n.png', dpi=300, bbox_inches='tight')
+    os.makedirs('images/differentiable', exist_ok=True)
+    plt.savefig('images/differentiable/1_runtime_vs_n.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4):
+def plot_cause_size_vs_lambda(n=100, p=0.3, lambdas=None, repeats=4, lmbda_label=r'$\lambda$'):
     if lambdas is None:
         lambdas = np.logspace(-2, 2, 15)
-    
-    # Store results for each repeat and lambda
+    lambdas = np.asarray(lambdas)
+
     cause_sizes_all = []
     delta_norms_all = []
-    
+
     for _ in range(repeats):
-        # Generate one random DAG per repeat
         W = erdos_renyi_dag(n, p=p, seed=None, draw=False)
         b = np.random.randn(n)
-        c = np.zeros(n)
-        c[-1] = 1  # sink node
+        c = np.zeros(n); c[-1] = 1
         thr = np.random.uniform(-1, 1)
-        
+
         cause_sizes_rep = []
         delta_norms_rep = []
-        
-        # Run through full lambda spectrum for this DAG
+
         for lmbda in lambdas:
-            result = diffalgo(W, b, c, thr, lmbda)
-            cause_sizes_rep.append(result['cause_size'])
-            delta_norms_rep.append(result['delta_norm'])
-        
+            res = diffalgo(W, b, c, thr, lmbda)
+            cause_sizes_rep.append(res['cause_size'])
+            delta_norms_rep.append(res['delta_norm'])
+
         cause_sizes_all.append(cause_sizes_rep)
         delta_norms_all.append(delta_norms_rep)
-    
-    # Calculate means and stds across repeats
+
     cause_sizes_all = np.array(cause_sizes_all)
     delta_norms_all = np.array(delta_norms_all)
-    
-    cause_sizes_mean = np.mean(cause_sizes_all, axis=0)
-    cause_sizes_std = np.std(cause_sizes_all, axis=0)
-    delta_norms_mean = np.mean(delta_norms_all, axis=0)
-    delta_norms_std = np.std(delta_norms_all, axis=0)
-    
-    # Plot cause sizes
+
+    cause_sizes_mean = cause_sizes_all.mean(axis=0)
+    cause_sizes_std  = cause_sizes_all.std(axis=0)
+    delta_norms_mean = delta_norms_all.mean(axis=0)
+    delta_norms_std  = delta_norms_all.std(axis=0)
+
+    outdir = 'images/differentiable'
+    os.makedirs(outdir, exist_ok=True)
+
     # plt.figure()
-    # plt.errorbar(lambdas, cause_sizes_mean, yerr=cause_sizes_std, marker='o', 
-    #              capsize=5, label=r'Nonzero $\delta_j$')
-    # plt.xlabel(r'Sparsity parameter $\lambda$')
+    # plt.errorbar(lambdas, cause_sizes_mean, yerr=cause_sizes_std, marker='o', capsize=5, label=r'Nonzero $\delta_j$')
+    # plt.xlabel(fr'Sparsity parameter {lmbda_label}')
     # plt.ylabel('Size of discovered cause (nonzero interventions)')
-    # plt.title(r'Causal Set Size vs $\lambda$')
+    # plt.title(fr'Causal Set Size vs {lmbda_label}')
     # plt.xscale('log')
     # plt.grid(True)
     # plt.legend()
-    
-    # Create directory if it doesn't exist
-    os.makedirs('images/diffrentiable', exist_ok=True)
-    # plt.savefig('images/diffrentiable/2_cause_size_vs_lambda.png', dpi=300, bbox_inches='tight')
+    # plt.savefig(f'{outdir}/2_cause_size_vs_lambda.png', dpi=300, bbox_inches='tight')
     # plt.close()
-    
-    # Plot L1 norm
+
     plt.figure()
-    plt.errorbar(lambdas, delta_norms_mean, yerr=delta_norms_std, marker='s', 
-                 capsize=5, label=r'$\ell_1$-norm')
-    plt.xlabel(r'Sparsity parameter $\lambda$')
+    plt.errorbar(lambdas, delta_norms_mean, yerr=delta_norms_std, marker='s', capsize=5, label=r'$\ell_1$-norm')
+    plt.xlabel(fr'Sparsity parameter {lmbda_label}')
     plt.ylabel(r'Intervention norm ($\|\delta\|_1$)')
     plt.xscale('log')
     plt.grid(True)
     plt.legend()
     plt.title(r'$\ell_1$-norm of Intervention vs $\lambda$')
-    
-    # Create directory if it doesn't exist
-    os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/3_l1_norm_vs_lambda.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{outdir}/3_l1_norm_vs_lambda.png', dpi=300, bbox_inches='tight')
     plt.close()
+
+    return {
+        'lambdas': lambdas,
+        'cause_sizes_mean': cause_sizes_mean,
+        'cause_sizes_std': cause_sizes_std,
+        'delta_norms_mean': delta_norms_mean,
+        'delta_norms_std': delta_norms_std,
+        'outdir': outdir
+    }
 
 def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     if lambdas is None:
@@ -133,8 +131,8 @@ def plot_robustness_vs_lambda(n=10, p=0.3, lambdas=None, repeats=4):
     plt.title(r'Discovered Cause Robustness vs $\lambda$')
     
     # Create directory if it doesn't exist
-    os.makedirs('images/diffrentiable', exist_ok=True)
-    plt.savefig('images/diffrentiable/4_robustness_vs_lambda.png', dpi=300, bbox_inches='tight')
+    os.makedirs('images/differentiable', exist_ok=True)
+    plt.savefig('images/differentiable/4_robustness_vs_lambda.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 # ================== Example usage ======================
