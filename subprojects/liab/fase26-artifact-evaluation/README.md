@@ -7,7 +7,6 @@ This artifact implements the k-leg liability framework from the FASE 2026 paper 
 ### Installation & Smoke Test
 
 ```bash
-cd subprojects/liab/fase26-artifact-evaluation
 docker build -t liability-artifact .
 docker run --rm liability-artifact python smoke_test.py
 ```
