@@ -1,7 +1,7 @@
 FROM python:3.9-slim
 
 WORKDIR /artifact
-COPY src/subprojects/liab/requirements.txt .
+COPY src/liab/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ .
 
@@ -10,7 +10,7 @@ COPY src/ .
 #     build-essential \
 #     && rm -rf /var/lib/apt/lists/*
 
-ENV PYTHONPATH=./src
+ENV PYTHONPATH=/artifact
 
 # Default command
-CMD ["python", "src/subprojects/liab/smoke-test.py"]
+CMD ["python", "liab/smoke-test.py"]
