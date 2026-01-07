@@ -375,6 +375,44 @@ def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_
     fig.savefig(images_dir / time_plot_name, dpi=300, bbox_inches='tight')
     print(f'Saved computational time plot: {images_dir / time_plot_name}')
     
+    # Calculate and print p-values table (Table 4 from the paper)
+    print("\n" + "="*60)
+    print("Table 4: p-values for the difference between k-leg and Shapley liabilities")
+    print(f"for M={min(Ms)}-{max(Ms)} and k={','.join(map(str, ks))}")
+    print("="*60)
+    
+    # Create the table header
+    header = "M".ljust(8)
+    for k in ks:
+        header += f"k={k}".ljust(12)
+    print(header)
+    print("-" * len(header))
+    
+    # Calculate p-values for each M and k combination
+    for M in Ms:
+        row = str(M).ljust(8)
+        
+        for k in ks:
+            # Get liability differences for this M and k
+            liability_diffs_for_M_k = [diff for m, diff in all_liability_diffs[k] if m == M]
+            
+            if liability_diffs_for_M_k:
+                # Calculate p-value as proportion of cases where difference > 0.2 * 2 = 0.4
+                # (0.2 of the maximum possible L1 norm difference, which is 2)
+                threshold = 0.4
+                num_above_threshold = sum(1 for diff in liability_diffs_for_M_k if diff > threshold)
+                p_value = num_above_threshold / len(liability_diffs_for_M_k)
+                row += f"{p_value:.3f}".ljust(12)
+            else:
+                row += "N/A".ljust(12)
+        
+        print(row)
+    
+    print("="*60)
+    print("Note: p-values represent the proportion of cases where the L1 norm")
+    print("difference between k-leg and Shapley apportionments exceeds 0.4")
+    print("(which is 0.2 times the maximum possible difference of 2.0)")
+    
     return all_liability_diffs, all_time_diffs
 
 # %%
