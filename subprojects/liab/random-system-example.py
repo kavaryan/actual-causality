@@ -2,10 +2,10 @@ import sys
 from pathlib import Path
 import __main__
 if not hasattr(__main__, '__file__'): # notebook
-    sys.path.append('../src') 
+    sys.path.append('../../') 
     pickle_dir = Path('..')
 else: # exported python
-    sys.path.append('src')
+    sys.path.append('../../')
     pickle_dir = Path('.')
 import time
 import pickle
@@ -17,10 +17,10 @@ import numpy as np
 import sympy as sp
 import warnings
 import matplotlib.pyplot as plt
-from liab.k_leg_liab import k_leg_liab
-from liab.shapley_liab import shapley_liab
-from liab.random_system import get_rand_system, rerand_system, get_rand_float_vec, get_rand_failure
-from liab.failure import ClosedHalfSpaceFailureSet
+from subprojects.liab.k_leg_liab import k_leg_liab
+from subprojects.liab.shapley_liab import shapley_liab
+from core.random_system import get_rand_system, rerand_system, get_rand_float_vec, get_rand_failure
+from core.failure import ClosedHalfSpaceFailureSet
 from IPython.display import display, clear_output
 from scipy.stats import mannwhitneyu
 from scipy.stats import entropy
@@ -52,15 +52,23 @@ def get_exp_unit(args):
     while True:
         S = get_rand_system(num_vars, 'linear', rnd=rnd)
         T = rerand_system(S, rnd=rnd)
+        # Get all variables from the systems
+        all_vars = list(S.U) + list(S.V)
+        F = get_rand_failure(all_vars[:2], ClosedHalfSpaceFailureSet, rnd=rnd)
+        
+        # Generate a random context for exogenous variables
+        u = {}
+        for var in S.U:
+            u[var] = rnd.uniform(-10, 10)  # Random values for exogenous variables
+        
+        # Convert systems to SCMSystem format
         M = S.induced_scm()
         N = T.induced_scm()
-        F = get_rand_failure(list(M.V)[:2], ClosedHalfSpaceFailureSet, rnd=rnd)
-        u = F.get_example_context(M, N, seed=seed)
-        if u:
-            state_m, _ = M.get_state(u)
-            state_n, _ = N.get_state(u)
-            if not F.contains(state_m) and F.contains(state_n):
-                return T, S, u, F
+        
+        state_m = M.get_state(u)
+        state_n = N.get_state(u)
+        if not F.contains(state_m) and F.contains(state_n):
+            return N, M, u, F
             
 def do_exp(args):
     T, S, u, F, ks = args
