@@ -242,10 +242,145 @@ def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pi
 
     return exp_results
 
+def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_pickle=True):
+    """
+    Reproduce the box plots from the paper showing liability differences and time differences
+    across different numbers of components (M) and k values.
+    """
+    # Create images directory if it doesn't exist
+    images_dir = Path('images')
+    images_dir.mkdir(exist_ok=True)
+    
+    # Collect all experimental results
+    all_liability_diffs = {k: [] for k in ks}
+    all_time_diffs = {k: [] for k in ks}
+    all_Ms = []
+    
+    for M in Ms:
+        print(f"\nProcessing M={M}...")
+        
+        # Run or load experiment for this M
+        pickle_fn = Path(pickle_dir) / f'num_vars={M}_ks={ks}.pickle'
+        
+        if use_pickle and pickle_fn.exists():
+            print(f"Loading from {pickle_fn}")
+            with open(pickle_fn, 'rb') as pickle_fd:
+                exp_results = pickle.load(pickle_fd)
+        else:
+            print(f"Running experiment for M={M}")
+            exp_results = experiment(M, ks=ks, num_samples=num_samples)
+            with open(pickle_fn, 'wb') as pickle_fd:
+                pickle.dump(exp_results, pickle_fd)
+        
+        k_leg_values, shapley_values, k_leg_times, shapley_times = tuple(exp_results.values())
+        
+        # Calculate liability differences (sum of absolute differences)
+        for k in ks:
+            liability_diffs_k = []
+            time_diffs_k = []
+            
+            for sublist1, sublist2 in zip(k_leg_values[k], shapley_values[k]):
+                # Sum of absolute liability differences
+                liability_diff = abs(np.array(sublist1) - np.array(sublist2)).sum()
+                liability_diffs_k.append(liability_diff)
+            
+            for shapley_time, k_leg_time in zip(shapley_times[k], k_leg_times[k]):
+                # Shapley time - k-leg time
+                time_diff = shapley_time - k_leg_time
+                time_diffs_k.append(time_diff)
+            
+            # Store results with M labels for box plotting
+            all_liability_diffs[k].extend([(M, diff) for diff in liability_diffs_k])
+            all_time_diffs[k].extend([(M, diff) for diff in time_diffs_k])
+    
+    # Create the liability difference box plots (like the paper's left plot)
+    fig, axes = plt.subplots(3, 1, figsize=(10, 12))
+    
+    for i, k in enumerate(ks):
+        ax = axes[i]
+        
+        # Organize data by M for box plotting
+        data_by_M = {}
+        for M, diff in all_liability_diffs[k]:
+            if M not in data_by_M:
+                data_by_M[M] = []
+            data_by_M[M].append(diff)
+        
+        # Create box plot
+        Ms_sorted = sorted(data_by_M.keys())
+        box_data = [data_by_M[M] for M in Ms_sorted]
+        
+        bp = ax.boxplot(box_data, positions=Ms_sorted, widths=0.6, patch_artist=True)
+        
+        # Style the boxes
+        for patch in bp['boxes']:
+            patch.set_facecolor('lightblue')
+            patch.set_alpha(0.7)
+        
+        ax.set_xlabel('Number of components')
+        ax.set_ylabel('Sum of abs liability diff')
+        ax.set_title(f'k={k}')
+        ax.set_xticks(Ms_sorted)
+        ax.grid(True, alpha=0.3)
+        
+        # Set y-axis to start from 0 and use appropriate scale
+        ax.set_ylim(bottom=0)
+    
+    fig.suptitle('Comparison of Shapley and k-leg methods in terms of liability difference', fontsize=14)
+    plt.tight_layout()
+    
+    # Save the liability difference plot
+    liability_plot_name = f'all_liabs_M{min(Ms)}-{max(Ms)}_k{"-".join(map(str, ks))}_n{num_samples}.png'
+    fig.savefig(images_dir / liability_plot_name, dpi=300, bbox_inches='tight')
+    print(f'Saved liability difference plot: {images_dir / liability_plot_name}')
+    
+    # Create the computational time box plots (like the paper's right plot)
+    fig, axes = plt.subplots(3, 1, figsize=(10, 12))
+    
+    for i, k in enumerate(ks):
+        ax = axes[i]
+        
+        # Organize data by M for box plotting
+        data_by_M = {}
+        for M, diff in all_time_diffs[k]:
+            if M not in data_by_M:
+                data_by_M[M] = []
+            data_by_M[M].append(diff)
+        
+        # Create box plot
+        Ms_sorted = sorted(data_by_M.keys())
+        box_data = [data_by_M[M] for M in Ms_sorted]
+        
+        bp = ax.boxplot(box_data, positions=Ms_sorted, widths=0.6, patch_artist=True)
+        
+        # Style the boxes
+        for patch in bp['boxes']:
+            patch.set_facecolor('lightcoral')
+            patch.set_alpha(0.7)
+        
+        ax.set_xlabel('Number of components')
+        ax.set_ylabel('Shapley time - k-leg time')
+        ax.set_title(f'k={k}')
+        ax.set_xticks(Ms_sorted)
+        ax.grid(True, alpha=0.3)
+        
+        # Add a dashed line at y=0 for reference
+        ax.axhline(y=0, color='blue', linestyle='--', alpha=0.5)
+    
+    fig.suptitle('Comparison of Shapley and k-leg methods in terms of computational time', fontsize=14)
+    plt.tight_layout()
+    
+    # Save the computational time plot
+    time_plot_name = f'all_times_M{min(Ms)}-{max(Ms)}_k{"-".join(map(str, ks))}_n{num_samples}.png'
+    fig.savefig(images_dir / time_plot_name, dpi=300, bbox_inches='tight')
+    print(f'Saved computational time plot: {images_dir / time_plot_name}')
+    
+    return all_liability_diffs, all_time_diffs
+
 # %%
 if __name__ == '__main__':
-    exp_results_M5 = experiment_and_plot(9, ks=[1,2,3], num_samples=100, use_pickle=False,
-        pickle_dir=pickle_dir)
+    # Reproduce the paper plots
+    reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=1000, use_pickle=True)
 
 # %%
 # mannwhitneyu problem (fixed)
