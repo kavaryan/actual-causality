@@ -62,13 +62,14 @@ def do_exp(args):
             if var in shapley:
                 shapley_values[k].append(shapley[var])
             else:
-                print(f'Warning: {var} not found in Shapley liability')
+                # Variable not found in Shapley liability - skip
+                pass
 
     return {'k_leg_values': k_leg_values, 'shapley_values': shapley_values,
         'k_leg_times': k_leg_times, 'shapley_times': shapley_times}
 
 def experiment(num_vars, ks, num_samples, num_workers):
-    print(f'Doing experiments ({num_samples=}) ...')
+    print(f'Running experiments with {num_samples} samples...')
     units = []
     pbar = tqdm(total=num_samples)
     def update_progress_get_unit(unit):
@@ -94,7 +95,7 @@ def experiment(num_vars, ks, num_samples, num_workers):
             pool.join()
     pbar.close()
     
-    print(f'Processing results for k in {ks} ...')
+    print(f'Processing results for k values: {ks}...')
     exp_results = {'k_leg_values':  defaultdict(list), 'shapley_values':  defaultdict(list),
         'k_leg_times': defaultdict(list), 'shapley_times': defaultdict(list)}
     pbar = tqdm(total=num_samples)

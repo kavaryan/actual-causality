@@ -72,17 +72,9 @@ def shapley_liab(T: SCMSystem, S: SCMSystem, u: Dict[str, float], F: FailureSet,
             state_k = T_k.get_state(u)
             state_kx = T_kx.get_state(u)
             
-            # print(f"Debug shapley: X={X}, K={K}")
-            # print(f"  state_k: {state_k}")
-            # print(f"  state_kx: {state_kx}")
-            # print(f"  F.depth(state_k): {F.depth(state_k)}")
-            # print(f"  F.depth(state_kx): {F.depth(state_kx)}")
-            
             d = max(0, F.depth(state_k) - F.depth(state_kx))
-            # print(f"  d before scaling: {d}")
-            # Shapley value weight
-            d *= math.factorial(len(K))*math.factorial(len(endogenous_vars)-len(K)-1)/math.factorial(len(endogenous_vars))                
-            # print(f"  d after scaling: {d}")
+            # Apply Shapley value weight
+            d *= math.factorial(len(K))*math.factorial(len(endogenous_vars)-len(K)-1)/math.factorial(len(endogenous_vars))
             X_shares[Ki] = d
         liabs[Xi] = X_shares.sum()
 
