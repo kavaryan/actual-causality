@@ -1,3 +1,5 @@
+"""Random SCM system generation utilities for creating test systems with binary or linear equations."""
+
 import random
 import networkx as nx
 import numpy as np

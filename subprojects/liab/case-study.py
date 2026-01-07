@@ -1,3 +1,5 @@
+"""Case study experiments comparing k-leg and Shapley liability methods on randomly generated SCM systems."""
+
 import sys
 from pathlib import Path
 import __main__
