@@ -4,8 +4,8 @@ import numpy as np
 import re
 import sympy as sp
 from sympy.logic import SOPform
-from liab.failure import FailureSet, ClosedHalfSpaceFailureSet, QFFOFormulaFailureSet
-from core.scm import ComponentOrEquation, System
+from core.failure import FailureSet, ClosedHalfSpaceFailureSet, QFFOFormulaFailureSet
+from core.scm import Component, SCMSystem, BoundedFloatInterval
 
 def all_combs_b(n: int) -> list[tuple[int]]:
     """Generate all combinations of binary numbers with n digits."""
