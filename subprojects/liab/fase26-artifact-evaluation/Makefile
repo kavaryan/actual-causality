@@ -37,5 +37,5 @@ download-image:
 		echo "Image archive liab-artifact.tar already exists"; \
 	fi
 
-smoke-test:
+smoke-test: build-docker
 	docker run --rm liab-artifact:latest
