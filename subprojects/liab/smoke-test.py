@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Smoke test for k-leg liability computation.
-Based on the paper example but simplified for testing.
 """
 
 import numpy as np
@@ -11,8 +10,8 @@ from core.failure import ClosedHalfSpaceFailureSet
 from subprojects.liab.k_leg_liab import k_leg_liab
 
 
-def test_paper_example():
-    """Test the paper example with k=2 liability computation."""
+def test_k_leg_liability():
+    """Test k-leg liability computation with a simple example."""
     
     # Define specification components
     a_sp = Component('A = a')
@@ -67,9 +66,9 @@ def test_paper_example():
     assert isinstance(liabs, list), "Liabilities should be a list"
     assert len(liabs) >= 0, "Should have non-negative number of liabilities"
     
-    print("✓ Paper example smoke test passed!")
+    print("✓ K-leg liability smoke test passed!")
     return liabs
 
 
 if __name__ == "__main__":
-    test_paper_example()
+    test_k_leg_liability()
