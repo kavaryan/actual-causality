@@ -25,7 +25,6 @@ class TestSCMSystem(TestCase):
         self.assertIsInstance(system, SCMSystem)
         actual_state = system.get_state({'a': 2})
         expected_state = {'A': 2, 'B': 4, 'C': 6, 'a': 2}
-        # self.assertLessEqual(set(expected_state.items()), set(actual_state.items()))
         self.assertEqual(actual_state, expected_state)
 
 

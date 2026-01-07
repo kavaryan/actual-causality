@@ -72,7 +72,7 @@ BT = BTu
 SH = ST
 
 # Billy's rock hits only if he throws and Suzy doesn't throw.
-# BH = BT * (1 - ST) --> this leads to that under {BTu=1, STu=0}, ST=0 becomes a cause of BS=1, because (X,x') = {ST=1}, (W,w) = {SH=0}, Bh=1*(1-1)=0, BS=min(1,0+0)=0
+# Billy's rock hits only if he throws and Suzy doesn't hit (modified from original to avoid ST causality issue)
 BH = BT * (1 - SH)
 
 # The bottle is shattered if either rock hits.

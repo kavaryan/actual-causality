@@ -2,7 +2,6 @@ import tempfile
 import os
 from core.scm import read_system
 
-# FIXME: use search formulation
 from core.hp_modified import find_all_causes_ac1_and_ac2
 from subprojects.metamorphic.search_formulation import hp_cause_bfs
 
