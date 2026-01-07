@@ -2,34 +2,32 @@
 
 ## Badges Applied For
 
-### Available ✓
+### Available
 Author-created artifacts placed on publicly accessible archival repository (Zenodo) with permanent DOI.
 
-- **Public Repository**: Artifact available on Zenodo with permanent DOI
-- **Archival Quality**: Repository has declared plan for permanent accessibility
-- **Paper Integration**: Same DOI referenced in both artifact evaluation and camera-ready paper
+- **Public Repository**: Artifact available on Zenodo with [permanent DOI](https://doi.org/10.5281/zenodo.18175468)
+- **Archival Quality**: Repository has [declared plan](https://about.zenodo.org/policies/) for permanent accessibility
+- **Paper Integration**: Same DOI will be referenced in the camera-ready paper
 
-### Functional ✓
+### Functional
 Artifact is documented, consistent, complete, exercisable, and includes appropriate evidence of verification and validation.
 
 - **Documented**: Comprehensive README with installation, usage, and examples
 - **Consistent**: All paper claims directly supported by runnable code and examples
 - **Complete**: Full implementation of k-leg liability algorithm with all components
 - **Exercisable**: Docker containerization ensures reproducible execution across platforms
-- **Verified**: Includes smoke tests, property verification, and validation against paper results
+- **Verified**: Includes a smoke test (`src/subprojects/liab/smoke-test.py`), unit tests for all the units (under `src/tests/`), and comparision table to verify the results of the paper in `README`
 
-### Reusable ✓
-Artifact significantly exceeds minimal functionality - very carefully documented and well-structured to facilitate reuse and repurposing.
-
-- **Exceptional Documentation**: API documentation, architectural overview, and extension guides
+### Reusable
+Artifact significantly exceeds minimal functionality - carefully documented and well-structured to facilitate reuse and repurposing.
+- **Documentation**: All unit are documented using python docstrings.
 - **Modular Architecture**: Clean separation of concerns with abstract base classes for extensible hierarchies
   - `SCMSystem`: Core structural causal model with component-based architecture
-  - `FailureSet`: Abstract base class for defining custom failure conditions
   - `Component`: Individual causal equations with symbolic expression support
-- **Extensibility**: Framework supports custom failure sets, liability methods, and SCM systems
-  - Custom failure sets via `ClosedHalfSpaceFailureSet` and `QFFOFormulaFailureSet`
-  - Pluggable liability algorithms (`k_leg_liab`, `shapley_liab`)
+  - `FailureSet`: Abstract base class for defining custom failure conditions
+- **Extensibility**: Framework supports custom SCM systems, failure sets, and liability methods
   - Temporal systems with differential equations via `TemporalSCMSystem`
+  - Custom failure sets, such as `ClosedHalfSpaceFailureSet` and `QFFOFormulaFailureSet`
+  - Pluggable liability algorithms, such as `k_leg_liab` and `shapley_liab` 
 - **Multiple Examples**: Diverse case studies demonstrating different usage patterns
-- **Best Practices**: Type hints, comprehensive error handling, and professional code structure
 - **Active Research Use**: Core classes currently used in multiple papers under review across causal analysis, metamorphic testing, and formal verification domains
