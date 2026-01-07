@@ -5,18 +5,25 @@ import time
 from tqdm import tqdm
 from core.scm import SCMSystem, read_system
 
-'''TODO:
-- [] Use Z3 for finding the counterexamples
-- [] Use dynamic programming
-- [] more realistic models
-- [] time analysis
-- [] attache models
-- [] Shapley value's higher dimensions
-'''
+"""
+Implementation of actual causality analysis using HP (Halpern-Pearl) definitions.
+Supports finding all causes that satisfy AC1, AC2, and AC3 axioms.
+"""
 
 def find_all_causes(scm: SCMSystem, context: dict[str,object], Y: str, op: str , y_thr: object, include_exo=False):
     """
-    TODO: support complex formulas for effect
+    Find all actual causes in an SCM system according to HP definitions.
+    
+    Args:
+        scm: The structural causal model system
+        context: Dictionary of exogenous variable assignments
+        Y: Target variable name
+        op: Comparison operator ('==', '!=', '<=', '<', '>=', '>')
+        y_thr: Threshold value for comparison
+        include_exo: Whether to include exogenous variables as potential causes
+    
+    Returns:
+        Dictionary containing timing results and list of causes
     """
     results = {}
     
@@ -139,7 +146,7 @@ def find_all_causes_ac1_and_ac2(scm: SCMSystem, context: dict[str,object], Y: st
                     # If Y is different from y, we found that X_subset=x is a cause
                     # (under the "change all variables in X_subset" definition).
                     if verbose:
-                        print(f"    FOUND CAUSE: {X_subset} -> {dict(zip(X_subset, combo))} with W={W_subset}")
+                        print(f"Found cause: {X_subset} -> {dict(zip(X_subset, combo))} with contingency W={W_subset}")
                     all_causes.append(
                         dict(
                             X_x_prime=dict(zip(X_subset, combo)),

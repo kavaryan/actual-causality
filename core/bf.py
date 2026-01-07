@@ -74,11 +74,7 @@ def bf(T: SCMSystem, S: SCMSystem, X: Union[str,list[str]],
         
         T_modified = SCMSystem(new_components, T.domains)
         y_dict = T_modified.get_state(u)
-        # print(f"Debug bf: Y={Y}, original_state={t_dict}, modified_state={y_dict}")
-        # print(f"  F.contains(original): {F.contains(t_dict)}")
-        # print(f"  F.contains(modified): {F.contains(y_dict)}")
         bf_dict_[Y] = not F.contains(y_dict)
-        # print(f"  bf_dict_[{Y}] = {bf_dict_[Y]}")
         
     _rec_bf(X)
     return bf_dict_[X]

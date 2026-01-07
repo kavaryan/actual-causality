@@ -143,8 +143,8 @@ class ClosedHalfSpaceFailureSet(FailureSet):
             state_m = M.get_state(ret)
             state_n = N.get_state(ret)
             if self.contains(state_m) or not self.contains(state_n):
-                # assert False
-                ...
+                # Constraint satisfaction failed - return None to indicate no valid context found
+                return None
         return ret
 
 
