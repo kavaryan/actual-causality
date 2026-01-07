@@ -1,16 +1,10 @@
 
-
-#%% --- cell (code) ---
-import sys
-sys.path.append('../../')
-
-
 #%% --- cell (code) ---
 import numpy as np
 
 from core.scm import Component, SCMSystem, BoundedFloatInterval
-from liab.failure import ClosedHalfSpaceFailureSet
-from liab.k_leg_liab import k_leg_liab
+from core.failure import ClosedHalfSpaceFailureSet
+from subprojects.liab.k_leg_liab import k_leg_liab
 
 a_sp = Component('A = a')
 b_sp = Component('B = b')
