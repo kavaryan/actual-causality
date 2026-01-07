@@ -7,55 +7,6 @@ from sympy.logic import SOPform
 from core.failure import FailureSet, ClosedHalfSpaceFailureSet, QFFOFormulaFailureSet
 from core.scm import Component, SCMSystem, BoundedFloatInterval
 
-class ComponentOrEquation:
-    """Legacy compatibility class for old random system generation."""
-    def __init__(self, inputs, output, expression):
-        self.I = inputs  # input variables
-        self.O = output  # output variable
-        self.expression = expression
-    
-    def to_component(self):
-        """Convert to new Component format."""
-        return Component(f"{self.O} = {self.expression}")
-
-class System:
-    """Legacy compatibility class for old random system generation."""
-    def __init__(self, components, func_type):
-        self.cs = components  # list of ComponentOrEquation objects
-        self.func_type = func_type
-        
-        # Extract all variables
-        self.U = set()  # exogenous variables
-        self.V = set()  # endogenous variables
-        
-        # Collect all output variables (endogenous)
-        for c in self.cs:
-            self.V.add(c.O)
-        
-        # Collect all input variables that are not outputs (exogenous)
-        all_inputs = set()
-        for c in self.cs:
-            all_inputs.update(c.I)
-        
-        self.U = all_inputs - self.V
-    
-    def induced_scm(self):
-        """Convert to new SCMSystem format."""
-        # Convert components
-        new_components = [c.to_component() for c in self.cs]
-        
-        # Create domains for all variables
-        domains = {}
-        all_vars = self.U | self.V
-        
-        for var in all_vars:
-            if self.func_type == 'binary':
-                domains[var] = BoundedFloatInterval(0.0, 1.0)
-            else:  # linear
-                domains[var] = BoundedFloatInterval(-100.0, 100.0)
-        
-        return SCMSystem(new_components, domains)
-
 def all_combs_b(n: int) -> list[tuple[int]]:
     """Generate all combinations of binary numbers with n digits."""
     ret = [bin(i)[2:].rjust(n, '0') for i in range(2**n)]
@@ -123,42 +74,75 @@ def get_rand_system(N: int, func_type: str, rnd: np.random.RandomState=None, see
     Args:
         N: Number of system variables (includes both exogenous and endogenous)
         func_type: Type of equations: `binary` or `linear`
+    
+    Returns:
+        SCMSystem: A randomly generated SCM system
     """
     assert func_type in ['binary', 'linear']
     G=nx.gnp_random_graph(N,0.5,directed=True,seed=rnd if rnd else seed)
     G=nx.DiGraph([(u,v) for (u,v) in G.edges() if u<v])
     assert nx.is_directed_acyclic_graph(G)
-    # U = set(f'u_{n}' for n,d in G.in_degree() if d==0)
-    # V = set(f'v_{n}' for n,d in G.in_degree() if d==0)
 
-    cs = []
+    components = []
+    all_vars = set()
+    endogenous_vars = set()
+    
     for n in G.nodes:
         preds = list(G.predecessors(n))
         vars_list = [f'x_{k}' for k in preds]
+        var_name = f'x_{n}'
+        all_vars.add(var_name)
+        all_vars.update(vars_list)
+        
         if len(preds) == 0: # This is an exogenous variable
             continue
+            
+        endogenous_vars.add(var_name)
+        
         if func_type == 'binary':            
             eq = get_rand_binary_eq(vars_list, rnd=rnd, seed=seed)
         elif func_type == 'linear':
             eq = get_rand_linear_eq(vars_list, rnd=rnd, seed=seed)
 
-        c = ComponentOrEquation(vars_list, f'x_{n}', eq)
-        cs.append(c)
+        component = Component(f"{var_name} = {eq}")
+        components.append(component)
+    
+    # Create domains for all variables
+    domains = {}
+    for var in all_vars:
+        if func_type == 'binary':
+            domains[var] = BoundedFloatInterval(0.0, 1.0)
+        else:  # linear
+            domains[var] = BoundedFloatInterval(-100.0, 100.0)
+    
+    return SCMSystem(components, domains)
+
+def rerand_system(S: SCMSystem, func_type: str, rnd: np.random.RandomState=None, seed=42):
+    """
+    Create a new random system with the same structure as S but different equations.
+    
+    Args:
+        S: Original SCMSystem to use as template
+        func_type: Type of equations: 'binary' or 'linear'
+        rnd: Random state for reproducibility
+        seed: Random seed
+    
+    Returns:
+        SCMSystem: New system with same structure but different equations
+    """
+    assert func_type in ['binary', 'linear']
+    
+    new_components = []
+    for comp in S.components.values():
+        if func_type == 'binary':            
+            eq = get_rand_binary_eq(comp.input_vars, rnd=rnd, seed=seed)
+        elif func_type == 'linear':
+            eq = get_rand_linear_eq(comp.input_vars, rnd=rnd, seed=seed)
         
+        new_component = Component(f"{comp.output} = {eq}")
+        new_components.append(new_component)
 
-    return System(cs, func_type)
-
-def rerand_system(S: System, rnd: np.random.RandomState=None, seed=42):
-    new_cs = []
-    for c in S.cs:
-        if S.func_type == 'binary':            
-            eq = get_rand_binary_eq(c.I, rnd=rnd, seed=seed)
-        elif S.func_type == 'linear':
-            eq = get_rand_linear_eq(c.I, rnd=rnd, seed=seed)
-        c = ComponentOrEquation(c.I, c.O, eq)
-        new_cs.append(c)
-
-    return System(new_cs, S.func_type)
+    return SCMSystem(new_components, S.domains)
 
 
 def get_rand_prop(vars_list: list[str], num_syms: int, rnd: np.random.RandomState=None, seed=42):
@@ -208,23 +192,22 @@ if __name__ == "__main__":
     rnd = np.random.RandomState(SEED)
     S = get_rand_system(N, 'binary', rnd=rnd)
     print('S', S)
-    T = rerand_system(S, rnd=rnd)
+    T = rerand_system(S, 'binary', rnd=rnd)
     print('T', T)
-    T2 = rerand_system(S, rnd=rnd)
+    T2 = rerand_system(S, 'binary', rnd=rnd)
     print('T2', T2)
 
-    M = S.induced_scm()
-    all_vars = list(M.U) + list(M.V)
+    all_vars = S.vars
 
     print(get_rand_failure(all_vars, QFFOFormulaFailureSet, rnd=rnd))
 
     S = get_rand_system(N, 'linear', rnd=rnd)
     print('S', S)
-    T = rerand_system(S, rnd=rnd)
+    T = rerand_system(S, 'linear', rnd=rnd)
     print('T', T)
-    T2 = rerand_system(S, rnd=rnd)
+    T2 = rerand_system(S, 'linear', rnd=rnd)
     print('T2', T2)
 
     print(get_rand_failure(all_vars[0:2], ClosedHalfSpaceFailureSet, rnd=rnd))
     
-    print("utils.py: All tests passed")
+    print("random_system.py: All tests passed")
