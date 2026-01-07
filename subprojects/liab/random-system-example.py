@@ -23,8 +23,6 @@ from scipy.stats import mannwhitneyu
 from scipy.stats import entropy
 
 SEED = 42
-NUM_WORKERS = 8
-pickle_dir = Path('.')
 # %reload_ext autoreload
 # %autoreload 2
 # %matplotlib inline
@@ -90,7 +88,7 @@ def do_exp(args):
     return {'k_leg_values': k_leg_values, 'shapley_values': shapley_values,
         'k_leg_times': k_leg_times, 'shapley_times': shapley_times}
 
-def experiment(num_vars, ks=[1,2], num_samples=20):
+def experiment(num_vars, ks=[1,2], num_samples=20, num_workers=8):
     print(f'Doing experiments ({num_samples=}) ...')
     units = []
     pbar = tqdm(total=num_samples)
@@ -100,7 +98,7 @@ def experiment(num_vars, ks=[1,2], num_samples=20):
             pbar.update(1)
     def error_get_unit(e):
         raise e
-    if NUM_WORKERS == 1:
+    if num_workers == 1:
         tasks = [(num_vars, i) for i in range(num_samples)]
         for task in tasks:
             try:
@@ -109,7 +107,7 @@ def experiment(num_vars, ks=[1,2], num_samples=20):
             except Exception as e:
                 error_get_unit(e)
     else:
-        with Pool(NUM_WORKERS) as pool:
+        with Pool(num_workers) as pool:
             tasks = [(num_vars, i) for i in range(num_samples)]
             for task in tasks:
                 pool.apply_async(get_exp_unit, args=(task,), callback=update_progress_get_unit, error_callback=error_get_unit)
@@ -129,7 +127,7 @@ def experiment(num_vars, ks=[1,2], num_samples=20):
             pbar.update(1)
     def error_do_exp(e):
         raise e
-    if NUM_WORKERS == 1:
+    if num_workers == 1:
         tasks = []
         for unit in tqdm(units):
             T, S, u, F = unit
@@ -142,7 +140,7 @@ def experiment(num_vars, ks=[1,2], num_samples=20):
             except Exception as e:
                 error_do_exp(e)
     else:
-        with Pool(NUM_WORKERS) as pool:
+        with Pool(num_workers) as pool:
             tasks = []
             for unit in tqdm(units):
                 T, S, u, F = unit
@@ -157,7 +155,7 @@ def experiment(num_vars, ks=[1,2], num_samples=20):
     return exp_results
 
 
-def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True):
+def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=Path('.'), num_workers=8):
     """
     Reproduce the box plots from the paper showing liability differences and time differences
     across different numbers of components (M) and k values.
@@ -183,7 +181,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True):
                 exp_results = pickle.load(pickle_fd)
         else:
             print(f"Running experiment for M={M}")
-            exp_results = experiment(M, ks=ks, num_samples=num_samples)
+            exp_results = experiment(M, ks=ks, num_samples=num_samples, num_workers=num_workers)
             with open(pickle_fn, 'wb') as pickle_fd:
                 pickle.dump(exp_results, pickle_fd)
         
@@ -379,12 +377,11 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     
-    # Update global NUM_WORKERS if specified
-    NUM_WORKERS = args.num_workers
-    
     reproduce_paper_plots(
         Ms=args.Ms, 
         ks=args.ks, 
         num_samples=args.num_samples, 
-        use_pickle=not args.no_pickle
+        use_pickle=not args.no_pickle,
+        pickle_dir=Path('.'),
+        num_workers=args.num_workers
     )
