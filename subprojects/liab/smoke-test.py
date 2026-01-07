@@ -41,6 +41,10 @@ def test_k_leg_liability():
     S = SCMSystem([a_sp, b_sp, c_sp, d_sp], domains)
     T = SCMSystem([a_im, b_im, c_im, d_im], domains)
     
+    # Test context and failure set
+    u = {'a': 10, 'b': 10, 'c': 10, 'd': 10}
+    F = ClosedHalfSpaceFailureSet({'D': (250, 'ge')})
+    
     # Print system details
     print("Specification System (S):")
     for comp in S.components:
@@ -56,10 +60,6 @@ def test_k_leg_liability():
     
     print(f"\nContext: {u}")
     print(f"Failure set: {F}")
-    
-    # Test context and failure set
-    u = {'a': 10, 'b': 10, 'c': 10, 'd': 10}
-    F = ClosedHalfSpaceFailureSet({'D': (250, 'ge')})
     
     # Verify expected states
     s_state = S.get_state(u)
