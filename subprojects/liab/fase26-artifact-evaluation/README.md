@@ -18,14 +18,18 @@ Expected output: A small example of k-leg liability computation ending with "Smo
 
 ### Reproduce Paper Results
 
-**Case Study (Section 7)**:
+| RQ | Figure/Table | Page | How to Reproduce | Expected Output |
+|----|--------------|------|------------------|-----------------|
+| RQ1 (Accuracy) | Figure 3 (left) | 17 | `docker run --rm -v $(pwd)/images:/artifact/images liab-artifact:latest python subprojects/liab/random-system-example.py` | Box plot showing liability differences between Shapley and k-leg methods saved as image in `./images` directory |
+| RQ1 (Accuracy) | Table 4 | 17 | Same command as above | p-values table printed to console showing statistical significance of differences between k-leg and Shapley liabilities |
+| RQ2 (Efficiency) | Figure 3 (right) | 17 | Same command as above | Box plot showing computational time differences between Shapley and k-leg methods saved as image in `./images` directory |
+
+**Complete Case Study (Section 7)**:
 ```bash
 docker run --rm -v $(pwd)/images:/artifact/images liab-artifact:latest python subprojects/liab/random-system-example.py
 ```
 
-Expected output:
-- The p-value table (Table 4 from the paper)
-- Two images corresponding to Figure 3 (left and right plots) saved in the `./images` directory
+This single command reproduces all experimental results from the paper's empirical evaluation.
 
 ### Paper Claims Supported
 - Theoretical properties (Theorems 4.1-4.3)
