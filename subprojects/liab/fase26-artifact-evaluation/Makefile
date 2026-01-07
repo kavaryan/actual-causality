@@ -37,5 +37,14 @@ docker-ready:                  # Ensure image exists in docker daemon
 		$(MAKE) build-docker; \
 	fi
 
+tests: docker-ready            # Run all tests in the container
+	docker run --rm liab-artifact:latest python tests/test_core/test_bf.py
+	docker run --rm liab-artifact:latest python tests/test_core/test_failure.py
+	docker run --rm liab-artifact:latest python tests/test_core/test_float_scm.py
+	docker run --rm liab-artifact:latest python tests/test_core/test_scm.py
+	docker run --rm liab-artifact:latest python tests/test_lift_experiments.py
+	docker run --rm liab-artifact:latest python tests/test_search_formulation.py
+	docker run --rm liab-artifact:latest python tests/test_subprojects/test_liab/test_k_leg_liab.py
+
 smoke-test: docker-ready        # Run container as a sanity check
 	docker run --rm liab-artifact:latest
