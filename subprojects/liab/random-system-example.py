@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import __main__
 import os
+import argparse
     
 import time
 import pickle
@@ -329,6 +330,61 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True):
     
     return all_liability_diffs, all_time_diffs
 
+def parse_args():
+    """Parse command line arguments with paper's default values."""
+    parser = argparse.ArgumentParser(
+        description='Reproduce paper results for k-leg liability framework',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    
+    parser.add_argument(
+        '--Ms', 
+        type=int, 
+        nargs='+', 
+        default=[4, 5, 6, 7, 8, 9, 10],
+        help='List of component numbers to test'
+    )
+    
+    parser.add_argument(
+        '--ks', 
+        type=int, 
+        nargs='+', 
+        default=[1, 2, 3],
+        help='List of k values for k-leg liability'
+    )
+    
+    parser.add_argument(
+        '--num-samples', 
+        type=int, 
+        default=1000,
+        help='Number of samples per experiment'
+    )
+    
+    parser.add_argument(
+        '--no-pickle', 
+        action='store_true',
+        help='Disable pickle caching (always recompute)'
+    )
+    
+    parser.add_argument(
+        '--num-workers',
+        type=int,
+        default=8,
+        help='Number of worker processes for parallel computation'
+    )
+    
+    return parser.parse_args()
+
 # %%
 if __name__ == '__main__':
-    reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=1000, use_pickle=True)
+    args = parse_args()
+    
+    # Update global NUM_WORKERS if specified
+    NUM_WORKERS = args.num_workers
+    
+    reproduce_paper_plots(
+        Ms=args.Ms, 
+        ks=args.ks, 
+        num_samples=args.num_samples, 
+        use_pickle=not args.no_pickle
+    )
