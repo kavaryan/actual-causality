@@ -380,7 +380,7 @@ def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_
 # %%
 if __name__ == '__main__':
     # Reproduce the paper plots
-    reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=1000, use_pickle=True)
+    reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=10, use_pickle=True)
 
 # %%
 # mannwhitneyu problem (fixed)
