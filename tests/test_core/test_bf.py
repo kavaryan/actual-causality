@@ -20,7 +20,10 @@ def test_bf():
     domains = {
         'a': BoundedIntInterval(0, 20),
         'b': BoundedIntInterval(0, 20), 
-        'c': BoundedIntInterval(0, 20)
+        'c': BoundedIntInterval(0, 20),
+        'A': BoundedIntInterval(0, 40),  # a can be 0-20, so A = a or a+10 can be 0-30
+        'B': BoundedIntInterval(0, 40),  # b can be 0-20, so B = b or b+10 can be 0-30  
+        'C': BoundedIntInterval(0, 1000) # C depends on A*B + c + possibly 10, so needs larger range
     }
 
     S = SCMSystem([a_sp, b_sp, c_sp], domains)
