@@ -47,16 +47,10 @@ def test_k_leg_liability():
     
     # Print system details
     print("Specification System (S):")
-    for comp in S.components:
-        print(f"  {comp.equation}")
-    print(f"  Exogenous vars: {S.exogenous_vars}")
-    print(f"  Endogenous vars: {S.endogenous_vars}")
+    print(S)
     
     print("\nImplementation System (T):")
-    for comp in T.components:
-        print(f"  {comp.equation}")
-    print(f"  Exogenous vars: {T.exogenous_vars}")
-    print(f"  Endogenous vars: {T.endogenous_vars}")
+    print(T)
     
     print(f"\nContext: {u}")
     print(f"Failure set: {F}")

@@ -288,6 +288,17 @@ class SCMSystem:
         if missing_domains:
             raise ValueError(f"Missing domain definitions for variables: {missing_domains}")
     
+    def __str__(self):
+        """String representation of the SCM system."""
+        lines = []
+        lines.append("SCM System:")
+        lines.append("  Equations:")
+        for comp in self.components.values():
+            lines.append(f"    {comp.output} = {comp.expression}")
+        lines.append(f"  Exogenous vars: {self.exogenous_vars}")
+        lines.append(f"  Endogenous vars: {self.endogenous_vars}")
+        return "\n".join(lines)
+    
     def get_state(self, context: dict[str,object], interventions: dict[str, object] = None):
         """
         Compute the state of the system given a dictionary of exogenous variable values.
