@@ -34,6 +34,9 @@ class Component:
         lhs, rhs = parts[0].strip(), parts[1].strip()
         self.output = lhs  # The output variable of this component.
         
+        # Store the original definition string for pickling
+        self.definition_str = definition_str
+        
         # Parse the right-hand side using sympy.
         # This allows symbolic manipulation within the component.
         self.expression = sympify(rhs, evaluate=False)
