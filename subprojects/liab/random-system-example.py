@@ -1,12 +1,7 @@
 import sys
 from pathlib import Path
 import __main__
-if not hasattr(__main__, '__file__'): # notebook
-    sys.path.append('../../') 
-    pickle_dir = Path('..')
-else: # exported python
-    sys.path.append('../../')
-    pickle_dir = Path('.')
+    
 import time
 import pickle
 from collections import defaultdict
@@ -27,6 +22,7 @@ from scipy.stats import entropy
 
 SEED = 42
 NUM_WORKERS = 8
+pickle_dir = Path('.')
 # %reload_ext autoreload
 # %autoreload 2
 # %matplotlib inline
@@ -233,7 +229,7 @@ def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pi
 
 # %%
 if __name__ == '__main__':
-    exp_results_M5 = experiment_and_plot(9, ks=[1,2,3], num_samples=1000, use_pickle=False,
+    exp_results_M5 = experiment_and_plot(9, ks=[1,2,3], num_samples=100, use_pickle=False,
         pickle_dir=pickle_dir)
 
 # %%
