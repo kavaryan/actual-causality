@@ -11,6 +11,7 @@ copy-sources:
 	mkdir -p src/core src/subprojects/liab
 	rsync -a --exclude='__pycache__/' ../../../core/ src/core/
 	rsync -a --exclude='__pycache__/' --exclude='fase26-artifact-evaluation/' ../ src/subprojects/liab/
+	cp ../requirements.txt src/subprojects/liab/
 
 check-image:
 	@if docker images -q liab-artifact:latest | grep -q .; then \
