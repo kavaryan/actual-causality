@@ -60,6 +60,19 @@ class Component:
             raise ValueError(f"Missing input variable: {e}")
         return self.func(*args)
     
+    def __getstate__(self):
+        """Custom pickle method - exclude the non-picklable func."""
+        state = self.__dict__.copy()
+        # Remove the unpicklable func
+        del state['func']
+        return state
+    
+    def __setstate__(self, state):
+        """Custom unpickle method - recreate the func."""
+        self.__dict__.update(state)
+        # Recreate the func from the stored definition
+        self.func = lambdify(self.input_vars, self.expression, modules=["math"])
+    
 class BoundedIntInterval:
     def __init__(self, a, b):
         """ [a,a+1,...,b] """
