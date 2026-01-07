@@ -1,42 +1,41 @@
-.PHONY: all clean build-docker copy-sources download-image check-image
+.PHONY: all help clean build-docker copy-sources docker-ready smoke-test
 
-all: build-docker download-image
+all: help                     # Show help
 
-clean:
+help:                          # Show this help message
+	@awk 'BEGIN {FS = ":.*#"} \
+	/^[a-zA-Z0-9_-]+:.*#/ { \
+		printf "  %-16s %s\n", $$1, $$2 \
+	}' $(MAKEFILE_LIST)
+
+clean:                         # Remove build artifacts and docker image
 	rm -rf src/
 	rm -f liab-artifact.tar
 	docker rmi -f liab-artifact:latest 2>/dev/null || true
 
-copy-sources:
-	mkdir -p src/core src/subprojects/liab
+copy-sources:                  # Copy sources from full repo into docker build context (DON'T USE DIRECTLY)
+	mkdir -p src/core src/subprojects/liab src/tests/test_subprojects/test_liab src/tests/test_core
 	rsync -a --exclude='__pycache__/' ../../../core/ src/core/
 	rsync -a --exclude='__pycache__/' --exclude='fase26-artifact-evaluation/' ../ src/subprojects/liab/
-	cp ../requirements.txt src/subprojects/liab/
+	rsync -a --exclude='__pycache__/' ../../../tests/test_core/ src/tests/test_core/
+	rsync -a --exclude='__pycache__/' ../../../tests/test_subprojects/test_liab/ src/tests/test_subprojects/test_liab/
+	cp ./requirements.txt ./src/subprojects/liab/requirements.txt
 
-check-image:
-	@if docker images -q liab-artifact:latest | grep -q .; then \
-		echo "Image liab-artifact:latest already exists, skipping build"; \
-		exit 0; \
+build-docker: copy-sources     # Build docker image and export tarball
+	docker build -t liab-artifact:latest .
+	docker save -o liab-artifact.tar liab-artifact:latest
+
+docker-ready:                  # Ensure image exists in docker daemon
+	@set -e; \
+	if docker image inspect liab-artifact:latest >/dev/null 2>&1; then \
+		echo "docker-ready: liab-artifact:latest already present"; \
+	elif [ -f "liab-artifact.tar" ]; then \
+		echo "docker-ready: loading liab-artifact.tar"; \
+		docker load -i liab-artifact.tar >/dev/null; \
 	else \
-		echo "Image liab-artifact:latest not found, will build"; \
-		exit 1; \
+		echo "docker-ready: building liab-artifact:latest"; \
+		$(MAKE) build-docker; \
 	fi
 
-build-docker: copy-sources
-	@if $(MAKE) check-image 2>/dev/null; then \
-		echo "Skipping build - image already exists"; \
-	else \
-		echo "Building Docker image..."; \
-		docker build -t liab-artifact:latest .; \
-	fi
-
-download-image:
-	@if [ ! -f liab-artifact.tar ]; then \
-		echo "Saving Docker image to liab-artifact.tar..."; \
-		docker save -o liab-artifact.tar liab-artifact:latest; \
-	else \
-		echo "Image archive liab-artifact.tar already exists"; \
-	fi
-
-smoke-test: build-docker
+smoke-test: docker-ready        # Run container as a sanity check
 	docker run --rm liab-artifact:latest
