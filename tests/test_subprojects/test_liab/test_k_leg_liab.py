@@ -24,7 +24,11 @@ def test_k_leg_liab():
         'a': BoundedIntInterval(0, 20),
         'b': BoundedIntInterval(0, 20),
         'c': BoundedIntInterval(0, 20),
-        'd': BoundedIntInterval(0, 20)
+        'd': BoundedIntInterval(0, 20),
+        'A': BoundedIntInterval(0, 30),  # a or a+10, so 0-30
+        'B': BoundedIntInterval(0, 30),  # b or b+10, so 0-30
+        'C': BoundedIntInterval(0, 28),  # c or c+8, so 0-28
+        'D': BoundedIntInterval(0, 1000) # d + Max(A*B, A*C, B*C) + possibly 10, needs large range
     }
 
     S = SCMSystem([a_sp, b_sp, c_sp, d_sp], domains)
