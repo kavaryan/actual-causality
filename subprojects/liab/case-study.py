@@ -23,20 +23,20 @@ def get_exp_unit(args):
     num_vars, seed = args
     rnd = np.random.RandomState(seed)
     while True:
-        S = get_rand_system(num_vars, 'linear', rnd=rnd)
-        T = rerand_system(S, rnd=rnd)
+        S = get_rand_system(num_vars, 'linear', rnd=rnd, seed=seed)
+        T = rerand_system(S, 'linear', rnd=rnd, seed=seed)
         # Get all variables from the systems
-        all_vars = list(S.U) + list(S.V)
-        F = get_rand_failure(all_vars[:2], ClosedHalfSpaceFailureSet, rnd=rnd)
+        all_vars = S.vars
+        F = get_rand_failure(all_vars[:2], ClosedHalfSpaceFailureSet, rnd=rnd, seed=seed)
         
         # Generate a random context for exogenous variables
         u = {}
-        for var in S.U:
+        for var in S.exogenous_nl_vars:
             u[var] = rnd.uniform(-10, 10)  # Random values for exogenous variables
         
-        # Convert systems to SCMSystem format
-        M = S.induced_scm()
-        N = T.induced_scm()
+        # Systems are already SCMSystem objects
+        M = S
+        N = T
         
         state_m = M.get_state(u)
         state_n = N.get_state(u)
