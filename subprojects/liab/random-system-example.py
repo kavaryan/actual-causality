@@ -12,34 +12,11 @@ from multiprocessing import Pool
 from tqdm import tqdm
 import numpy as np
 import sympy as sp
-import warnings
 import matplotlib.pyplot as plt
 from subprojects.liab.k_leg_liab import k_leg_liab
 from subprojects.liab.shapley_liab import shapley_liab
-from core.random_system import get_rand_system, rerand_system, get_rand_float_vec, get_rand_failure
+from core.random_system import get_rand_system, rerand_system, get_rand_failure
 from core.failure import ClosedHalfSpaceFailureSet
-from IPython.display import display, clear_output
-from scipy.stats import mannwhitneyu
-from scipy.stats import entropy
-
-SEED = 42
-# %reload_ext autoreload
-# %autoreload 2
-# %matplotlib inline
-
-# %%
-# S = get_rand_system(6, 'linear', seed=SEED)
-# T = rerand_system(S, seed=SEED+1)
-# print(S)
-# print(T)
-# print(S.func_type, T.func_type)
-
-# %%
-# M = S.induced_scm()
-# N = T.induced_scm()
-# print(M)
-# print(N)
-# print(M.func_type, N.func_type)
 
 # %%
 def get_exp_unit(args):
@@ -88,7 +65,7 @@ def do_exp(args):
     return {'k_leg_values': k_leg_values, 'shapley_values': shapley_values,
         'k_leg_times': k_leg_times, 'shapley_times': shapley_times}
 
-def experiment(num_vars, ks=[1,2], num_samples=20, num_workers=8):
+def experiment(num_vars, ks, num_samples, num_workers):
     print(f'Doing experiments ({num_samples=}) ...')
     units = []
     pbar = tqdm(total=num_samples)
