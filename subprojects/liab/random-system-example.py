@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import __main__
+import os
     
 import time
 import pickle
@@ -171,6 +172,10 @@ def get_vargha_delaney(n1, n2, U):
         return f"no effect"
 
 def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pickle_dir='.'):
+    # Create images directory if it doesn't exist
+    images_dir = Path('images')
+    images_dir.mkdir(exist_ok=True)
+    
     pickle_fn = Path(pickle_dir) / f'{num_vars=}_{ks=}.pickle'
     print(pickle_fn)
     if use_pickle:
@@ -213,6 +218,11 @@ def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pi
         # ax[1, ki].set_ylim([min(muts[k]), max(muts[k])])
     fig.suptitle(f'Liability difference (M={num_vars})', y=0.95)  # Position at the bottom
     fig.tight_layout()
+    
+    # Save the liability difference plot
+    liability_plot_name = f'liability_difference_M{num_vars}_k{"-".join(map(str, ks))}_n{num_samples}.png'
+    fig.savefig(images_dir / liability_plot_name, dpi=300, bbox_inches='tight')
+    print(f'Saved liability difference plot: {images_dir / liability_plot_name}')
 
     fig, ax = plt.subplots(1, len(k_leg_times), figsize=(4*len(k_leg_times), 4))
     for ki, k in enumerate(k_leg_times):
@@ -224,6 +234,11 @@ def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pi
         ax[ki].set_title(f'p-vale={p_value:.3f}, effect={effect_size}')
     fig.suptitle(f'Computational time (seconds, M={num_vars})', y=0.95)  # Position at the bottom
     fig.tight_layout()
+    
+    # Save the computational time plot
+    time_plot_name = f'computational_time_M{num_vars}_k{"-".join(map(str, ks))}_n{num_samples}.png'
+    fig.savefig(images_dir / time_plot_name, dpi=300, bbox_inches='tight')
+    print(f'Saved computational time plot: {images_dir / time_plot_name}')
 
     return exp_results
 
