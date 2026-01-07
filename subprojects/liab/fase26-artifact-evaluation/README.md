@@ -57,5 +57,25 @@ Also, the provided `Makefile` and `Dockerfile` streamline the build and executio
 
 This library can be easily extended and reused for other causal analysis applications. The modular design allows researchers to define
 custom failure conditions, implement new causality measures, or apply the framework to different domains beyond autonomous vehicles.
+
+**Core Class Hierarchies:**
+- **`FailureSet`** (abstract base class): Extensible hierarchy for defining failure conditions
+  - `ClosedHalfSpaceFailureSet`: Conjunctions of linear inequalities (e.g., `x ≥ a ∧ y ≤ b`)
+  - `QFFOFormulaFailureSet`: Quantifier-free first-order formulas using SymPy expressions
+  - Custom failure sets can be added by implementing `contains()` and `dist()` methods
+
+- **`SCMSystem`**: Core structural causal model with component-based architecture
+  - `Component`: Individual causal equations with symbolic expression support
+  - `TemporalSCMSystem`: Extension for differential equations and temporal dynamics
+  - Domain specifications via `BoundedIntInterval` and `BoundedFloatInterval`
+
+- **Liability Algorithms**: Pluggable causality measures
+  - `k_leg_liab()`: Our polynomial-time k-leg liability framework
+  - `shapley_liab()`: Shapley value-based liability for comparison
+  - `bf()`: But-for causality checking with memoization
+
 The SCM framework supports both deterministic and probabilistic models, temporal systems with differential equations, and interval
 specifications, making it suitable for a wide range of real-world systems requiring liability analysis.
+
+**Active Research Use:** These core classes are currently being used in our other papers under review, demonstrating their practical
+utility across multiple research projects in causal analysis, metamorphic testing, and formal verification domains.
