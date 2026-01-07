@@ -20,7 +20,7 @@ Artifact is documented, consistent, complete, exercisable, and includes appropri
 
 ### Reusable
 Artifact significantly exceeds minimal functionality - carefully documented and well-structured to facilitate reuse and repurposing.
-- **Documentation**: All unit are documented using python docstrings.
+- **Documentation**: All units are thoroughly documented using Python docstrings, with comprehensive README providing installation, usage, and API documentation
 - **Modular Architecture**: Clean separation of concerns with abstract base classes for extensible hierarchies
   - `SCMSystem`: Core structural causal model with component-based architecture
   - `Component`: Individual causal equations with symbolic expression support
