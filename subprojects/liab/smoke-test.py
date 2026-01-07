@@ -41,6 +41,22 @@ def test_k_leg_liability():
     S = SCMSystem([a_sp, b_sp, c_sp, d_sp], domains)
     T = SCMSystem([a_im, b_im, c_im, d_im], domains)
     
+    # Print system details
+    print("Specification System (S):")
+    for comp in S.components:
+        print(f"  {comp.equation}")
+    print(f"  Exogenous vars: {S.exogenous_vars}")
+    print(f"  Endogenous vars: {S.endogenous_vars}")
+    
+    print("\nImplementation System (T):")
+    for comp in T.components:
+        print(f"  {comp.equation}")
+    print(f"  Exogenous vars: {T.exogenous_vars}")
+    print(f"  Endogenous vars: {T.endogenous_vars}")
+    
+    print(f"\nContext: {u}")
+    print(f"Failure set: {F}")
+    
     # Test context and failure set
     u = {'a': 10, 'b': 10, 'c': 10, 'd': 10}
     F = ClosedHalfSpaceFailureSet({'D': (250, 'ge')})
