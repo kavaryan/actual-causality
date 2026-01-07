@@ -14,11 +14,16 @@ clean:                         # Remove build artifacts and docker image
 	docker rmi -f liab-artifact:latest 2>/dev/null || true
 
 copy-sources:                  # Copy sources from full repo into docker build context (DON'T USE DIRECTLY)
-	mkdir -p src/core src/subprojects/liab src/tests/test_subprojects/test_liab src/tests/test_core
-	rsync -a --exclude='__pycache__/' --exclude='*.ipynb' ../../../core/ src/core/
-	rsync -a --exclude='__pycache__/' --exclude='*.ipynb' --exclude='fase26-artifact-evaluation/' ../ src/subprojects/liab/
-	rsync -a --exclude='__pycache__/' --exclude='*.ipynb' ../../../tests/test_core/ src/tests/test_core/
-	rsync -a --exclude='__pycache__/' --exclude='*.ipynb' ../../../tests/test_subprojects/test_liab/ src/tests/test_subprojects/test_liab/
+	@if [ ! -d "src" ]; then \
+		echo "copy-sources: creating src directory and copying sources"; \
+		mkdir -p src/core src/subprojects/liab src/tests/test_subprojects/test_liab src/tests/test_core; \
+		rsync -a --exclude='__pycache__/' --exclude='*.ipynb' ../../../core/ src/core/; \
+		rsync -a --exclude='__pycache__/' --exclude='*.ipynb' --exclude='fase26-artifact-evaluation/' ../ src/subprojects/liab/; \
+		rsync -a --exclude='__pycache__/' --exclude='*.ipynb' ../../../tests/test_core/ src/tests/test_core/; \
+		rsync -a --exclude='__pycache__/' --exclude='*.ipynb' ../../../tests/test_subprojects/test_liab/ src/tests/test_subprojects/test_liab/; \
+	else \
+		echo "copy-sources: src directory already exists, skipping copy"; \
+	fi
 
 build-docker: copy-sources     # Build docker image and export tarball
 	docker build -t liab-artifact:latest .
