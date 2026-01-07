@@ -155,94 +155,8 @@ def experiment(num_vars, ks=[1,2], num_samples=20):
     
     return exp_results
 
-def get_vargha_delaney(n1, n2, U):
-    # Calculate Vargha and Delaney A effect size
-    A = U / (n1 * n2)
 
-    # Determine the effect size description
-    if A >= 0.71 or A == 0:
-        return f"large effect"
-    elif A >= 0.64:
-        return f"medium effect"
-    elif A >= 0.56:
-        return f"small effect"
-    elif A >= 0.44:
-        return f"negligible effect"
-    else:
-        return f"no effect"
-
-def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pickle_dir='.'):
-    # Create images directory if it doesn't exist
-    images_dir = Path('images')
-    images_dir.mkdir(exist_ok=True)
-    
-    pickle_fn = Path(pickle_dir) / f'{num_vars=}_{ks=}_n{num_samples}.pickle'
-    print(pickle_fn)
-    if use_pickle:
-        with open(pickle_fn, 'rb') as pickle_fd:
-            exp_results = pickle.load(pickle_fd)
-    else:
-        exp_results = experiment(num_vars, ks=ks, num_samples=num_samples)
-        with open(pickle_fn, 'wb') as pickle_fd:
-            pickle.dump(exp_results, pickle_fd)
-    
-    k_leg_values, shapley_values, k_leg_times, shapley_times = tuple(exp_results.values())
-    
-    ents = defaultdict(list)
-    for k in ks:
-        for sublist1, sublist2 in zip(k_leg_values[k], shapley_values[k]):
-            # try:
-            #     mut = max(entropy(sublist1, sublist2), entropy(sublist2, sublist1))
-            # except RuntimeWarning:
-            #     print(sublist1)
-            #     print(sublist2)
-            #     print('**', entropy(sublist1, sublist2))
-            #     print('==', entropy(sublist2, sublist1))
-            #     return
-            mut = abs(np.array(sublist1) - sublist2).sum()
-            ents[k].append(mut)
-
-    fig, ax = plt.subplots(1, len(k_leg_times), figsize=(4*len(k_leg_times), 4))
-    for ki, k in enumerate(k_leg_times):
-        ax[ki].hist(ents[k], bins=50, alpha=0.7)
-        # ax[ki].hist(shapley_falttened[k], bins=20, alpha=0.7, label=f'Shapley')
-        # ax[ki].legend()
-        # U, p_value = mannwhitneyu(shapley_falttened[k], k_leg_flattened[k], alternative='two-sided')
-        # effect_size = get_vargha_delaney(len(k_leg_flattened[k]), len(shapley_falttened[k]), U)
-        # ax[ki].set_title(f'p-vale={p_value:.3f}, effect={effect_size}')
-        ax[ki].set_yscale('log')
-        X = np.array(ents[k])
-        mx = max(X)
-        p_value = (len(X) - len(X[X<.2])) / len(X) # .2 of max mean difference which is 1
-        print(f'{p_value=}')
-        # ax[1, ki].set_ylim([min(muts[k]), max(muts[k])])
-    fig.suptitle(f'Liability difference (M={num_vars})', y=0.95)  # Position at the bottom
-    fig.tight_layout()
-    
-    # Save the liability difference plot
-    liability_plot_name = f'liability_difference_M{num_vars}_k{"-".join(map(str, ks))}_n{num_samples}.png'
-    fig.savefig(images_dir / liability_plot_name, dpi=300, bbox_inches='tight')
-    print(f'Saved liability difference plot: {images_dir / liability_plot_name}')
-
-    fig, ax = plt.subplots(1, len(k_leg_times), figsize=(4*len(k_leg_times), 4))
-    for ki, k in enumerate(k_leg_times):
-        ax[ki].hist(k_leg_times[k], bins=20, alpha=0.7, label=f'{k}-leg')
-        ax[ki].hist(shapley_times[k], bins=20, alpha=0.7, label=f'Shapley')
-        ax[ki].legend()
-        U, p_value = mannwhitneyu(shapley_times[k], k_leg_times[k], alternative='greater')
-        effect_size = get_vargha_delaney(len(k_leg_times[k]), len(shapley_times[k]), U)
-        ax[ki].set_title(f'p-vale={p_value:.3f}, effect={effect_size}')
-    fig.suptitle(f'Computational time (seconds, M={num_vars})', y=0.95)  # Position at the bottom
-    fig.tight_layout()
-    
-    # Save the computational time plot
-    time_plot_name = f'computational_time_M{num_vars}_k{"-".join(map(str, ks))}_n{num_samples}.png'
-    fig.savefig(images_dir / time_plot_name, dpi=300, bbox_inches='tight')
-    print(f'Saved computational time plot: {images_dir / time_plot_name}')
-
-    return exp_results
-
-def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_pickle=True):
+def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True):
     """
     Reproduce the box plots from the paper showing liability differences and time differences
     across different numbers of components (M) and k values.
@@ -417,17 +331,4 @@ def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_
 
 # %%
 if __name__ == '__main__':
-    # Reproduce the paper plots
-    reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_pickle=True)
-
-# %%
-# mannwhitneyu problem (fixed)
-# for d in [1,2,3,10,300]:
-#     x = np.random.normal(loc=6, scale=0.5, size=1000)
-#     y = np.random.normal(loc=6+d, scale=0.5, size=1000)
-#     U_lt, p_value = mannwhitneyu(x, y, alternative='less')
-#     U_neq, p_value = mannwhitneyu(x, y, alternative='two-sided')
-
-#     print(f'{d=}, {U_lt=}, {U_neq=}')
-
-
+    reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=1000, use_pickle=True)
