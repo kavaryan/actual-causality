@@ -309,7 +309,14 @@ def parse_args():
     """Parse command line arguments with paper's default values."""
     parser = argparse.ArgumentParser(
         description='Reproduce paper results for k-leg liability framework',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        epilog='''
+Examples:
+  %(prog)s                                    # Use paper defaults (M=4-10, k=1-3, 1000 samples)
+  %(prog)s --Ms 4 5 6 --ks 1 2 --num-samples 100  # Quick test with fewer components and samples
+  %(prog)s --no-pickle --num-workers 4       # Disable caching, use 4 workers
+  %(prog)s --Ms 4 --ks 1 --num-samples 10    # Minimal test for debugging
+        '''.strip()
     )
     
     parser.add_argument(
