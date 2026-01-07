@@ -12,6 +12,12 @@ class TestSCMSystem(TestCase):
                 A = a
                 B = A**2
                 C = A + B
+                
+                [domains]
+                a: Int(0,10)
+                A: Int(0,10)
+                B: Int(0,100)
+                C: Int(0,110)
                 """))
             f.flush()
             system = read_system(f.name)
@@ -40,6 +46,7 @@ class TestSCMSystem(TestCase):
                 BS = min(1, SH + BH)
 
                 [domains]
+                STu,BTu: Int(0,1)
                 ST,BT,SH,BH,BS: Int(0,1)
                 """))
             f.flush()
