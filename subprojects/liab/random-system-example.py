@@ -176,7 +176,7 @@ def experiment_and_plot(num_vars, ks=[1,2], num_samples=20, use_pickle=False, pi
     images_dir = Path('images')
     images_dir.mkdir(exist_ok=True)
     
-    pickle_fn = Path(pickle_dir) / f'{num_vars=}_{ks=}.pickle'
+    pickle_fn = Path(pickle_dir) / f'{num_vars=}_{ks=}_n{num_samples}.pickle'
     print(pickle_fn)
     if use_pickle:
         with open(pickle_fn, 'rb') as pickle_fd:
@@ -260,7 +260,7 @@ def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_
         print(f"\nProcessing M={M}...")
         
         # Run or load experiment for this M
-        pickle_fn = Path(pickle_dir) / f'num_vars={M}_ks={ks}.pickle'
+        pickle_fn = Path(pickle_dir) / f'num_vars={M}_ks={ks}_n{num_samples}.pickle'
         
         if use_pickle and pickle_fn.exists():
             print(f"Loading from {pickle_fn}")
