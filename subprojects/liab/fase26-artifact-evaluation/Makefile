@@ -27,7 +27,7 @@ copy-sources:                  # Copy sources from full repo into docker build c
 
 build-docker: copy-sources     # Build docker image and export tarball
 	docker build -t liab-artifact:latest .
-	# docker save -o liab-artifact.tar liab-artifact:latest
+	docker save -o liab-artifact.tar liab-artifact:latest
 
 docker-ready:                  # Ensure image exists in docker daemon
 	@set -e; \

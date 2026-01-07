@@ -1,0 +1,15 @@
+# Requirements
+
+## Packaged Architecture
+- x86_64 (tested; Docker image `liab-artifact.tar` provided)
+
+## Software Requirements
+- Docker 20.10+ with the current user having permissions to use the Docker daemon
+- GNU Make 4.3+
+- Linux/macOS/Windows
+
+## Dependencies
+All dependencies included in Docker image (`liab-artifact.tar`):
+- Python 3.9
+- Python requirements are further listed in `requirements.txt`
+- a `Dockerfile` is also provided. The image can be built using `make build-docker`
