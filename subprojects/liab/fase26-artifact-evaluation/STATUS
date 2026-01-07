@@ -5,8 +5,24 @@
 ### Available ✓
 Author-created artifacts placed on publicly accessible archival repository (Zenodo) with permanent DOI.
 
+- **Public Repository**: Artifact available on Zenodo with permanent DOI
+- **Archival Quality**: Repository has declared plan for permanent accessibility
+- **Paper Integration**: Same DOI referenced in both artifact evaluation and camera-ready paper
+
 ### Functional ✓
 Artifact is documented, consistent, complete, exercisable, and includes appropriate evidence of verification and validation.
 
+- **Documented**: Comprehensive README with installation, usage, and examples
+- **Consistent**: All paper claims directly supported by runnable code and examples
+- **Complete**: Full implementation of k-leg liability algorithm with all components
+- **Exercisable**: Docker containerization ensures reproducible execution across platforms
+- **Verified**: Includes smoke tests, property verification, and validation against paper results
+
 ### Reusable ✓
 Artifact significantly exceeds minimal functionality - very carefully documented and well-structured to facilitate reuse and repurposing.
+
+- **Exceptional Documentation**: API documentation, architectural overview, and extension guides
+- **Modular Architecture**: Clean separation of concerns with abstract base classes
+- **Extensibility**: Framework supports custom failure sets, liability methods, and SCM systems  
+- **Multiple Examples**: Diverse case studies demonstrating different usage patterns
+- **Best Practices**: Type hints, comprehensive error handling, and professional code structure
