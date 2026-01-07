@@ -22,7 +22,14 @@ Artifact is documented, consistent, complete, exercisable, and includes appropri
 Artifact significantly exceeds minimal functionality - very carefully documented and well-structured to facilitate reuse and repurposing.
 
 - **Exceptional Documentation**: API documentation, architectural overview, and extension guides
-- **Modular Architecture**: Clean separation of concerns with abstract base classes
-- **Extensibility**: Framework supports custom failure sets, liability methods, and SCM systems  
+- **Modular Architecture**: Clean separation of concerns with abstract base classes for extensible hierarchies
+  - `SCMSystem`: Core structural causal model with component-based architecture
+  - `FailureSet`: Abstract base class for defining custom failure conditions
+  - `Component`: Individual causal equations with symbolic expression support
+- **Extensibility**: Framework supports custom failure sets, liability methods, and SCM systems
+  - Custom failure sets via `ClosedHalfSpaceFailureSet` and `QFFOFormulaFailureSet`
+  - Pluggable liability algorithms (`k_leg_liab`, `shapley_liab`)
+  - Temporal systems with differential equations via `TemporalSCMSystem`
 - **Multiple Examples**: Diverse case studies demonstrating different usage patterns
 - **Best Practices**: Type hints, comprehensive error handling, and professional code structure
+- **Active Research Use**: Core classes currently used in multiple papers under review across causal analysis, metamorphic testing, and formal verification domains
