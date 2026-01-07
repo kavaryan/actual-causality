@@ -323,8 +323,8 @@ def reproduce_paper_plots(Ms=[4,5,6,7,8,9,10], ks=[1,2,3], num_samples=100, use_
         ax.set_xticks(Ms_sorted)
         ax.grid(True, alpha=0.3)
         
-        # Set y-axis to start from 0 and use appropriate scale
-        ax.set_ylim(bottom=0)
+        # Set y-axis to start slightly below 0 so zero values are visible
+        ax.set_ylim(bottom=-0.05)
     
     fig.suptitle('Comparison of Shapley and k-leg methods in terms of liability difference', fontsize=14)
     plt.tight_layout()
