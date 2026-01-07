@@ -1,0 +1,40 @@
+# Core scientific computing
+numpy>=1.20.0
+scipy>=1.7.0
+sympy>=1.8.0
+
+# Graph and network analysis
+networkx>=2.6.0
+
+# Plotting and visualization
+matplotlib>=3.4.0
+
+# SMT solver
+z3-solver>=4.8.0
+
+# Progress bars
+tqdm>=4.62.0
+
+# Jupyter notebook support (for .py files with notebook cells)
+ipython>=7.25.0
+
+# Statistical analysis (used in random-system-example.py)
+statsmodels>=0.12.0
+
+# Path handling (built-in pathlib is used)
+# No additional requirement needed for pathlib
+
+# Standard library modules used (no additional requirements):
+# - ast
+# - random  
+# - time
+# - pickle
+# - collections
+# - multiprocessing
+# - sys
+# - os
+# - math
+# - re
+# - itertools
+# - typing
+# - abc
