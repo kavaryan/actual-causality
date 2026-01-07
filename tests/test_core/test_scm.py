@@ -64,9 +64,7 @@ class TestSCMSystem(TestCase):
         state2 = system2.get_state({'ST': 1})
         self.assertEqual(state2, {'ST': 1, 'BT': 0, 'SH': 1, 'BH': 0, 'BS': 1})
 
-
-                
-
+            
 # Example usage:
 if __name__ == "__main__":
     unittest.main()
