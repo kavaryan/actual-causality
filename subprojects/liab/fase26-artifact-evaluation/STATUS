@@ -15,7 +15,7 @@ Artifact is documented, consistent, complete, exercisable, and includes appropri
 - **Documented**: Comprehensive README with installation, usage, and examples
 - **Consistent**: All paper claims directly supported by runnable code and examples
 - **Complete**: Full implementation of k-leg liability algorithm with all components
-- **Exercisable**: Docker containerization ensures reproducible execution across platforms
+- **Exercisable**: Docker containerization ensures reproducible execution across platforms, with comprehensive Makefile providing automated build, test, and execution targets
 - **Verified**: Includes a smoke test (`src/subprojects/liab/smoke-test.py`), unit tests for all the units (under `src/tests/`), and comparision table to verify the results of the paper in `README`
 
 ### Reusable
