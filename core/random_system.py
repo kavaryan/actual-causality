@@ -7,6 +7,55 @@ from sympy.logic import SOPform
 from core.failure import FailureSet, ClosedHalfSpaceFailureSet, QFFOFormulaFailureSet
 from core.scm import Component, SCMSystem, BoundedFloatInterval
 
+class ComponentOrEquation:
+    """Legacy compatibility class for old random system generation."""
+    def __init__(self, inputs, output, expression):
+        self.I = inputs  # input variables
+        self.O = output  # output variable
+        self.expression = expression
+    
+    def to_component(self):
+        """Convert to new Component format."""
+        return Component(f"{self.O} = {self.expression}")
+
+class System:
+    """Legacy compatibility class for old random system generation."""
+    def __init__(self, components, func_type):
+        self.cs = components  # list of ComponentOrEquation objects
+        self.func_type = func_type
+        
+        # Extract all variables
+        self.U = set()  # exogenous variables
+        self.V = set()  # endogenous variables
+        
+        # Collect all output variables (endogenous)
+        for c in self.cs:
+            self.V.add(c.O)
+        
+        # Collect all input variables that are not outputs (exogenous)
+        all_inputs = set()
+        for c in self.cs:
+            all_inputs.update(c.I)
+        
+        self.U = all_inputs - self.V
+    
+    def induced_scm(self):
+        """Convert to new SCMSystem format."""
+        # Convert components
+        new_components = [c.to_component() for c in self.cs]
+        
+        # Create domains for all variables
+        domains = {}
+        all_vars = self.U | self.V
+        
+        for var in all_vars:
+            if self.func_type == 'binary':
+                domains[var] = BoundedFloatInterval(0.0, 1.0)
+            else:  # linear
+                domains[var] = BoundedFloatInterval(-100.0, 100.0)
+        
+        return SCMSystem(new_components, domains)
+
 def all_combs_b(n: int) -> list[tuple[int]]:
     """Generate all combinations of binary numbers with n digits."""
     ret = [bin(i)[2:].rjust(n, '0') for i in range(2**n)]
