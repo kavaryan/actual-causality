@@ -5,7 +5,7 @@ import re
 import sympy as sp
 from sympy.logic import SOPform
 from liab.failure import FailureSet, ClosedHalfSpaceFailureSet, QFFOFormulaFailureSet
-from liab.scm import ComponentOrEquation, System
+from core.scm import ComponentOrEquation, System
 
 def all_combs_b(n: int) -> list[tuple[int]]:
     """Generate all combinations of binary numbers with n digits."""
