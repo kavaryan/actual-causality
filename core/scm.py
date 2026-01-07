@@ -1,4 +1,5 @@
 # simple_actual_cauality.py
+"""Structural Causal Model (SCM) system implementation with components, domains, and temporal expansion."""
 
 import ast
 import random
