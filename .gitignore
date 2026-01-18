@@ -208,3 +208,9 @@ __marimo__/
 
 .vscode/
 .aider*
+
+*.csv
+*.pickle
+*.png
+*.tar
+subprojects/liab/fase26-artifact-evaluation/src

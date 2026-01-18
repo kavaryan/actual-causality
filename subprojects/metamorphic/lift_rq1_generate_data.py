@@ -10,21 +10,18 @@ from tqdm import tqdm
 import sys
 import os
 
-# Add path to access the case study modules
-sys.path.append('.')
 
 # Import shared configuration
-from lift_rq1_settings import (
+from subprojects.metamorphic.lift_rq1_settings import (
     DEFAULT_NUM_LIFTS_LIST, DEFAULT_NUM_TRIALS, DEFAULT_AWT_COEFF, DEFAULT_TIMEOUT,
-    SPEED_CLASSES, DENSITY_CLASSES, AVERAGE_MAX_TIME, PROB_ACTIVE, BUNDLE_SIZE
 )
 
 from subprojects.metamorphic.case_studies.lift.mock_lift_simulation import MockLiftsSimulator
 from subprojects.metamorphic.case_studies.lift.lift import LiftSearchSpace
 from subprojects.metamorphic.lift_run_single_experiment import lift_run_single_experiment
 
-def run_rq1_scalability_study(num_lifts_list=None, 
-                             num_trials=None, awt_coeff=None, timeout=None):
+def run_rq1_scalability_study(num_lifts_list, 
+                             num_trials, awt_coeff, timeout, speed_classes, density_classes, bundle_size=5, average_max_time=2.0, prob_active=0.7):
     """
     Run RQ1 scalability study comparing BFS vs Bundled A*.
     
@@ -33,39 +30,24 @@ def run_rq1_scalability_study(num_lifts_list=None,
     - 2 call density classes: low (0.1), high (0.5)
     - Configurable lift counts and trials
     """
-    # Use defaults if not provided
-    if num_lifts_list is None:
-        num_lifts_list = DEFAULT_NUM_LIFTS_LIST
-    if num_trials is None:
-        num_trials = DEFAULT_NUM_TRIALS
-    if awt_coeff is None:
-        awt_coeff = DEFAULT_AWT_COEFF
-    if timeout is None:
-        timeout = DEFAULT_TIMEOUT
+  
     
     # Print actual configuration being used
     print("Starting RQ1 Scalability Study Data Generation...")
-    print(f"Testing {len(SPEED_CLASSES)} speed × {len(DENSITY_CLASSES)} call density = {len(SPEED_CLASSES) * len(DENSITY_CLASSES)} subject classes")
-    print(f"Speed classes: {list(SPEED_CLASSES.keys())} (values: {list(SPEED_CLASSES.values())})")
-    print(f"Density classes: {list(DENSITY_CLASSES.keys())} (values: {list(DENSITY_CLASSES.values())})")
+    print(f"Testing {len(speed_classes)} speed × {len(density_classes)} call density = {len(speed_classes) * len(density_classes)} subject classes")
+    print(f"Speed classes: {list(speed_classes.keys())} (values: {list(speed_classes.values())})")
+    print(f"Density classes: {list(density_classes.keys())} (values: {list(density_classes.values())})")
     print(f"Lift counts: {num_lifts_list} with {num_trials} trials each")
-    print(f"Bundle size: {BUNDLE_SIZE}, Timeout: {timeout}s")
+    print(f"Bundle size: {bundle_size}, Timeout: {timeout}s")
     
     results = []
-    
-    # Use global constants for subject classes
-    speed_classes = SPEED_CLASSES
-    density_classes = DENSITY_CLASSES
-    
-    # Shared average_max_time that works for all configurations
-    average_max_time = AVERAGE_MAX_TIME
     
     for speed_name, speed_val in speed_classes.items():
         for density_name, density_val in density_classes.items():
             for num_lifts in tqdm(num_lifts_list, desc=f"Speed={speed_name}, Density={density_name}"):
                 for trial in tqdm(range(num_trials), desc=f"N={num_lifts}", leave=False):
                     # Generate random configuration
-                    v = np.random.binomial(1, PROB_ACTIVE, size=num_lifts)
+                    v = np.random.binomial(1, prob_active, size=num_lifts)
                     
                     # Ensure at least one lift is active
                     if sum(v) == 0:
@@ -84,7 +66,7 @@ def run_rq1_scalability_study(num_lifts_list=None,
                     # Test both methods on the same configuration
                     methods_to_test = [
                         ('bfs', {}),
-                        ('mm_bundled', {'bundle_size': BUNDLE_SIZE})
+                        ('mm_bundled', {'bundle_size': bundle_size})
                     ]
                     
                     for method, kwargs in methods_to_test:
@@ -108,7 +90,7 @@ def run_rq1_scalability_study(num_lifts_list=None,
                             'initial_awt': initial_awt,
                             'awt_thr': awt_thr,
                             'initial_active': sum(v),
-                            'prob_active': PROB_ACTIVE
+                            'prob_active': prob_active
                         })
                         results.append(result)
     

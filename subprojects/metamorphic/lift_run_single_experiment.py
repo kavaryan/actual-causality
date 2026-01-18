@@ -1,7 +1,7 @@
 import time
 import threading
 import numpy as np
-from search_formulation import MonotoQual, RevMonotoQual, SearchSpace, AdditiveBundle, hp_cause_bfs, hp_cause_mm, hp_cause_mm_bundled
+from subprojects.metamorphic.search_formulation import MonotoQual, RevMonotoQual, SearchSpace, AdditiveBundle, hp_cause_bfs, hp_cause_mm, hp_cause_mm_bundled
 
 class TimeoutError(Exception):
     pass
@@ -35,7 +35,7 @@ def lift_run_single_experiment(awt_thr, v, method, search_space, timeout=30, **k
                 X = hp_cause_mm(v, awt_thr, mms, search_space)
             elif method == 'mm_bundled':
                 bundle_size = kwargs.get('bundle_size', 2)
-                mms = [MonotoQual(i) for i in V]
+                # mms = [MonotoQual(i) for i in V]
                 
                 # Create bundles
                 bundles = []
@@ -43,7 +43,7 @@ def lift_run_single_experiment(awt_thr, v, method, search_space, timeout=30, **k
                     bundle_vars = list(range(i, min(i + bundle_size, len(V))))
                     bundles.append(AdditiveBundle(bundle_vars))
                 
-                X = hp_cause_mm_bundled(V, v, awt_thr, mms, bundles, search_space)
+                X = hp_cause_mm_bundled(V, v, awt_thr, [], bundles, search_space)
             else:
                 raise ValueError(f"Unknown method: {method}")
             
@@ -66,18 +66,22 @@ def lift_run_single_experiment(awt_thr, v, method, search_space, timeout=30, **k
                 'error': str(e)
             })
     
-    thread = threading.Thread(target=target)
-    thread.daemon = True
-    thread.start()
-    thread.join(timeout)
-    
-    if thread.is_alive():
-        # Thread is still running, it timed out
-        result.update({
-            'success': False,
-            'time': timeout,
-            'solution': None,
-            'timeout': True
-        })
-    
+    if method == 'bfs':
+        thread = threading.Thread(target=target)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout)
+        
+        if thread.is_alive():
+            # Thread is still running, it timed out
+            result.update({
+                'success': False,
+                'time': timeout,
+                'solution': None,
+                'timeout': True
+            })
+    else:
+        print('Running method without threading')
+        target()
+            
     return result
