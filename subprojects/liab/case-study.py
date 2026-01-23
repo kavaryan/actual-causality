@@ -219,7 +219,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
         # Set y-axis to start slightly below 0 so zero values are visible
         ax.set_ylim(bottom=-0.05)
     
-    fig.suptitle('Comparison of Shapley and k-leg methods in terms of liability difference', fontsize=14)
+    # fig.suptitle('Comparison of Shapley and k-leg methods in terms of liability difference', fontsize=14)
     plt.tight_layout()
     
     # Save the liability difference plot
@@ -252,7 +252,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             patch.set_alpha(0.7)
         
         ax.set_xlabel('Number of components')
-        ax.set_ylabel('Shapley time - k-leg time')
+        ax.set_ylabel('Shapley time - k-leg time (s)')
         ax.set_title(f'k={k}')
         ax.set_xticks(Ms_sorted)
         ax.grid(True, alpha=0.3)
@@ -260,7 +260,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
         # Add a dashed line at y=0 for reference
         ax.axhline(y=0, color='blue', linestyle='--', alpha=0.5)
     
-    fig.suptitle('Comparison of Shapley and k-leg methods in terms of computational time', fontsize=14)
+    # fig.suptitle('Comparison of Shapley and k-leg methods in terms of computational time', fontsize=14)
     plt.tight_layout()
     
     # Save the computational time plot
