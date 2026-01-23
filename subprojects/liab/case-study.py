@@ -290,9 +290,9 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             liability_diffs_for_M_k = [diff for m, diff in all_liability_diffs[k] if m == M]
             
             if liability_diffs_for_M_k:
-                # Calculate p-value as proportion of cases where difference > 0.2 * 2 = 0.4
-                # (0.2 of the maximum possible L1 norm difference, which is 2)
-                threshold = 0.4
+                # Calculate p-value as proportion of cases where difference > 0.4 * 2 = 0.8
+                # (0.4 of the maximum possible L1 norm difference, which is 2)
+                threshold = 0.8
                 num_above_threshold = sum(1 for diff in liability_diffs_for_M_k if diff > threshold)
                 p_value = num_above_threshold / len(liability_diffs_for_M_k)
                 row += f"{p_value:.3f}".ljust(12)
