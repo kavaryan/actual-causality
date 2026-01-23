@@ -187,7 +187,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             all_time_diffs[k].extend([(M, diff) for diff in time_diffs_k])
     
     # Create the liability difference box plots (like the paper's left plot)
-    fig, axes = plt.subplots(3, 1, figsize=(5, 12))
+    fig, axes = plt.subplots(3, 1, figsize=(5, 9))
     
     for i, k in enumerate(ks):
         ax = axes[i]
@@ -228,7 +228,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
     print(f'Saved liability difference plot: {images_dir / liability_plot_name}')
     
     # Create the computational time box plots (like the paper's right plot)
-    fig, axes = plt.subplots(3, 1, figsize=(5, 12))
+    fig, axes = plt.subplots(3, 1, figsize=(5, 9))
     
     for i, k in enumerate(ks):
         ax = axes[i]
