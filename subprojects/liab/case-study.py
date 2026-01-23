@@ -15,6 +15,16 @@ from tqdm import tqdm
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
+# Set larger font sizes for all plot elements
+plt.rcParams.update({
+    'font.size': 12,
+    'axes.titlesize': 14,
+    'axes.labelsize': 12,
+    'xtick.labelsize': 11,
+    'ytick.labelsize': 11,
+    'legend.fontsize': 11,
+    'figure.titlesize': 16
+})
 from subprojects.liab.k_leg_liab import k_leg_liab
 from subprojects.liab.shapley_liab import shapley_liab
 from core.random_system import get_rand_system, rerand_system, get_rand_failure
@@ -210,9 +220,9 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             patch.set_facecolor('lightblue')
             patch.set_alpha(0.7)
         
-        ax.set_xlabel('Number of components')
-        ax.set_ylabel('Sum of abs liability diff')
-        ax.set_title(f'k={k}')
+        ax.set_xlabel('Number of components', fontsize=13)
+        ax.set_ylabel('Sum of abs liability diff', fontsize=13)
+        ax.set_title(f'k={k}', fontsize=15)
         ax.set_xticks(Ms_sorted)
         ax.grid(True, alpha=0.3)
         
@@ -251,9 +261,9 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             patch.set_facecolor('lightcoral')
             patch.set_alpha(0.7)
         
-        ax.set_xlabel('Number of components')
-        ax.set_ylabel('Shapley time - k-leg time (s)')
-        ax.set_title(f'k={k}')
+        ax.set_xlabel('Number of components', fontsize=13)
+        ax.set_ylabel('Shapley time - k-leg time (s)', fontsize=13)
+        ax.set_title(f'k={k}', fontsize=15)
         ax.set_xticks(Ms_sorted)
         ax.grid(True, alpha=0.3)
         
