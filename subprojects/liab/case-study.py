@@ -187,7 +187,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             all_time_diffs[k].extend([(M, diff) for diff in time_diffs_k])
     
     # Create the liability difference box plots (like the paper's left plot)
-    fig, axes = plt.subplots(3, 1, figsize=(10, 12))
+    fig, axes = plt.subplots(3, 1, figsize=(5, 12))
     
     for i, k in enumerate(ks):
         ax = axes[i]
@@ -220,7 +220,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
         ax.set_ylim(bottom=-0.05)
     
     # fig.suptitle('Comparison of Shapley and k-leg methods in terms of liability difference', fontsize=14)
-    plt.tight_layout()
+    plt.tight_layout(pad=2.0)
     
     # Save the liability difference plot
     liability_plot_name = f'all_liabs_M{min(Ms)}-{max(Ms)}_k{"-".join(map(str, ks))}_n{num_samples}.png'
@@ -228,7 +228,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
     print(f'Saved liability difference plot: {images_dir / liability_plot_name}')
     
     # Create the computational time box plots (like the paper's right plot)
-    fig, axes = plt.subplots(3, 1, figsize=(10, 12))
+    fig, axes = plt.subplots(3, 1, figsize=(5, 12))
     
     for i, k in enumerate(ks):
         ax = axes[i]
@@ -261,7 +261,7 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
         ax.axhline(y=0, color='blue', linestyle='--', alpha=0.5)
     
     # fig.suptitle('Comparison of Shapley and k-leg methods in terms of computational time', fontsize=14)
-    plt.tight_layout()
+    plt.tight_layout(pad=2.0)
     
     # Save the computational time plot
     time_plot_name = f'all_times_M{min(Ms)}-{max(Ms)}_k{"-".join(map(str, ks))}_n{num_samples}.png'
