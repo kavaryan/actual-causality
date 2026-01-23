@@ -17,13 +17,13 @@ import sympy as sp
 import matplotlib.pyplot as plt
 # Set larger font sizes for all plot elements
 plt.rcParams.update({
-    'font.size': 12,
-    'axes.titlesize': 14,
-    'axes.labelsize': 12,
-    'xtick.labelsize': 11,
-    'ytick.labelsize': 11,
-    'legend.fontsize': 11,
-    'figure.titlesize': 16
+    'font.size': 16,
+    'axes.titlesize': 20,
+    'axes.labelsize': 18,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16,
+    'figure.titlesize': 22
 })
 from subprojects.liab.k_leg_liab import k_leg_liab
 from subprojects.liab.shapley_liab import shapley_liab
@@ -220,9 +220,9 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             patch.set_facecolor('lightblue')
             patch.set_alpha(0.7)
         
-        ax.set_xlabel('Number of components', fontsize=13)
-        ax.set_ylabel('Sum of abs liability diff', fontsize=13)
-        ax.set_title(f'k={k}', fontsize=15)
+        ax.set_xlabel('Number of components', fontsize=20)
+        ax.set_ylabel('Sum of abs liability diff', fontsize=20)
+        ax.set_title(f'k={k}', fontsize=22)
         ax.set_xticks(Ms_sorted)
         ax.grid(True, alpha=0.3)
         
@@ -261,9 +261,9 @@ def reproduce_paper_plots(Ms, ks, num_samples=1000, use_pickle=True, pickle_dir=
             patch.set_facecolor('lightcoral')
             patch.set_alpha(0.7)
         
-        ax.set_xlabel('Number of components', fontsize=13)
-        ax.set_ylabel('Shapley time - k-leg time (s)', fontsize=13)
-        ax.set_title(f'k={k}', fontsize=15)
+        ax.set_xlabel('Number of components', fontsize=20)
+        ax.set_ylabel('Shapley time - k-leg time (s)', fontsize=20)
+        ax.set_title(f'k={k}', fontsize=22)
         ax.set_xticks(Ms_sorted)
         ax.grid(True, alpha=0.3)
         
