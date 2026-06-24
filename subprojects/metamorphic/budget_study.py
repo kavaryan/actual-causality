@@ -261,8 +261,17 @@ def perform_budget_anova(
 
 
 def plot_budget_results(
-    results: pd.DataFrame, budget: float, output: Path, sizes=None
+    results: pd.DataFrame,
+    budget: float,
+    output: Path,
+    sizes=None,
+    case_study: str | None = None,
+    panels: tuple[str, ...] = ("time", "cardinality", "robustness"),
 ) -> None:
+    if case_study is not None:
+        results = results[results.case_study == case_study].copy()
+        if results.empty:
+            raise ValueError(f"No rows found for case_study={case_study!r}")
     plotted = results[(~results.timeout)].copy()
     timeout_rates = results.groupby(["method", "n_vars"]).timeout.mean()
     sizes = sorted(sizes if sizes is not None else results.n_vars.unique())
@@ -270,15 +279,21 @@ def plot_budget_results(
     width = 0.18
     offsets = np.linspace(-1.5 * width, 1.5 * width, len(METHODS))
 
-    panels = [
-        ("time", "Execution Time (seconds)", True),
-        ("cardinality", "Found Set Cardinality", False),
-        ("robustness", "Robustness", False),
-    ]
+    panel_specs = {
+        "time": ("time", "Execution Time (seconds)", True),
+        "cardinality": ("cardinality", "Found Set Cardinality", False),
+        "robustness": ("robustness", "Robustness", False),
+    }
+    unknown_panels = sorted(set(panels) - set(panel_specs))
+    if unknown_panels:
+        raise ValueError(f"Unknown plot panel(s): {unknown_panels}")
+    selected_panels = [panel_specs[panel] for panel in panels]
+    figsize = (6.16, 4.56) if len(selected_panels) == 1 else (6.16, 8.0)
     fig, axes = plt.subplots(
-        len(panels), 1, figsize=(6.16, 8.0), sharex=True
+        len(selected_panels), 1, figsize=figsize, sharex=True
     )
-    for ax, (column, ylabel, log_scale) in zip(axes, panels):
+    axes = np.atleast_1d(axes)
+    for ax, (column, ylabel, log_scale) in zip(axes, selected_panels):
         for offset, method in zip(offsets, METHODS):
             groups = [
                 plotted[
@@ -338,8 +353,15 @@ def plot_budget_results(
     plt.close(fig)
 
 
-def plot_times(results: pd.DataFrame, budget: float, output: Path, sizes=None) -> None:
-    plot_budget_results(results, budget, output, sizes=sizes)
+def plot_times(
+    results: pd.DataFrame,
+    budget: float,
+    output: Path,
+    sizes=None,
+    runtime_only: bool = False,
+) -> None:
+    panels = ("time",) if runtime_only else ("time", "cardinality", "robustness")
+    plot_budget_results(results, budget, output, sizes=sizes, panels=panels)
 
 
 def main() -> None:
@@ -362,6 +384,14 @@ def main() -> None:
         "--smoke-test",
         action="store_true",
         help="Skip ANOVA generation; useful for quick plotting/runtime checks.",
+    )
+    parser.add_argument(
+        "--runtime-only",
+        action="store_true",
+        help=(
+            "Also write runtime-only versions of the budget plots. The default "
+            "three-panel plots are still generated."
+        ),
     )
     parser.add_argument(
         "--output-dir", type=Path, default=ROOT / "budget_results"
@@ -390,6 +420,31 @@ def main() -> None:
     plot_budget_results(
         results, args.budget, args.output_dir / "budget_times.png", sizes=sizes
     )
+    if args.runtime_only:
+        plot_budget_results(
+            results,
+            args.budget,
+            args.output_dir / "budget_runtime_only.png",
+            sizes=sizes,
+            panels=("time",),
+        )
+    for case_study in sorted(results.case_study.unique()):
+        plot_budget_results(
+            results,
+            args.budget,
+            args.output_dir / f"{case_study}_budget_times.png",
+            sizes=sizes,
+            case_study=case_study,
+        )
+        if args.runtime_only:
+            plot_budget_results(
+                results,
+                args.budget,
+                args.output_dir / f"{case_study}_budget_runtime_only.png",
+                sizes=sizes,
+                case_study=case_study,
+                panels=("time",),
+            )
 
 
 if __name__ == "__main__":

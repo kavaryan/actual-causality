@@ -27,12 +27,27 @@ This writes:
 - `budget_results/budget_anova_completed_only.csv`
 - `budget_results/budget_anova_timeout_as_budget.csv`
 - `budget_results/budget_times.png`
+- `budget_results/lift_budget_times.png`
+- `budget_results/av_budget_times.png`
 
-`budget_times.png` contains three shared-x boxplot panels:
+`budget_times.png`, `lift_budget_times.png`, and `av_budget_times.png` contain
+three shared-x boxplot panels:
 
 - execution time in seconds;
 - cardinality of the found causal set;
 - robustness of the found causal set.
+
+To additionally write runtime-only variants, use:
+
+```bash
+~/.venv/bin/python subprojects/metamorphic-2/budget_study.py --budget 2 --runtime-only
+```
+
+This also writes:
+
+- `budget_results/budget_runtime_only.png`
+- `budget_results/lift_budget_runtime_only.png`
+- `budget_results/av_budget_runtime_only.png`
 
 A method/N box is omitted when more than half of the corresponding runs time
 out.
@@ -67,6 +82,33 @@ For a quick run:
 ```bash
 ~/.venv/bin/python subprojects/metamorphic-2/rq2_budget_bundle_study.py --smoke-test --budget 0.5 --results-dir /tmp/metamorphic2_rq2_budget_smoke/results --figures-dir /tmp/metamorphic2_rq2_budget_smoke/figures
 ```
+
+## Paper figures
+
+After the two studies above have produced their CSV files, regenerate every PNG
+used by the paper with:
+
+```bash
+~/.venv/bin/python subprojects/metamorphic-2/paper_figures.py
+```
+
+This reads:
+
+- `budget_results/budget_runs.csv`
+- `results/rq2_budget_bundle_results.csv`
+
+and writes:
+
+- `paper/ictac26/images/lift_budget_runtime_only.png`
+- `paper/ictac26/images/av_budget_runtime_only.png`
+- `paper/ictac26/images/lift_rq2_budget_bfs.png`
+- `paper/ictac26/images/lift_rq2_budget_approx_best_first.png`
+- `paper/ictac26/images/lift_rq2_budget_nsga2.png`
+- `paper/ictac26/images/lift_rq2_budget_best_first_shrink.png`
+
+The paper figure script also regenerates the full three-panel RQ1 images
+(`*_budget_times.png`) for inspection, but the LaTeX paper uses the
+runtime-only RQ1 images.
 
 ## Notebook
 
